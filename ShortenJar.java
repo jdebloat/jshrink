@@ -14,7 +14,19 @@ public class ShortenJar {
             String jarPath = args[0];
             String outPath = args[1];
             String prgmPath = args[2];
-            ArrayList<String> paths = FilePathProcessor.process(jarPath, "");
+            
+            String jarTmpPath = jarPath;
+            String outTmpPath = outPath + "_out";
+            
+            Runtime rt = Runtime.getRuntime();
+            
+            String OS = System.getProperty("os.name", "generic").toLowerCase();
+            if (OS.indexOf("nux") >= 0) {
+            	jarTmpPath = jarPath + "_out";
+            	Process p = rt.exec("unzip " + jarTmpPath + " -d " + jarTmpPath);
+            }
+            
+            ArrayList<String> paths = FilePathProcessor.process(jarTmpPath, "");
 //            for (int i = 0; i < paths.size(); ++i) {
 //                System.out.println(paths.get(i));
 //            }
@@ -24,7 +36,7 @@ public class ShortenJar {
 
             for (int i = 0; i < paths.size(); ++i) {
                 String thisPath = paths.get(i);
-                String realPath = jarPath + thisPath;
+                String realPath = jarTmpPath + thisPath;
 
                 ClassInfo thisInfo = new ClassInfo(thisPath);
                 FileInputStream is = new FileInputStream(realPath);
@@ -59,7 +71,7 @@ public class ShortenJar {
             }
 
             for (String path: ucProcessor.usedClasses) {
-                String fullPath = outPath + path;
+                String fullPath = outTmpPath + path;
                 System.out.println(fullPath);
                 String regex = "\\\\";
                 String[] splitted = fullPath.split(regex);
@@ -72,8 +84,10 @@ public class ShortenJar {
                 if (!Files.exists(Paths.get(directory))) {
                     Files.createDirectories(Paths.get(directory));
                 }
-                Files.copy(Paths.get(jarPath + path), Paths.get(outPath + path));
+                Files.copy(Paths.get(jarTmpPath + path), Paths.get(outTmpPath + path));
             }
+            
+            rt.exec("jar cf " + outPath + " " + outTmpPath);
 
         } catch (FileNotFoundException e) {
             System.out.println(e);
