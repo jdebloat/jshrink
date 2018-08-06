@@ -10,11 +10,11 @@ import soot.options.*;
 
 public class SootTest {
 	public static void main(String [] args) {
-		String inputJarPath = "/home/troy/ONR/call-graph-analysis/dependencies/Jama-1.0.3.jar";
-		String outputJarPath = "/home/troy/ONR/call-graph-analysis/dependencies/Jama-1.0.3-shortened.jar";
-		String inputPath = "/home/troy/ONR/call-graph-analysis/dependencies/Jama-1.0.3";
+		String inputJarPath = "src/test/resources/Jama-1.0.3.jar";
+		String outputJarPath = "src/test/resources/Jama-1.0.3-shortened.jar";
+		String inputPath = "src/test/resources/Jama-1.0.3";
 		String outputPath = inputPath + "-tmp";
-		String entryJarPath = "/home/troy/ONR/call-graph-analysis/client_program/jama-client.jar";
+		String entryJarPath = "src/test/resources/jama-client.jar";
 		String entryClassName = "Sample";
 		String entryMethodName = "main";
 		
