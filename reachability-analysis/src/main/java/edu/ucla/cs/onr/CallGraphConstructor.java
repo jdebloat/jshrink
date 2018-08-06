@@ -24,6 +24,22 @@ public class CallGraphConstructor {
 		String entryClassName = "junit.tests.AllTests";
 		String entryMethodName = "main";
 		
+		// count the classes and methods in the library jars and application directories
+		HashSet<String> libClasses = new HashSet<String>();
+		HashSet<String> libMethods = new HashSet<String>();
+		String[] libs = lib_class_path.split(File.pathSeparator);
+		for(String lib : libs) {
+			ASMUtils.readClassFromJarFile(lib, libClasses, libMethods);
+		}
+		HashSet<String> appClasses = new HashSet<String>();
+		HashSet<String> appMethods = new HashSet<String>();
+		ASMUtils.readClassFromDirectory(app_class_path, appClasses, appMethods);
+		ASMUtils.readClassFromDirectory(app_test_path, appClasses, appMethods);
+		System.out.println("Num of library classes : " + libClasses.size());
+		System.out.println("Num of library methods : " + libMethods.size());
+		System.out.println("Num of application classes : " + appClasses.size());
+		System.out.println("Num of application methods : " + appMethods.size());
+		
 		String cp = SootUtils.getJREJars();
 		cp += File.pathSeparator + lib_class_path;
 		cp += File.pathSeparator + app_class_path;
