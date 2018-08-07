@@ -69,8 +69,11 @@ public class SootUtils {
 		while (targets.hasNext()){
 			SootMethod method = (SootMethod)targets.next();
 			usedClass.add(method.getDeclaringClass().toString());
-			if (!visited.contains(method.toString())) {
-				visited.add(method.toString());
+			String signature = method.getSignature();
+			// remove the brackets before and after the method signature
+			signature = signature.substring(1, signature.length() - 1);
+			if (!visited.contains(signature)) {
+				visited.add(signature);
 				// depth first
 				visitMethod(method, cg, usedClass, visited);
 			}

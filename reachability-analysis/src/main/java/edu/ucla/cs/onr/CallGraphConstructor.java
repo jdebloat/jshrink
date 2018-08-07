@@ -73,7 +73,21 @@ public class CallGraphConstructor {
 		
 		SootUtils.visitMethod(entryMethod, cg, usedClasses, usedMethods);
 		
-		System.out.println("Num of used classes : " + usedClasses.size());
-		System.out.println("Num of used methods : " + usedMethods.size());
+		// check for used library classes and methods
+		HashSet<String> usedLibClasses = new HashSet<String>(libClasses);
+		usedLibClasses.retainAll(usedClasses);
+		HashSet<String> usedLibMethods = new HashSet<String>(libMethods);
+		usedLibMethods.retainAll(usedMethods);
+		
+		// check for used application classes and methods
+		HashSet<String> usedAppClasses = new HashSet<String>(appClasses);
+		usedAppClasses.retainAll(usedClasses);
+		HashSet<String> usedAppMethods = new HashSet<String>(appMethods);
+		usedAppMethods.retainAll(usedMethods);
+		
+		System.out.println("Num of used library classes : " + usedLibClasses.size());
+		System.out.println("Num of used library methods : " + usedLibMethods.size());
+		System.out.println("Num of used application classes : " + usedAppClasses.size());
+		System.out.println("Num of used application methods : " + usedAppMethods.size());
 	}
 }
