@@ -1,10 +1,14 @@
 package edu.ucla.cs.onr;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+
+import org.apache.commons.io.FileUtils;
 
 import soot.Scene;
 import soot.SootClass;
@@ -19,8 +23,9 @@ public class CallGraphConstructor {
 				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/classes";
 		String app_test_path = 
 				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/test-classes";
-		String lib_class_path = "/home/troy/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-				+ ":/home/troy/.m2/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar";
+		String lib_class_path = "/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
+				+ ":/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar";
+		String test_log_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/onr_test.log";
 		
 		// count the classes and methods in the library jars and application directories
 		HashSet<String> libClasses = new HashSet<String>();
@@ -54,15 +59,38 @@ public class CallGraphConstructor {
 		dirs.add(app_test_path);
 		Options.v().set_process_dir(dirs);
 		
-//		String entryClassName = "junit.tests.AllTests";
-//		String entryMethodName = "main";
+		// collect test cases from the test log file
+		ArrayList<String> testClasses = new ArrayList<String>();
+		try {
+			List<String> lines = FileUtils.readLines(new File(test_log_path), Charset.defaultCharset());
+			for(String line : lines) {
+				if(line.contains("Running ")) {
+					String testClass = line.substring(line.indexOf("Running ") + 8);
+					testClasses.add(testClass);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 		ArrayList<SootMethod> entryPoints = new ArrayList<SootMethod>();
+		// set all methods in a test class as entry points
+		for(String testClass : testClasses) {
+			SootClass entryClass = Scene.v().loadClassAndSupport(testClass);
+			Scene.v().loadNecessaryClasses();
+			List<SootMethod> methods = entryClass.getMethods();
+			for(SootMethod m : methods) {
+				entryPoints.add(m);
+			}
+		}
+		// scan all methods and add all main methods as entry points except the main method is 
+		// in a test class, since it has bee added already
 		for(String s : appMethods) {
 			String[] ss = s.split(": ");
 			String className = ss[0];
 			String methodName = ss[1];
-			if(methodName.equals("void main(java.lang.String[])")) {
+			if(!testClasses.contains(className) &&
+					methodName.equals("void main(java.lang.String[])")) {
 				SootClass entryClass = Scene.v().loadClassAndSupport(className);
 				Scene.v().loadNecessaryClasses();
 				SootMethod entryMethod = entryClass.getMethodByName("main");
