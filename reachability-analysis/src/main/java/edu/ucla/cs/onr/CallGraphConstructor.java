@@ -21,8 +21,6 @@ public class CallGraphConstructor {
 				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/test-classes";
 		String lib_class_path = "/home/troy/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
 				+ ":/home/troy/.m2/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar";
-		String entryClassName = "junit.tests.AllTests";
-		String entryMethodName = "main";
 		
 		// count the classes and methods in the library jars and application directories
 		HashSet<String> libClasses = new HashSet<String>();
@@ -55,11 +53,23 @@ public class CallGraphConstructor {
 		dirs.add(app_class_path);
 		dirs.add(app_test_path);
 		Options.v().set_process_dir(dirs);
-		SootClass entryClass = Scene.v().loadClassAndSupport(entryClassName);
-		Scene.v().loadNecessaryClasses();
+		
+//		String entryClassName = "junit.tests.AllTests";
+//		String entryMethodName = "main";
+		
 		ArrayList<SootMethod> entryPoints = new ArrayList<SootMethod>();
-		SootMethod entryMethod = entryClass.getMethodByName(entryMethodName);
-		entryPoints.add(entryMethod);
+		for(String s : appMethods) {
+			String[] ss = s.split(": ");
+			String className = ss[0];
+			String methodName = ss[1];
+			if(methodName.equals("void main(java.lang.String[])")) {
+				SootClass entryClass = Scene.v().loadClassAndSupport(className);
+				Scene.v().loadNecessaryClasses();
+				SootMethod entryMethod = entryClass.getMethodByName("main");
+				entryPoints.add(entryMethod);
+			}
+		}
+		
 	    Scene.v().setEntryPoints(entryPoints);
 	    
 	    HashMap<String, String> opt = SootUtils.getSparkOpt();
@@ -71,7 +81,9 @@ public class CallGraphConstructor {
 		HashSet<String> usedMethods = new HashSet<String>();		
 		HashSet<String> usedClasses = new HashSet<String>();
 		
-		SootUtils.visitMethod(entryMethod, cg, usedClasses, usedMethods);
+		for(SootMethod entryMethod : entryPoints) {
+			SootUtils.visitMethod(entryMethod, cg, usedClasses, usedMethods);
+		}
 		
 		// check for used library classes and methods
 		HashSet<String> usedLibClasses = new HashSet<String>(libClasses);
