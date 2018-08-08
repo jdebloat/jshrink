@@ -17,38 +17,67 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 
-public class CallGraphConstructor {
-	public static void main(String[] args) {
-		String app_class_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/classes";
-		String app_test_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/test-classes";
-		String lib_class_path = "/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar";
-		String test_log_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/onr_test.log";
+public class SparkCallGraphAnalysis {
+	String lib_jar_path;
+	String app_class_path;
+	String app_test_path;
+	String test_log_path;
+	
+	HashSet<String> libClasses;
+	HashSet<String> libMethods;
+	HashSet<String> appClasses;
+	HashSet<String> appMethods;
+	HashSet<String> usedLibClasses;
+	HashSet<String> usedLibMethods;
+	HashSet<String> usedAppClasses;
+	HashSet<String> usedAppMethods;
+	
+	public SparkCallGraphAnalysis(String lib_jar_path, 
+			String app_class_path, String app_test_path, String test_log_path) {
+		this.lib_jar_path = lib_jar_path;
+		this.app_class_path = app_class_path;
+		this.app_test_path = app_test_path;
+		this.test_log_path = test_log_path;
 		
-		// count the classes and methods in the library jars and application directories
-		HashSet<String> libClasses = new HashSet<String>();
-		HashSet<String> libMethods = new HashSet<String>();
-		String[] libs = lib_class_path.split(File.pathSeparator);
+		libClasses = new HashSet<String>();
+		libMethods = new HashSet<String>();
+		appClasses = new HashSet<String>();
+		appMethods = new HashSet<String>();
+		usedLibClasses = new HashSet<String>();
+		usedLibMethods = new HashSet<String>();
+		usedAppClasses = new HashSet<String>();
+		usedAppMethods = new HashSet<String>();
+	}
+	
+	public void run() {
+		// 1. use ASM to find all classes and methods 
+		findAllClassesAndMethods();
+		
+		// 2. use Spark to construct the call graph and compute the reachable classes and methods
+		runCallGraphAnalysis();
+	}
+
+	private void findAllClassesAndMethods() {
+		String[] libs = lib_jar_path.split(File.pathSeparator);
 		for(String lib : libs) {
 			ASMUtils.readClassFromJarFile(lib, libClasses, libMethods);
 		}
-		HashSet<String> appClasses = new HashSet<String>();
-		HashSet<String> appMethods = new HashSet<String>();
 		ASMUtils.readClassFromDirectory(app_class_path, appClasses, appMethods);
 		ASMUtils.readClassFromDirectory(app_test_path, appClasses, appMethods);
+		
+		// for debug purposes only
 		System.out.println("Num of library classes : " + libClasses.size());
 		System.out.println("Num of library methods : " + libMethods.size());
 		System.out.println("Num of application classes : " + appClasses.size());
 		System.out.println("Num of application methods : " + appMethods.size());
-		
+	}
+	
+	private void runCallGraphAnalysis() {
+		// set the Soot classpath and other options
 		String cp = SootUtils.getJREJars();
-		cp += File.pathSeparator + lib_class_path;
+		cp += File.pathSeparator + lib_jar_path;
 		cp += File.pathSeparator + app_class_path;
 		cp += File.pathSeparator + app_test_path;
-		
-		// set the Soot classpath and other options
 		Options.v().set_soot_classpath(cp);
 		Options.v().set_whole_program(true);
 		Options.v().set_allow_phantom_refs(true);
@@ -75,14 +104,14 @@ public class CallGraphConstructor {
 		
 		ArrayList<SootMethod> entryPoints = new ArrayList<SootMethod>();
 		// set all methods in a test class as entry points
-		for(String testClass : testClasses) {
-			SootClass entryClass = Scene.v().loadClassAndSupport(testClass);
-			Scene.v().loadNecessaryClasses();
-			List<SootMethod> methods = entryClass.getMethods();
-			for(SootMethod m : methods) {
-				entryPoints.add(m);
-			}
-		}
+//		for(String testClass : testClasses) {
+//			SootClass entryClass = Scene.v().loadClassAndSupport(testClass);
+//			Scene.v().loadNecessaryClasses();
+//			List<SootMethod> methods = entryClass.getMethods();
+//			for(SootMethod m : methods) {
+//				entryPoints.add(m);
+//			}
+//		}
 		// scan all methods and add all main methods as entry points except the main method is 
 		// in a test class, since it has bee added already
 		for(String s : appMethods) {
@@ -114,17 +143,18 @@ public class CallGraphConstructor {
 		}
 		
 		// check for used library classes and methods
-		HashSet<String> usedLibClasses = new HashSet<String>(libClasses);
+		usedLibClasses.addAll(libClasses);
 		usedLibClasses.retainAll(usedClasses);
-		HashSet<String> usedLibMethods = new HashSet<String>(libMethods);
+		usedLibMethods.addAll(libMethods);
 		usedLibMethods.retainAll(usedMethods);
 		
 		// check for used application classes and methods
-		HashSet<String> usedAppClasses = new HashSet<String>(appClasses);
+		usedAppClasses.addAll(appClasses);
 		usedAppClasses.retainAll(usedClasses);
-		HashSet<String> usedAppMethods = new HashSet<String>(appMethods);
+		usedAppMethods.addAll(appMethods);
 		usedAppMethods.retainAll(usedMethods);
 		
+		// for the debugging purpose only
 		System.out.println("Num of used library classes : " + usedLibClasses.size());
 		System.out.println("Num of used library methods : " + usedLibMethods.size());
 		System.out.println("Num of used application classes : " + usedAppClasses.size());
