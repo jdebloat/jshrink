@@ -1,19 +1,15 @@
 package edu.ucla.cs.onr.methodwiper;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import soot.*;
 import soot.jimple.JasminClass;
-import soot.jimple.JimpleBody;
 import soot.options.Options;
 import soot.util.JasminOutputStream;
 
 import java.io.*;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
+import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
 import static soot.Scene.v;

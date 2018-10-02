@@ -156,7 +156,7 @@ public class MethodWiper {
 	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
 		wipeMethodStart(sootMethod);
 		addThrowRuntimeException(sootMethod, Optional.of(message));
-		wipeMethodEnd(sootMethod);
+//		wipeMethodEnd(sootMethod);
 	}
 
 	/**
