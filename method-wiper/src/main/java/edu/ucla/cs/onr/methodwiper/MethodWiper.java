@@ -156,7 +156,7 @@ public class MethodWiper {
 	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
 		wipeMethodStart(sootMethod);
 		addThrowRuntimeException(sootMethod, Optional.of(message));
-		wipeMethodEnd(sootMethod);
+		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class MethodWiper {
 	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod) {
 		wipeMethodStart(sootMethod);
 		addThrowRuntimeException(sootMethod, Optional.empty());
-		wipeMethodEnd(sootMethod);
+		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
 	}
 
 }
