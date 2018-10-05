@@ -23,8 +23,12 @@ public class ASMUtils {
             while (entries.hasMoreElements()) {
             	final JarEntry entry = entries.nextElement();
                 if (entry.getName().endsWith(".class")) {
-                	ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
-                	cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+                	try {
+                		ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
+                		cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+                	} catch (IllegalArgumentException ex) {
+                		continue;
+                	}
                 }
             }
 		} catch (IOException e) {

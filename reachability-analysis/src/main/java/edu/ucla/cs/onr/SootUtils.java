@@ -34,7 +34,7 @@ public class SootUtils {
 		opt.put("enabled","true");
 		opt.put("verbose","true");
 		opt.put("ignore-types","false");          
-		opt.put("force-gc","false");            
+		opt.put("force-gc","true");            
 		opt.put("pre-jimplify","false");          
 		opt.put("vta","false");                   
 		opt.put("rta","false");                   
@@ -46,7 +46,7 @@ public class SootUtils {
 		opt.put("simple-edges-bidirectional","false");
 		opt.put("on-fly-cg","true");            
 		opt.put("simplify-offline","false");    
-		opt.put("simplify-sccs","false");        
+		opt.put("simplify-sccs","true");        
 		opt.put("ignore-types-for-sccs","false");
 		opt.put("propagator","worklist");
 		opt.put("set-impl","double");

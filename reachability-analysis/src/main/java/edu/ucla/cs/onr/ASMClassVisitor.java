@@ -40,6 +40,7 @@ public class ASMClassVisitor extends ClassVisitor{
 		}
 		String qualifiedName = className + ": " + returnType + " " + name + "(" + args + ")";
 		methods.add(qualifiedName);
+		// return new ASMMethodVisitor(Opcodes.ASM5);
 		return null;
 	}
 }

@@ -1,54 +1,239 @@
 package edu.ucla.cs.onr;
 
-import static org.junit.Assert.assertEquals;
+import java.io.File;
 
 import org.junit.Test;
 
 public class SparkCallGraphAnalysisTest {
+	private static String root_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects"; 
+	
 	@Test
 	public void testJUnit4() {
-		String app_class_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/classes";
-		String app_test_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/target/test-classes";
-		String lib_class_path = "/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-library/1.3/hamcrest-library-1.3.jar";
-		String test_log_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit4/onr_test.log";
+		String project_folder = "junit-team_junit4";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 2 library dependencies
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
 		
 		SparkCallGraphAnalysis runner = 
 				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
 		runner.run();
-		
-		assertEquals(72, runner.usedLibClasses.size());
-		assertEquals(356, runner.usedLibMethods.size());
-		assertEquals(590, runner.usedAppClasses.size());
-		assertEquals(2219, runner.usedAppMethods.size());
 	}
 	
 	@Test
 	public void testApacheCommonsLang() {
-		String app_class_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/apache_commons-lang/target/classes";
-		String app_test_path = 
-				"/media/troy/Disk2/ONR/BigQuery/sample-projects/apache_commons-lang/target/test-classes";
-		String lib_class_path = "/media/troy/Disk2/ONR/maven/repository/junit/junit/4.12/junit-4.12.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/hamcrest/hamcrest-all/1.3/hamcrest-all-1.3.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/easymock/easymock/3.5.1/easymock-3.5.1.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/objenesis/objenesis/2.6/objenesis-2.6.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/openjdk/jmh/jmh-core/1.19/jmh-core-1.19.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/net/sf/jopt-simple/jopt-simple/4.6/jopt-simple-4.6.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/apache/commons/commons-math3/3.2/commons-math3-3.2.jar"
-				+ ":/media/troy/Disk2/ONR/maven/repository/org/openjdk/jmh/jmh-generator-annprocess/1.19/jmh-generator-annprocess-1.19.jar";
-		String test_log_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/apache_commons-lang/onr_test.log";
+		String project_folder = "apache_commons-lang";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 9 library dependencies
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
 		
 		SparkCallGraphAnalysis runner = 
 				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
 		runner.run();
+	}
+	
+	@Test
+	public void testSquareJavapoet() {
+		String project_folder = "square_javapoet";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 19 library dependencies
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
 		
-//		assertEquals(72, runner.usedLibClasses.size());
-//		assertEquals(356, runner.usedLibMethods.size());
-//		assertEquals(590, runner.usedAppClasses.size());
-//		assertEquals(2219, runner.usedAppMethods.size());
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testJJWT() {
+		String project_folder = "jwtk_jjwt";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 30 library dependencies
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testDensityConverter() {
+		String project_folder = "patrickfav_density-converter";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 49 library dependencies
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+				
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testAmazonEcho() {
+		String project_folder = "armzilla_amazon-echo-ha-bridge";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 68 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testElasticSearch() {
+		String project_folder = "NLPchina_elasticsearch";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 71 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testSpringRestServiceOauth() {
+		String project_folder = "royclarkson_spring-rest-service-oauth";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 75 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testSolo() {
+		String project_folder = "b3log_solo";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 78 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testLittleProxy() {
+		String project_folder = "adamfisk_LittleProxy";
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 116 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testJeesite() {
+		String project_folder = "thinkgem_jeesite";
+		// this project has a custom output directory
+		String app_class_path = 
+				"/media/troy/Disk2/ONR/BigQuery/sample-projects/thinkgem_jeesite/src/main/webapp/WEB-INF/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 136 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testDddsampleCore() {
+		String project_folder = "citerus_dddsample-core";
+		// this project has a custom output directory
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 152 library dependencies, works when increasing the max heap size to 10G
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
 	}
 }
