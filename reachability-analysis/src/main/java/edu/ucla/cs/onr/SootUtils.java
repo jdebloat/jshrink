@@ -1,10 +1,7 @@
 package edu.ucla.cs.onr;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Stack;
+import java.util.*;
 
 import soot.MethodOrMethodContext;
 import soot.Scene;
@@ -109,7 +106,7 @@ public class SootUtils {
 	 * @param visited
 	 */
 	@Deprecated
-	public static void visitMethod(SootMethod m, CallGraph cg, HashSet<String> usedClass, HashSet<String> visited) {
+	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
 		String signature = m.getSignature();
 		// remove the brackets before and after the method signature
