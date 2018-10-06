@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Stack;
 
 import soot.MethodOrMethodContext;
 import soot.Scene;
@@ -64,19 +65,56 @@ public class SootUtils {
 		return opt;
 	}
 	
+	/**
+	 * 
+	 * This recursive function does not work well when a call graph is very deep.
+	 * Call visitMethodNonRecur instead.
+	 * 
+	 * @param m
+	 * @param cg
+	 * @param usedClass
+	 * @param visited
+	 */
+	@Deprecated
 	public static void visitMethod(SootMethod m, CallGraph cg, HashSet<String> usedClass, HashSet<String> visited) {
-		Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(m));
-		while (targets.hasNext()){
-			SootMethod method = (SootMethod)targets.next();
-			usedClass.add(method.getDeclaringClass().toString());
-			String signature = method.getSignature();
-			// remove the brackets before and after the method signature
-			signature = signature.substring(1, signature.length() - 1);
-			if (!visited.contains(signature)) {
-				visited.add(signature);
-				// depth first
+		String className = m.getDeclaringClass().toString();
+		String signature = m.getSignature();
+		// remove the brackets before and after the method signature
+		signature = signature.substring(1, signature.length() - 1);
+		if(!visited.contains(signature)) {
+			// visited early and avoid recursion
+			usedClass.add(className);
+			visited.add(signature);
+			
+			Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(m));
+			while (targets.hasNext()){
+				SootMethod method = (SootMethod)targets.next();
 				visitMethod(method, cg, usedClass, visited);
 			}
+		}
+	}
+	
+	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, HashSet<String> usedClass, HashSet<String> visited) {
+		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
+		methods_to_visit.add(m);
+		while(!methods_to_visit.isEmpty()) {
+			SootMethod first = methods_to_visit.pop();
+			String className = first.getDeclaringClass().toString();
+			String signature = first.getSignature();
+			// remove the brackets before and after the method signature
+			signature = signature.substring(1, signature.length() - 1);
+			if(!visited.contains(signature)) {
+				// avoid recursion
+				usedClass.add(className);
+				visited.add(signature);
+				
+				// add callees to the stack
+				Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(first));
+				while (targets.hasNext()){
+					SootMethod method = (SootMethod)targets.next();
+					methods_to_visit.push(method);
+				}
+			}	
 		}
 	}
 }
