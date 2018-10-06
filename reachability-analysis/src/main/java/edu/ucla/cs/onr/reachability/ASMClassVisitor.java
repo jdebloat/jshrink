@@ -1,6 +1,7 @@
 package edu.ucla.cs.onr;
 
-import java.util.HashSet;
+import java.io.File;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.ClassVisitor;
@@ -8,11 +9,11 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 public class ASMClassVisitor extends ClassVisitor{
-	private String className;
-	HashSet<String> classes; 
-	HashSet<String> methods;
+	private String currentClass;
+	private Set<String> classes;
+	private Set<String> methods;
 	
-	public ASMClassVisitor(int api, HashSet<String> classes, HashSet<String> methods) {
+	public ASMClassVisitor(int api, Set<String> classes, Set<String> methods) {
 		super(api);
 		this.classes = classes;
 		this.methods = methods;  
@@ -22,7 +23,7 @@ public class ASMClassVisitor extends ClassVisitor{
 	public void visit(int version, int access, String name,
             String signature, String superName, String[] interfaces) {
 		String name2 = name.replaceAll(Pattern.quote("/"), ".");
-		className = name2;
+		currentClass = name2;
 		classes.add(name2);
 	}
 	
@@ -38,7 +39,7 @@ public class ASMClassVisitor extends ClassVisitor{
 		if(ts.length > 0) {
 			args += ts[ts.length - 1].getClassName();
 		}
-		String qualifiedName = className + ": " + returnType + " " + name + "(" + args + ")";
+		String qualifiedName = currentClass + ": " + returnType + " " + name + "(" + args + ")";
 		methods.add(qualifiedName);
 		// return new ASMMethodVisitor(Opcodes.ASM5);
 		return null;

@@ -1,18 +1,17 @@
 package edu.ucla.cs.onr;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Stack;
+import java.util.*;
 
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
+import soot.options.Options;
 
 public class SootUtils {
+
 	public static String getJREJars() { 
 		String defaultClasspath = Scene.v().defaultClassPath();
 		String cp;
@@ -28,6 +27,37 @@ public class SootUtils {
 		}
 		
 		return cp;
+	}
+
+	private static String listToPathString(List<File> paths){
+		StringBuilder sb = new StringBuilder();
+		for(File path : paths){
+			sb.append(File.pathSeparator + path.getAbsolutePath());
+		}
+		return sb.toString();
+	}
+
+	public static void setupSoot(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+		String cp = SootUtils.getJREJars();
+		cp += listToPathString(libJarPath);
+		cp += listToPathString(appClassPath);
+		cp += listToPathString(appTestPath);
+		Options.v().set_soot_classpath(cp);
+		Options.v().set_whole_program(true);
+		Options.v().set_allow_phantom_refs(true);
+
+		// set the application directories
+		List<String> dirs = new ArrayList<String>();
+
+		for(File path : appClassPath) {
+			dirs.add(path.getAbsolutePath());
+		}
+
+		for(File path : appTestPath) {
+			dirs.add(path.getAbsolutePath());
+		}
+
+		Options.v().set_process_dir(dirs);
 	}
 	
 	public static HashMap<String, String> getSparkOpt() {
@@ -76,7 +106,7 @@ public class SootUtils {
 	 * @param visited
 	 */
 	@Deprecated
-	public static void visitMethod(SootMethod m, CallGraph cg, HashSet<String> usedClass, HashSet<String> visited) {
+	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
 		String signature = m.getSignature();
 		// remove the brackets before and after the method signature
@@ -94,7 +124,7 @@ public class SootUtils {
 		}
 	}
 	
-	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, HashSet<String> usedClass, HashSet<String> visited) {
+	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
 		methods_to_visit.add(m);
 		while(!methods_to_visit.isEmpty()) {
