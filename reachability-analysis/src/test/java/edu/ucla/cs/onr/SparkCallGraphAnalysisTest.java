@@ -225,7 +225,28 @@ public class SparkCallGraphAnalysisTest {
 				project_folder + File.separator + "target/classes";
 		String app_test_path = root_path + File.separator + 
 				project_folder + File.separator + "target/test-classes";
-		// 152 library dependencies, works when increasing the max heap size to 10G
+		// 152 library dependencies, Spark fails with 10G max heap size
+		// CHA passes it
+		String cp_log = root_path + File.separator + 
+				project_folder + File.separator + "onr_classpath_new.log";  
+		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String test_log_path = root_path + File.separator + 
+				project_folder + File.separator + "onr_test.log";
+		
+		SparkCallGraphAnalysis runner = 
+				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path, test_log_path);
+		runner.run();
+	}
+	
+	@Test
+	public void testSparkTimeSeries() {
+		String project_folder = "sryza_spark-timeseries";
+		// this project has a custom output directory
+		String app_class_path = root_path + File.separator + 
+				project_folder + File.separator + "target/classes";
+		String app_test_path = root_path + File.separator + 
+				project_folder + File.separator + "target/test-classes";
+		// 173 library dependencies, works when increasing the max heap size to 10G
 		String cp_log = root_path + File.separator + 
 				project_folder + File.separator + "onr_classpath_new.log";  
 		String lib_class_path = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();

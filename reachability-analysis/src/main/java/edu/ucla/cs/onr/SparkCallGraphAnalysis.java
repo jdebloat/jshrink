@@ -14,6 +14,7 @@ import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.spark.SparkTransformer;
+import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 
@@ -104,14 +105,14 @@ public class SparkCallGraphAnalysis {
 		
 		ArrayList<SootMethod> entryPoints = new ArrayList<SootMethod>();
 		// set all methods in a test class as entry points
-//		for(String testClass : testClasses) {
-//			SootClass entryClass = Scene.v().loadClassAndSupport(testClass);
-//			Scene.v().loadNecessaryClasses();
-//			List<SootMethod> methods = entryClass.getMethods();
-//			for(SootMethod m : methods) {
-//				entryPoints.add(m);
-//			}
-//		}
+		for(String testClass : testClasses) {
+			SootClass entryClass = Scene.v().loadClassAndSupport(testClass);
+			Scene.v().loadNecessaryClasses();
+			List<SootMethod> methods = entryClass.getMethods();
+			for(SootMethod m : methods) {
+				entryPoints.add(m);
+			}
+		}
 		// scan all methods and add all main methods as entry points except the main method is 
 		// in a test class, since it has bee added already
 		for(String s : appMethods) {
@@ -129,8 +130,9 @@ public class SparkCallGraphAnalysis {
 		
 	    Scene.v().setEntryPoints(entryPoints);
 	    
-	    HashMap<String, String> opt = SootUtils.getSparkOpt();
-		SparkTransformer.v().transform("",opt);
+	    CHATransformer.v().transform();
+//	    HashMap<String, String> opt = SootUtils.getSparkOpt();
+//		SparkTransformer.v().transform("",opt);
 
 		CallGraph cg = Scene.v().getCallGraph();
 		System.out.println("graph done");
@@ -139,7 +141,8 @@ public class SparkCallGraphAnalysis {
 		HashSet<String> usedClasses = new HashSet<String>();
 		
 		for(SootMethod entryMethod : entryPoints) {
-			SootUtils.visitMethod(entryMethod, cg, usedClasses, usedMethods);
+//			SootUtils.visitMethod(entryMethod, cg, usedClasses, usedMethods);
+			SootUtils.visitMethodNonRecur(entryMethod, cg, usedClasses, usedMethods);
 		}
 		
 		// check for used library classes and methods
