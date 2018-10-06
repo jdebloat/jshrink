@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.*;
 
 public class FilePathProcessor {
-    public static void process(HashMap<String, String> allClasses, String basePath, String prefix, String prefixFile) {
+    public static void process(Map<String, String> allClasses, String basePath, String prefix, String prefixFile) {
         File folder = new File(basePath);
         File[] listOfFiles = folder.listFiles();
         for (int i = 0; i < listOfFiles.length; ++ i) {
