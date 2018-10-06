@@ -3,9 +3,14 @@ package edu.ucla.cs.onr;
 import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
+
+import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
+import edu.ucla.cs.onr.util.SootUtils;
 import edu.ucla.cs.onr.ApplicationCommandLineParser.ENTRY_POINT;
 import edu.ucla.cs.onr.methodwiper.MethodWiper;
+
 import org.apache.commons.io.FileUtils;
+
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -36,6 +41,7 @@ public class Application {
 		//Run the call graph analysis
 		SparkCallGraphAnalysis callGraphAnalysis = new SparkCallGraphAnalysis(commandLineParser.getLibClassPath(),
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(),entryPoints);
+		callGraphAnalysis.run();
 
 		//Load the classes to Soot
 		SootUtils.setupSoot(commandLineParser.getLibClassPath(),

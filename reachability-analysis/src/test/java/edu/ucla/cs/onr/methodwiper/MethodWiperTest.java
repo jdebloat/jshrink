@@ -1,5 +1,6 @@
 package edu.ucla.cs.onr.methodwiper;
 
+import static org.junit.Assert.assertEquals;
 import soot.*;
 import soot.jimple.JasminClass;
 import soot.options.Options;
@@ -11,34 +12,18 @@ import java.util.List;
 
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
-import static soot.Scene.v;
+import edu.ucla.cs.onr.util.SootUtils;
 
 public class MethodWiperTest {
-
-	private static String getJREJars() {
-		String defaultClasspath = v().defaultClassPath();
-		String cp;
-		if (defaultClasspath.contains(":")) {
-			// The JRE in Mac returns multiple JRE jars including rt.jar and jce.jar
-			cp = defaultClasspath;
-		} else {
-			// The JRE in Linux returns rt.jar only
-			String jreDirectory = (new File(defaultClasspath)).getParent();
-			String jcePath = jreDirectory + File.separator + "jce.jar";
-			// add rt.jar and jce.jar to the classpath, as required by Soot
-			cp = defaultClasspath + File.pathSeparator + jcePath;
-		}
-
-		return cp;
-	}
-
 	private static SootClass getSootClassFromResources(String className){
-		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
-		File classFile = classFile = new File(classLoader.getResource(className + ".class").getFile());
+//		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
+//		File classFile = new File(classLoader.getResource(className + ".class").getFile());
+		// the code above throws an exception about unfound resources
+		// below is a temporary patch
+		File classFile = new File("src/test/resources/methodwiper/" + className + ".class");
 
 		final String workingClasspath=classFile.getParentFile().getAbsolutePath();
-		Options.v().set_soot_classpath(MethodWiperTest.getJREJars() + File.pathSeparator + workingClasspath);
+		Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);
 		Options.v().set_whole_program(true);
 		Options.v().set_allow_phantom_refs(true);
 
@@ -122,7 +107,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void sanityCheck() {
+	public void sanityCheck() {
 		SootClass sootClass = getSootClassFromResources("Test1");
 		String output = runClass(sootClass);
 
@@ -144,7 +129,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_Test1_staticVoidMethodNoParams(){
+	public void wipeMethodTest_Test1_staticVoidMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test2");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodNoParams"));
 		String output = runClass(sootClass);
@@ -166,7 +151,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticIntMethodNoParams() {
+	public void wipeMethodTest_staticIntMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test3");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodNoParams"));
 		String output = runClass(sootClass);
@@ -188,7 +173,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticStringMethodNoParam() {
+	public void wipeMethodTest_staticStringMethodNoParam() {
 		SootClass sootClass = getSootClassFromResources("Test4");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticStringMethodNoParams"));
 		String output = runClass(sootClass);
@@ -210,7 +195,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticDoubleMethodNoParams() {
+	public void wipeMethodTest_staticDoubleMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test5");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticDoubleMethodNoParams"));
 		String output = runClass(sootClass);
@@ -232,7 +217,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticVoidMethodTwoParams() {
+	public void wipeMethodTest_staticVoidMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test6");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodTwoParams"));
 		String output = runClass(sootClass);
@@ -254,7 +239,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticIntMethodTwoParams() {
+	public void wipeMethodTest_staticIntMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test7");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodTwoParams"));
 		String output = runClass(sootClass);
@@ -276,7 +261,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_methodNoParams() {
+	public void wipeMethodTest_methodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test8");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("methodNoParams"));
 		String output = runClass(sootClass);
@@ -298,7 +283,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_intMethodNoParams() {
+	public void wipeMethodTest_intMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test9");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodNoParams"));
 		String output = runClass(sootClass);
@@ -320,7 +305,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_intMethodTwoParams() {
+	public void wipeMethodTest_intMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test10");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodTwoParams"));
 		String output = runClass(sootClass);
@@ -342,7 +327,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticBooleanMethodNoParams(){
+	public void wipeMethodTest_staticBooleanMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test11");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticBooleanMethodNoParams"));
 		String output = runClass(sootClass);
@@ -364,7 +349,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticCharMethodNoParams(){
+	public void wipeMethodTest_staticCharMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test12");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticCharMethodNoParams"));
 		String output = runClass(sootClass);
@@ -386,7 +371,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticByteMethodNoParams(){
+	public void wipeMethodTest_staticByteMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test13");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticByteMethodNoParams"));
 		String output = runClass(sootClass);
@@ -408,7 +393,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodTest_staticShortMethodNoParams(){
+	public void wipeMethodTest_staticShortMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test14");
 		MethodWiper.wipeMethod(sootClass.getMethodByName("staticShortMethodNoParams"));
 		String output = runClass(sootClass);
@@ -430,7 +415,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodAndInsertRuntimeException_TestWithoutMessage(){
+	public void wipeMethodAndInsertRuntimeException_TestWithoutMessage(){
 		SootClass sootClass = getSootClassFromResources("Test15");
 		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams"));
 		String output = runClass(sootClass);
@@ -451,7 +436,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	void wipeMethodAndInsertRuntimeException_TestWithMessage(){
+	public void wipeMethodAndInsertRuntimeException_TestWithMessage(){
 		SootClass sootClass = getSootClassFromResources("Test15");
 		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams"), "TEST");
 		String output = runClass(sootClass);
@@ -470,7 +455,5 @@ public class MethodWiperTest {
 
 		assertEquals(expected, output);
 	}
-
-
 }
 

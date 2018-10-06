@@ -1,4 +1,4 @@
-package edu.ucla.cs.onr;
+package edu.ucla.cs.onr.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +11,8 @@ import java.util.jar.JarFile;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
+
+import edu.ucla.cs.onr.reachability.ASMClassVisitor;
 
 public class ASMUtils {
     public static void readClassFromJarFile(File jarPath, Set<String> classes,

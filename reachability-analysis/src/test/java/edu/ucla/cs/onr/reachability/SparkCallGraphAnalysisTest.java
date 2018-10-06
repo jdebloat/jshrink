@@ -1,11 +1,11 @@
-package edu.ucla.cs.onr;
+package edu.ucla.cs.onr.reachability;
 
 import java.io.File;
 
 import org.junit.Test;
 
-import edu.ucla.cs.onr.reachability.MavenLogUtils;
 import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
+import edu.ucla.cs.onr.util.MavenLogUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -44,11 +44,7 @@ public class SparkCallGraphAnalysisTest {
 				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 					SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 						lib_class_path,app_class_path,app_test_path,test_log_path));
-
-		assertEquals(72, runner.getUsedLibClasses().size());
-		assertEquals(356, runner.getUsedLibMethods().size());
-		assertEquals(590, runner.getUsedAppClasses().size());
-		assertEquals(2219, runner.getUsedAppMethods().size());
+		runner.run();
 	}
 	
 	@Test
@@ -82,6 +78,7 @@ public class SparkCallGraphAnalysisTest {
 				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 					SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 						lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -114,6 +111,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -146,6 +144,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -178,6 +177,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -210,6 +210,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -242,6 +243,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -274,6 +276,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -306,6 +309,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -338,6 +342,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -370,6 +375,7 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 	
 	@Test
@@ -402,5 +408,6 @@ public class SparkCallGraphAnalysisTest {
 			new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
 				SparkCallGraphAnalysis.getEntryPointsFromTestLog(
 					lib_class_path, app_class_path, app_test_path, test_log_path));
+		runner.run();
 	}
 }

@@ -1,8 +1,10 @@
-package edu.ucla.cs.onr;
+package edu.ucla.cs.onr.reachability;
 
 import java.util.*;
 import java.io.*;
 
+import edu.ucla.cs.onr.util.FilePathProcessor;
+import edu.ucla.cs.onr.util.SootUtils;
 import soot.*;
 import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.*;

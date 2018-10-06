@@ -1,4 +1,4 @@
-package edu.ucla.cs.onr;
+package edu.ucla.cs.onr.reachability;
 
 import static org.junit.Assert.assertEquals;
 
@@ -6,6 +6,8 @@ import java.io.File;
 import java.util.HashSet;
 
 import org.junit.Test;
+
+import edu.ucla.cs.onr.util.ASMUtils;
 
 public class ASMUtilsTest {
 	@Test

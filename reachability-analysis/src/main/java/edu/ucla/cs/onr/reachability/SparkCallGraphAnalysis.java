@@ -1,4 +1,4 @@
-package edu.ucla.cs.onr;
+package edu.ucla.cs.onr.reachability;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,6 +7,8 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 
+import edu.ucla.cs.onr.util.ASMUtils;
+import edu.ucla.cs.onr.util.SootUtils;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -45,11 +47,9 @@ public class SparkCallGraphAnalysis {
 		usedLibMethods = new HashSet<String>();
 		usedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashSet<String>();
-
-		this.run();
 	}
 
-	private void run() {
+	public void run() {
 		// 1. use ASM to find all classes and methods 
 		this.findAllClassesAndMethods();
 
