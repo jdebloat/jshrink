@@ -16,15 +16,11 @@ import edu.ucla.cs.onr.util.SootUtils;
 
 public class MethodWiperTest {
 	private static SootClass getSootClassFromResources(String className){
-
-		//I readded this because this really should work. Please feel free to revert
-		//Are you sure this doesn't work?
-		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
-		File classFile = new File(classLoader.getResource(
-			"methodwiper" + File.separator +className + ".class").getFile());
+//		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
+//		File classFile = new File(classLoader.getResource(className + ".class").getFile());
 		// the code above throws an exception about unfound resources
 		// below is a temporary patch
-	//	File classFile = new File("src/test/resources/methodwiper/" + className + ".class");
+		File classFile = new File("src/test/resources/methodwiper/" + className + ".class");
 
 		final String workingClasspath=classFile.getParentFile().getAbsolutePath();
 		Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);
