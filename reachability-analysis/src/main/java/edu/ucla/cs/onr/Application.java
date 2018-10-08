@@ -44,7 +44,7 @@ public class Application {
 		callGraphAnalysis.run();
 
 		//Load the classes to Soot
-		SootUtils.setupSoot(commandLineParser.getLibClassPath(),
+		SootUtils.setup(commandLineParser.getLibClassPath(),
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
 
 		Set<SootClass> classesToRewrite = new HashSet<SootClass>();
@@ -110,7 +110,7 @@ public class Application {
 	private static Set<String> getEntryPoints(ApplicationCommandLineParser commandLineParser){
 		Set<String> toReturn = new HashSet<String>();
 
-		SootUtils.setupSoot(commandLineParser.getLibClassPath(),
+		SootUtils.setup(commandLineParser.getLibClassPath(),
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
 
 		if(commandLineParser.getEntryPoint() == ENTRY_POINT.MAIN){

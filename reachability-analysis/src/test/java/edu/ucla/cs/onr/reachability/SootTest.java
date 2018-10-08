@@ -63,7 +63,7 @@ public class SootTest {
 		HashSet<String> visited = new HashSet<String>();		
 		HashSet<String> usedClass = new HashSet<String>();
 
-		SootUtils.visitMethod(entryMethod, cg, usedClass, visited);
+		SootUtils.visitMethodNonRecur(entryMethod, cg, usedClass, visited);
 	
 		System.out.println("results");
 		
