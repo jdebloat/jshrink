@@ -2,3 +2,8 @@
 *.class
 *.idea
 *target
+*.metadata
+*.classpath
+*.project 
+*.settings 
+*.DS_Store
