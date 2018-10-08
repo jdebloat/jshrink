@@ -20,6 +20,7 @@ public class MethodWiperTest {
 //		File classFile = new File(classLoader.getResource(className + ".class").getFile());
 		// the code above throws an exception about unfound resources
 		// below is a temporary patch
+		//TODO: Fix this --- cannot get load resources working across eclipse version.
 		File classFile = new File("src/test/resources/methodwiper/" + className + ".class");
 
 		final String workingClasspath=classFile.getParentFile().getAbsolutePath();
