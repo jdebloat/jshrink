@@ -8,6 +8,7 @@ import java.util.*;
 import org.apache.commons.io.FileUtils;
 
 import edu.ucla.cs.onr.util.ASMUtils;
+import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
 import soot.Scene;
 import soot.SootClass;
@@ -18,10 +19,12 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.options.Options;
 
 public class SparkCallGraphAnalysis {
+	public static boolean DEBUG = true;
+	
 	private List<File> libJarPath;
 	private List<File> appClassPath;
 	private List<File> appTestPath;
-	private Set<String> entryMethods;
+	private Set<String> entryMethods; // in the 'className:methodName' format
 
 	private Set<String> libClasses;
 	private Set<String> libMethods;
@@ -33,7 +36,9 @@ public class SparkCallGraphAnalysis {
 	private Set<String> usedAppMethods;
 
 	public SparkCallGraphAnalysis(List<File> libJarPath,
-	                              List<File> appClassPath, List<File> appTestPath, Set<String> entryMethods) {
+	                              List<File> appClassPath, 
+	                              List<File> appTestPath, 
+	                              Set<String> entryMethods) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
@@ -69,44 +74,20 @@ public class SparkCallGraphAnalysis {
 		for (File testPath : appTestPath) {
 			ASMUtils.readClassFromDirectory(testPath, appClasses, appMethods);
 		}
-	}
-
-	public static Set<String> getEntryPointsFromTestLog(List<File> libJarPath, List<File> appClassPath,
-	                                              List<File> appTestPath, File testLog) {
-
-		ArrayList<String> testClasses = new ArrayList<String>();
-		try {
-			List<String> lines = FileUtils.readLines(testLog, Charset.defaultCharset());
-			for (String line : lines) {
-				if (line.contains("Running ")) {
-					String testClass = line.substring(line.indexOf("Running ") + 8);
-					testClasses.add(testClass);
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		
+		if(DEBUG) {
+			System.out.println("Num of library classes : " + libClasses.size());
+			System.out.println("Num of library methods : " + libMethods.size());
+			System.out.println("Num of application classes : " + appClasses.size());
+			System.out.println("Num of application methods : " + appMethods.size());
 		}
-
-		Set<String> entryPoints = new HashSet<String>();
-		SootUtils.setupSoot(libJarPath,appClassPath,appTestPath);
-
-		for(String testClass : testClasses){
-			for(SootMethod sootMethod : Scene.v().getSootClass(testClass).getMethods()){
-				entryPoints.add(sootMethod.getSignature());
-			}
-		}
-
-		return entryPoints;
-
 	}
 
 	private void runCallGraphAnalysis() {
-		SootUtils.setupSoot(this.libJarPath, this.appClassPath, this.appTestPath);
+		// must call this first, and we only need to call it once
+		SootUtils.setup(this.libJarPath, this.appClassPath, this.appTestPath);
 
-		List<SootMethod> entryPoints = new ArrayList<SootMethod>();
-		for (String entry : this.entryMethods) {
-			entryPoints.add(Scene.v().getMethod(entry));
-		}
+		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
 		Scene.v().setEntryPoints(entryPoints);
 
@@ -134,6 +115,13 @@ public class SparkCallGraphAnalysis {
 		this.usedAppClasses.retainAll(usedClasses);
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
+		
+		if(DEBUG) {
+			System.out.println("Num of used library classes : " + usedLibClasses.size());
+			System.out.println("Num of used library methods : " + usedLibMethods.size());
+			System.out.println("Num of used application classes : " + usedAppClasses.size());
+			System.out.println("Num of used application methods : " + usedAppMethods.size());
+		}
 	}
 
 	public Set<String> getLibClasses() {

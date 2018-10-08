@@ -37,7 +37,7 @@ public class SootUtils {
 		return sb.toString();
 	}
 
-	public static void setupSoot(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+	public static void setup(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
 		String cp = SootUtils.getJREJars();
 		cp += listToPathString(libJarPath);
 		cp += listToPathString(appClassPath);
