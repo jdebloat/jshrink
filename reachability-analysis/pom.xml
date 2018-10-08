@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>onr-code-reduction</groupId>
+	<groupId>edu.ucla.cs.onr</groupId>
 	<artifactId>reachability-analysis</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 
@@ -29,6 +29,16 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.5</version>
+        </dependency>
     </dependencies>
 	<repositories>
 		<repository>
@@ -37,10 +47,6 @@
 			<url>https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/</url>
 		</repository>
 	</repositories>
-
-    <modules>
-        <module>method-wiper</module>
-    </modules>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
