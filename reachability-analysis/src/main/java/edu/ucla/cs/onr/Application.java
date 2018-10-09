@@ -11,17 +11,18 @@ import edu.ucla.cs.onr.methodwiper.MethodWiper;
 
 import org.apache.commons.io.FileUtils;
 
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.SourceLocator;
+import org.apache.log4j.PropertyConfigurator;
+import soot.*;
 import soot.jimple.JasminClass;
 import soot.options.Options;
 import soot.util.JasminOutputStream;
 
 public class Application {
 
-	public static void main(String[] args){
+	public static void main(String[] args) {
+
+		PropertyConfigurator.configure(
+			Application.class.getClassLoader().getResourceAsStream("log4j.properties"));
 
 		//Load the command line arguments
 		ApplicationCommandLineParser commandLineParser = null;
