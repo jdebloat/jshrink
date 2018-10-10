@@ -33,7 +33,10 @@ public class EntryPointUtil {
 				if (line.contains("Running ")) {
 					String testClass = line
 							.substring(line.indexOf("Running ") + 8);
-					methods.add(testClass + ":*");
+					if(testClass.matches("^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_\\$]+)+$")) {
+						// double check whether this is a fully qualified class name
+						methods.add(testClass + ":*");
+					}
 				}
 			}
 		} catch (IOException e) {
