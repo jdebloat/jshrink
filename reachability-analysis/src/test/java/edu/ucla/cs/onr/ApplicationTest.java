@@ -96,7 +96,7 @@ public class ApplicationTest {
 		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--entry-point main ");
+		arguments.append("--main-entry ");
 		arguments.append("--debug");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -125,9 +125,8 @@ public class ApplicationTest {
 		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--entry-point tests ");
+		arguments.append("--test-entry ");
 		arguments.append("--debug ");
-		arguments.append("--verbose ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -155,7 +154,40 @@ public class ApplicationTest {
 		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--entry-point public ");
+		arguments.append("--public-entry ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+	}
+
+	@Test
+	public void mainTest_targetAllEntryPoints(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--public-entry ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));

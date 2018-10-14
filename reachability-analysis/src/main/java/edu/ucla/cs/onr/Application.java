@@ -8,7 +8,6 @@ import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
-import edu.ucla.cs.onr.ApplicationCommandLineParser.ENTRY_POINT;
 import edu.ucla.cs.onr.methodwiper.MethodWiper;
 import edu.ucla.cs.onr.util.WritingClassUtils;
 
@@ -162,14 +161,20 @@ public class Application {
 			ASMUtils.readClass(testPath, new HashSet<String>(), testMethods);
 		}
 
-		if (commandLineParser.getEntryPoint() == ENTRY_POINT.MAIN) {
+		if (commandLineParser.includeMainEntryPoint()) {
 			toReturn.addAll(EntryPointUtil.getMainMethodsAsEntryPoints(appMethods));
-		} else if (commandLineParser.getEntryPoint() == ENTRY_POINT.PUBLIC) {
+		}
+
+		if (commandLineParser.includePublicEntryPoints()) {
 			toReturn.addAll(EntryPointUtil.getPublicMethodsAsEntryPoints(appMethods));
-		} else if (commandLineParser.getEntryPoint() == ENTRY_POINT.TESTS) {
+		}
+
+		if (commandLineParser.includeTestEntryPoints()) {
 			toReturn.addAll(EntryPointUtil.getTestMethodsAsEntryPoints(testMethods));
-		} else { //Error
-			System.err.println("ERROR: Unknown entry-point specified.");
+		}
+
+		if(toReturn.isEmpty()){ //Error
+			System.err.println("No entry points specified.");
 			System.exit(1);
 		}
 

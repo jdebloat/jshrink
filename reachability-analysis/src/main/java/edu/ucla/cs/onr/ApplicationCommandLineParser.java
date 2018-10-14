@@ -9,17 +9,13 @@ import java.util.List;
 
 public class ApplicationCommandLineParser {
 
-	enum ENTRY_POINT{
-		MAIN,
-		PUBLIC,
-		TESTS
-	}
-
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
 	private final List<File> testClassPath;
 	private final boolean pruneApp;
-	private final ENTRY_POINT entryPoint;
+	private final boolean mainEntryPoint;
+	private final boolean publicEntryPoints;
+	private final boolean testEntryPoints;
 	private final boolean debug;
 	private final boolean verbose;
 
@@ -38,18 +34,6 @@ public class ApplicationCommandLineParser {
 		assert(commandLine != null);
 
 		this.pruneApp = commandLine.hasOption("p");
-		String entryPointString = commandLine.getOptionValue('e').toLowerCase().trim();
-
-		if(entryPointString.equals("main")){
-			entryPoint = ENTRY_POINT.MAIN;
-		} else if(entryPointString.equals("public")){
-			entryPoint = ENTRY_POINT.PUBLIC;
-		} else if(entryPointString.equals("tests")){
-			entryPoint = ENTRY_POINT.TESTS;
-		} else {
-			throw new ParseException(
-				"Could not parse argument for 'entry-point' option. Must be 'main', 'public', or 'tests'");
-		}
 
 		if(commandLine.hasOption("a")){
 			appClassPath = pathToFiles(commandLine.getOptionValue("a"));
@@ -72,6 +56,14 @@ public class ApplicationCommandLineParser {
 		debug = commandLine.hasOption('d');
 
 		verbose = commandLine.hasOption('v');
+
+		mainEntryPoint = commandLine.hasOption('m');
+		publicEntryPoints = commandLine.hasOption('u');
+		testEntryPoints = commandLine.hasOption('s');
+
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints){
+			throw new ParseException("No entry point was specified");
+		}
 
 	}
 
@@ -124,12 +116,25 @@ public class ApplicationCommandLineParser {
 			.optionalArg(false)
 			.build();
 
-		Option entryPointOption = Option.builder("e")
-			.desc("The entry point option ('main', 'public', or 'tests'")
-			.longOpt("entry-point")
-			.hasArg(true)
-			.optionalArg(false)
-			.required()
+		Option mainEntryPointOption = Option.builder("m")
+			.desc("Include the main method as the entry point")
+			.longOpt("main-entry")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option publicEntryPointOption = Option.builder("u")
+			.desc("Include public methods as entry points")
+			.longOpt("public-entry")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option  testEntryPointOption = Option.builder("s")
+			.desc("Include the test methods as entry points")
+			.longOpt("test-entry")
+			.hasArg(false)
+			.required(false)
 			.build();
 
 		Option debugOption = Option.builder("d")
@@ -150,7 +155,9 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
 		toReturn.addOption(testClassPathOption);
-		toReturn.addOption(entryPointOption);
+		toReturn.addOption(mainEntryPointOption);
+		toReturn.addOption(publicEntryPointOption);
+		toReturn.addOption(testEntryPointOption);
 		toReturn.addOption(pruneAppOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
@@ -174,15 +181,23 @@ public class ApplicationCommandLineParser {
 		return pruneApp;
 	}
 
-	public ENTRY_POINT getEntryPoint() {
-		return entryPoint;
-	}
-
 	public boolean isDebug(){
 		return debug;
 	}
 
 	public boolean isVerbose(){
 		return verbose;
+	}
+
+	public boolean includeMainEntryPoint(){
+		return mainEntryPoint;
+	}
+
+	public boolean includePublicEntryPoints(){
+		return publicEntryPoints;
+	}
+
+	public boolean includeTestEntryPoints(){
+		return testEntryPoints;
 	}
 }
