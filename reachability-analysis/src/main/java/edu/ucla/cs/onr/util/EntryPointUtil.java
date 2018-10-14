@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import org.apache.commons.io.FileUtils;
 
 import soot.Scene;
@@ -25,7 +26,7 @@ public class EntryPointUtil {
 	 * @return
 	 */
 	public static Set<String> getTestMethodsAsEntryPoints(File testLog) {
-		HashSet<String> methods = new HashSet<String>();
+		Set<String> methods = new HashSet<String>();
 		try {
 			List<String> lines = FileUtils.readLines(testLog,
 					Charset.defaultCharset());
@@ -42,30 +43,49 @@ public class EntryPointUtil {
 
 		return methods;
 	}
+
+	public static Set<MethodData> getTestMethodsAsEntryPoints(Set<MethodData> methods){
+		Set<MethodData> testMethods = new HashSet<MethodData>();
+
+		for(MethodData methodData: methods){
+			if(methodData.getAnnotation().isPresent()
+				&& methodData.getAnnotation().get().equals("org.junit.Test")){
+				testMethods.add(methodData);
+			}
+		}
+
+		return testMethods;
+	}
+
 	
 	/**
 	 * 
 	 * This method gets a list of main methods from a set of given methods.
 	 * 
-	 * @param appMethods
+	 * @param methods
 	 * @return
 	 */
-	public static Set<String> getMainMethodsAsEntryPoints(Set<String> methods) {
-		HashSet<String> mainMethods = new HashSet<String>();
-		for(String s : methods) {
-			String[] ss = s.split(": ");
-			String className = ss[0];
-			String methodName = ss[1];
-			if(methodName.equals("void main(java.lang.String[])")) {
-				mainMethods.add(className + ":main");
+	public static Set<MethodData> getMainMethodsAsEntryPoints(Set<MethodData> methods) {
+		Set<MethodData> mainMethods = new HashSet<MethodData>();
+		for(MethodData s : methods) {
+			//TODO: Am I representing all possible implementations of main? What are the rules? Need to do some research
+			if(s.isPublic() && s.isStatic() && s.getName().equals("main")){
+				mainMethods.add(s);
 			}
 		}
 		return mainMethods;
 	}
 	
-	public static Set<String> getPublicMethodsAsEntryPoints(Set<String> methods) {
-		// TODO: implement later
-		return null;
+	public static Set<MethodData> getPublicMethodsAsEntryPoints(Set<MethodData> methods) {
+		Set<MethodData> publicMethods = new HashSet<MethodData>();
+
+		for(MethodData method: methods){
+			if(method.isPublic()){
+				publicMethods.add(method);
+			}
+		}
+
+		return publicMethods;
 	}
 	
 	/**
@@ -77,26 +97,13 @@ public class EntryPointUtil {
 	 * @param methods
 	 * @return
 	 */
-	public static List<SootMethod> convertToSootMethod(Set<String> methods) {
+	public static List<SootMethod> convertToSootMethod(Set<MethodData> methods) {
 		List<SootMethod> entryPoints = new ArrayList<SootMethod>();
-		for(String s : methods) {
-			String[] ss = s.split(":");
-			String className = ss[0];
-			String methodName = ss[1];
-			if(methodName.equals("*")) {
-				// all methods are considered as entry points
-				SootClass entryClass = Scene.v().loadClassAndSupport(className);
-				Scene.v().loadNecessaryClasses();
-				List<SootMethod> mList = entryClass.getMethods();
-				for(SootMethod m : mList) {
-					entryPoints.add(m);
-				}
-			} else {
-				SootClass entryClass = Scene.v().loadClassAndSupport(className);
-				Scene.v().loadNecessaryClasses();
-				SootMethod entryMethod = entryClass.getMethodByName(methodName);
-				entryPoints.add(entryMethod);
-			}
+		for(MethodData s : methods) {
+			SootClass entryClass = Scene.v().loadClassAndSupport(s.getClassName());
+			Scene.v().loadNecessaryClasses();
+			SootMethod entryMethod = entryClass.getMethodByName(s.getName());
+			entryPoints.add(entryMethod);
 		}
 		return entryPoints;
 	}

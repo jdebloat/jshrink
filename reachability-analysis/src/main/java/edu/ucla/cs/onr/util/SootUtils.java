@@ -3,9 +3,11 @@ package edu.ucla.cs.onr.util;
 import java.io.File;
 import java.util.*;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
+import soot.Type;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
@@ -37,6 +39,22 @@ public class SootUtils {
 		return sb.toString();
 	}
 
+	public static MethodData sootMethodToMethodData(SootMethod sootMethod){
+		String methodName = sootMethod.getName();
+		String methodClassName = sootMethod.getDeclaringClass().getName();
+		String methodReturnType = sootMethod.getReturnType().toString();
+		boolean isPublic = sootMethod.isPublic();
+		boolean isStatic = sootMethod.isStatic();
+
+		String[] methodArgs = new String[sootMethod.getParameterCount()];
+		for(int i=0; i<sootMethod.getParameterTypes().size(); i++){
+			Type type = sootMethod.getParameterTypes().get(i);
+			methodArgs[i] = type.toString();
+		}
+
+		return new MethodData(methodName,methodClassName,methodReturnType,methodArgs,isPublic, isStatic);
+	}
+
 	public static void setup(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
 		String cp = SootUtils.getJREJars();
 		cp += listToPathString(libJarPath);
@@ -59,7 +77,8 @@ public class SootUtils {
 
 		Options.v().set_process_dir(dirs);
 	}
-	
+
+	/*
 	public static HashMap<String, String> getSparkOpt() {
 		HashMap<String, String> opt = new HashMap<String, String>();
 		opt.put("enabled","true");
@@ -105,6 +124,7 @@ public class SootUtils {
 	 * @param usedClass
 	 * @param visited
 	 */
+	/*
 	@Deprecated
 	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
@@ -122,21 +142,21 @@ public class SootUtils {
 				visitMethod(method, cg, usedClass, visited);
 			}
 		}
-	}
+	}*/
 	
-	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
+	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> visited) {
 		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
 		methods_to_visit.add(m);
 		while(!methods_to_visit.isEmpty()) {
 			SootMethod first = methods_to_visit.pop();
-			String className = first.getDeclaringClass().toString();
-			String signature = first.getSignature();
-			// remove the brackets before and after the method signature
-			signature = signature.substring(1, signature.length() - 1);
-			if(!visited.contains(signature)) {
+			MethodData firstMethodData = sootMethodToMethodData(first);
+
+			String className = firstMethodData.getClassName();
+
+			if(!visited.contains(firstMethodData)) {
 				// avoid recursion
-				usedClass.add(className);
-				visited.add(signature);
+				usedClass.add(firstMethodData.getClassName());
+				visited.add(firstMethodData);
 				
 				// add callees to the stack
 				Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(first));

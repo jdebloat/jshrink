@@ -1,19 +1,22 @@
 package edu.ucla.cs.onr.reachability;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import jdk.internal.org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 public class ASMClassVisitor extends ClassVisitor{
 	private String currentClass;
+	private String currentMethod;
 	private Set<String> classes;
-	private Set<String> methods;
+	private Set<MethodData> methods;
 	
-	public ASMClassVisitor(int api, Set<String> classes, Set<String> methods) {
+	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods) {
 		super(api);
 		this.classes = classes;
 		this.methods = methods;  
@@ -32,16 +35,30 @@ public class ASMClassVisitor extends ClassVisitor{
 			String desc, String signature, String[] exceptions) {
 		String returnType = Type.getReturnType(desc).getClassName();
 		Type[] ts = Type.getArgumentTypes(desc);
+
+		this.currentMethod = name;
+
+		// No idea why this works, but it do.
 		String args = "";
 		for(int i = 0; i < ts.length - 1; i++) {
-			args += ts[i].getClassName() + ",";
+				args += ts[i].getClassName() + ",";
 		}
-		if(ts.length > 0) {
+		if(ts.length > 0 && !ts[ts.length - 1].getClassName().equals("")) {
 			args += ts[ts.length - 1].getClassName();
 		}
-		String qualifiedName = currentClass + ": " + returnType + " " + name + "(" + args + ")";
-		methods.add(qualifiedName);
-		// return new ASMMethodVisitor(Opcodes.ASM5);
-		return null;
+
+		List<String> argsList = new ArrayList<String>();
+		for(String arg: args.split(",")){
+			if(!arg.trim().isEmpty()){
+				argsList.add(arg);
+			}
+		}
+
+		MethodData methodData = new MethodData(name, currentClass,returnType,
+			argsList.toArray(new String[argsList.size()]),
+			(access & Opcodes.ACC_PUBLIC) !=0, (access & Opcodes.ACC_STATIC) != 0);
+		methods.add(methodData);
+
+		return new ASMMethodAnnotationScanner(this.api, methodData);
 	}
 }

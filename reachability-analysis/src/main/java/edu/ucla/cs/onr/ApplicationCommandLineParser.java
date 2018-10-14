@@ -20,6 +20,8 @@ public class ApplicationCommandLineParser {
 	private final List<File> testClassPath;
 	private final boolean pruneApp;
 	private final ENTRY_POINT entryPoint;
+	private final boolean debug;
+	private final boolean verbose;
 
 
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
@@ -56,16 +58,20 @@ public class ApplicationCommandLineParser {
 		}
 
 		if(commandLine.hasOption('l')){
-			libClassPath = pathToFiles(commandLine.getOptionValue("a"));
+			libClassPath = pathToFiles(commandLine.getOptionValue("l"));
 		} else {
 			libClassPath = new ArrayList<File>();
 		}
 
 		if(commandLine.hasOption('t')){
-			testClassPath = pathToFiles(commandLine.getOptionValue("a"));
+			testClassPath = pathToFiles(commandLine.getOptionValue("t"));
 		} else {
 			testClassPath = new ArrayList<File>();
 		}
+
+		debug = commandLine.hasOption('d');
+
+		verbose = commandLine.hasOption('v');
 
 	}
 
@@ -116,7 +122,6 @@ public class ApplicationCommandLineParser {
 			.hasArg(true)
 			.required(false)
 			.optionalArg(false)
-			.hasArg(true)
 			.build();
 
 		Option entryPointOption = Option.builder("e")
@@ -127,6 +132,19 @@ public class ApplicationCommandLineParser {
 			.required()
 			.build();
 
+		Option debugOption = Option.builder("d")
+			.desc("Run the program in 'debug' mode. Used for testing")
+			.longOpt("debug")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option verboseMove = Option.builder("v")
+			.desc("Run the program in 'verbose' mode. Useful for debugging")
+			.longOpt("verbose")
+			.hasArg(false)
+			.required(false)
+			.build();
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
@@ -134,6 +152,8 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(testClassPathOption);
 		toReturn.addOption(entryPointOption);
 		toReturn.addOption(pruneAppOption);
+		toReturn.addOption(debugOption);
+		toReturn.addOption(verboseMove);
 
 		return toReturn;
 	}
@@ -158,5 +178,11 @@ public class ApplicationCommandLineParser {
 		return entryPoint;
 	}
 
+	public boolean isDebug(){
+		return debug;
+	}
 
+	public boolean isVerbose(){
+		return verbose;
+	}
 }
