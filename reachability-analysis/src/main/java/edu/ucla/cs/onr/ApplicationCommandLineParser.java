@@ -1,11 +1,12 @@
 package edu.ucla.cs.onr;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 public class ApplicationCommandLineParser {
 
@@ -18,6 +19,7 @@ public class ApplicationCommandLineParser {
 	private final boolean testEntryPoints;
 	private final boolean debug;
 	private final boolean verbose;
+	private final Set<MethodData> customEntryPoints;
 
 
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
@@ -61,7 +63,33 @@ public class ApplicationCommandLineParser {
 		publicEntryPoints = commandLine.hasOption('u');
 		testEntryPoints = commandLine.hasOption('s');
 
-		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints){
+		customEntryPoints = new HashSet<MethodData>();
+		if(commandLine.hasOption('c')){
+			String[] values = commandLine.getOptionValues('c');
+			StringBuilder toAdd = new StringBuilder();
+			for(String val : values){
+				/*
+				Due to the weird way the Apache Commons CLI library works, i need to stitch
+				together the strings as they may contain spaces
+				 */
+				if(val.endsWith(">")){
+					toAdd.append(val);
+					try {
+						customEntryPoints.add(new MethodData(toAdd.toString()));
+					} catch(IOException e){
+						throw new ParseException("Could not create method from input string " +
+							"'" + toAdd.toString() + "' Exception thrown:"
+							+ System.lineSeparator() + e.getLocalizedMessage());
+					}
+					toAdd = new StringBuilder();
+				} else {
+					toAdd.append(val +" ");
+				}
+
+			}
+		}
+
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
 			throw new ParseException("No entry point was specified");
 		}
 
@@ -137,6 +165,15 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option customEntryPointOption = Option.builder("c")
+			.desc("Specify custom entry points in syntax of " +
+				"'<[classname]:[public?] [static?] [returnType] [methodName]([args...?])>'")
+			.longOpt("custom-entry")
+			.hasArgs()
+			.valueSeparator()
+			.required(false)
+			.build();
+
 		Option debugOption = Option.builder("d")
 			.desc("Run the program in 'debug' mode. Used for testing")
 			.longOpt("debug")
@@ -159,6 +196,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(publicEntryPointOption);
 		toReturn.addOption(testEntryPointOption);
 		toReturn.addOption(pruneAppOption);
+		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 
@@ -199,5 +237,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean includeTestEntryPoints(){
 		return testEntryPoints;
+	}
+
+	public Set<MethodData> getCustomEntryPoints(){
+		return Collections.unmodifiableSet(customEntryPoints);
 	}
 }

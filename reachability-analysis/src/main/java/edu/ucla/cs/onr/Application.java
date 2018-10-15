@@ -173,6 +173,8 @@ public class Application {
 			toReturn.addAll(EntryPointUtil.getTestMethodsAsEntryPoints(testMethods));
 		}
 
+		toReturn.addAll(commandLineParser.getCustomEntryPoints());
+
 		if(toReturn.isEmpty()){ //Error
 			System.err.println("No entry points specified.");
 			System.exit(1);

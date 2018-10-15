@@ -164,8 +164,6 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-
-
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -197,8 +195,6 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-
-
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -209,5 +205,34 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
+	}
+
+	@Test
+	public void mainTest_targetCustomEntryPoint(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertTrue(isPresent(methodsRemoved,"Main","main"));
 	}
 }
