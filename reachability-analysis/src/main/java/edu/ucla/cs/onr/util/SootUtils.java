@@ -49,6 +49,14 @@ public class SootUtils {
 		Options.v().set_soot_classpath(cp);
 		Options.v().set_whole_program(true);
 		Options.v().set_allow_phantom_refs(true);
+		// try the following two options to ignore the static field error in the Jython lib 
+		// the first one does not work but the second one works (why?)
+		// check the following links for reference:
+		// https://github.com/petablox-project/petablox/issues/6
+		// https://github.com/Sable/soot/issues/410
+		// https://github.com/Sable/soot/issues/717 
+//		Options.v().setPhaseOption("jb.tr", "ignore-wrong-staticness:true");
+		Options.v().set_wrong_staticness(Options.wrong_staticness_ignore);
 
 		// set the application directories
 		List<String> dirs = new ArrayList<String>();
