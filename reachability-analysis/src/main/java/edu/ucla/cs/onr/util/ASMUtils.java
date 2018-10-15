@@ -16,6 +16,10 @@ import edu.ucla.cs.onr.reachability.ASMClassVisitor;
 public class ASMUtils {
     public static void readClassFromJarFile(File jarPath, Set<String> classes,
     		Set<String> methods) {
+    	if(!jarPath.getName().endsWith(".jar")) {
+    		System.err.println(jarPath.getAbsolutePath() + " is not a jar file.");
+    		return;
+    	}
         try {
         	JarFile jarFile = new JarFile(jarPath);
         	final Enumeration<JarEntry> entries = jarFile.entries();
