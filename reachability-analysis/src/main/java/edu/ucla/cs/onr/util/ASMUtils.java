@@ -37,7 +37,13 @@ public class ASMUtils {
     
     public static void readClassFromDirectory(File dirPath, Set<String> classes,
     		Set<String> methods) {
-
+    	
+    	if(!dirPath.exists()) {
+    		// fix NPE due to non-existent file
+    		System.err.println(dirPath.getAbsolutePath() + " does not exist.");
+    		return;
+    	}
+    	
     	for(File f : dirPath.listFiles()) {
     		if(f.isDirectory()) {
     			readClassFromDirectory(f, classes, methods);

@@ -32,7 +32,11 @@ public class SootUtils {
 	private static String listToPathString(List<File> paths){
 		StringBuilder sb = new StringBuilder();
 		for(File path : paths){
-			sb.append(File.pathSeparator + path.getAbsolutePath());
+			if(path.exists()) {
+				sb.append(File.pathSeparator + path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
 		}
 		return sb.toString();
 	}
@@ -50,11 +54,21 @@ public class SootUtils {
 		List<String> dirs = new ArrayList<String>();
 
 		for(File path : appClassPath) {
-			dirs.add(path.getAbsolutePath());
+			// double check whether the file path exists
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+			
 		}
 
 		for(File path : appTestPath) {
-			dirs.add(path.getAbsolutePath());
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
 		}
 
 		Options.v().set_process_dir(dirs);
