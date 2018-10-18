@@ -1,5 +1,7 @@
 package edu.ucla.cs.onr.classcollapser;
 
+import edu.ucla.cs.onr.reachability.MethodData;
+
 import java.io.File;
 import java.util.List;
 import java.util.Set;
@@ -23,5 +25,5 @@ public interface IClassCollapser {
 	 *                       touched, please consider 'wipeMethodStart(int) touched also.
 	 *
 	 */
-	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<String> touchedMethods);
+	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<MethodData> touchedMethods);
 }
