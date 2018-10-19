@@ -104,6 +104,8 @@ public class Application {
 		Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
 		classPathsOfConcern.addAll(commandLineParser.getLibClassPath());
 
+		System.out.println("number_lib_methods_removed," + libMethodsToRemove.size());
+
 
 		for (MethodData methodToRemoveString : libMethodsToRemove) {
 			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
@@ -114,10 +116,11 @@ public class Application {
 			classesToRewrite.add(sootClass);
 		}
 
+		Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
 		//Remove the unused app methods (if applicable)
 		if (commandLineParser.isPruneAppInstance()) {
 			classPathsOfConcern.addAll(commandLineParser.getAppClassPath());
-			Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
+
 			appMethodToRemove.addAll(callGraphAnalysis.getAppMethods());
 			appMethodToRemove.removeAll(callGraphAnalysis.getUsedAppMethods());
 
@@ -129,6 +132,8 @@ public class Application {
 				classesToRewrite.add(sootClass);
 			}
 		}
+
+		System.out.println("number_app_methods_removed," + appMethodToRemove.size());
 
 		//Rewrite the modified classes
 		for (SootClass sootClass : classesToRewrite) {

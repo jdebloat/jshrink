@@ -63,14 +63,11 @@ public class SparkCallGraphAnalysis {
 		for (File appPath : appClassPath) {
 			ASMUtils.readClass(appPath, appClasses, appMethods);
 		}
-		
-		if(Application.isVerboseMode()) {
-			System.out.println();
-			System.out.println("Num of library classes : " + libClasses.size());
-			System.out.println("Num of library methods : " + libMethods.size());
-			System.out.println("Num of application classes : " + appClasses.size());
-			System.out.println("Num of application methods : " + appMethods.size());
-		}
+
+		System.out.println("number_lib_classes," + libClasses.size());
+		System.out.println("number_lib_methods," + libMethods.size());
+		System.out.println("number_app_classes," + appClasses.size());
+		System.out.println("number_app_methods," + appMethods.size());
 	}
 
 	private void runCallGraphAnalysis() {
@@ -121,14 +118,6 @@ public class SparkCallGraphAnalysis {
 		this.usedAppClasses.retainAll(usedClasses);
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
-		
-		if(Application.isVerboseMode()) {
-			System.out.println();
-			System.out.println("Num of used library classes : " + usedLibClasses.size());
-			System.out.println("Num of used library methods : " + usedLibMethods.size());
-			System.out.println("Num of used application classes : " + usedAppClasses.size());
-			System.out.println("Num of used application methods : " + usedAppMethods.size());
-		}
 	}
 
 	public Set<String> getLibClasses() {
