@@ -112,6 +112,20 @@ public class MethodData {
 		return this.annotation;
 	}
 
+	public String getSignature(){
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append(this.returnType +" " + this.name + "(");
+		for(int i=0; i< this.args.length; i++){
+			stringBuilder.append(this.args[i]);
+			if(i < this.args.length -1){
+				stringBuilder.append(", ");
+			}
+		}
+		stringBuilder.append(")");
+
+		return stringBuilder.toString();
+	}
+
 	@Override
 	public String toString(){
 		StringBuilder stringBuilder = new StringBuilder();

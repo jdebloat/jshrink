@@ -109,7 +109,7 @@ public class Application {
 
 		for (MethodData methodToRemoveString : libMethodsToRemove) {
 			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-			SootMethod sootMethod = sootClass.getMethodByName(methodToRemoveString.getName());
+			SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
 
 			if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
 				Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
