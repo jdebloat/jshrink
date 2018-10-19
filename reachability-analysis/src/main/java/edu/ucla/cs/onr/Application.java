@@ -111,9 +111,10 @@ public class Application {
 			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
 			SootMethod sootMethod = sootClass.getMethodByName(methodToRemoveString.getName());
 
-			MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod));
-			Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-			classesToRewrite.add(sootClass);
+			if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
+				Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+				classesToRewrite.add(sootClass);
+			}
 		}
 
 		Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
@@ -126,10 +127,12 @@ public class Application {
 
 			for (MethodData methodToRemoveString : appMethodToRemove) {
 				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-				SootMethod sootMethod = sootClass.getMethodByName(methodToRemoveString.getName());
-				MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod));
-				Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-				classesToRewrite.add(sootClass);
+				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
+
+				if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
+					Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+					classesToRewrite.add(sootClass);
+				}
 			}
 		}
 
