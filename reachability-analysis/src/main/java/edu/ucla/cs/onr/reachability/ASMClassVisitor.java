@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import jdk.internal.org.objectweb.asm.Opcodes;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -54,9 +53,10 @@ public class ASMClassVisitor extends ClassVisitor{
 			}
 		}
 
+
 		MethodData methodData = new MethodData(name, currentClass,returnType,
 			argsList.toArray(new String[argsList.size()]),
-			(access & Opcodes.ACC_PUBLIC) !=0, (access & Opcodes.ACC_STATIC) != 0);
+			(access & 1) !=0, (access & 8) != 0); //1 == public; 8 == Static
 		methods.add(methodData);
 
 		return new ASMMethodAnnotationScanner(this.api, methodData);
