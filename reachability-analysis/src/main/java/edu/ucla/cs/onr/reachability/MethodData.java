@@ -141,10 +141,6 @@ public class MethodData {
 	public boolean equals(Object o){
 		if(o instanceof MethodData){
 			MethodData toCompare = (MethodData)o;
-			if(toCompare.getName().equals("getString") && this.getName().equals(toCompare.getName())
-				&& toCompare.getClassName().equals("StandardStuff")){
-				System.out.println();
-			}
 			if(this.name.equals(toCompare.name) && this.className.equals(toCompare.className)
 				&& this.isPublicMethod == toCompare.isPublicMethod && this.args.length == toCompare.args.length
 				&& this.returnType.equals(toCompare.returnType) && this.isStaticMethod == toCompare.isStaticMethod){
