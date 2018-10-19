@@ -28,7 +28,7 @@ public class ASMUtils {
                 } catch (IOException ex){
 	                //TODO: Fix this. Not sure if here is the best way to handle it, but ok for the meantime
                     System.err.println("An an exception was thrown when reading data from .jar file:");
-                    System.err.println(ex.getLocalizedMessage());
+                    ex.printStackTrace();
                     System.exit(1);
                 }
             }

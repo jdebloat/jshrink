@@ -46,7 +46,7 @@ public class Application {
 		try {
 			commandLineParser = new ApplicationCommandLineParser(args);
 		} catch (Exception e) {
-			System.err.println(e.getLocalizedMessage());
+			e.printStackTrace();
 			System.exit(1);
 		}
 
@@ -153,7 +153,7 @@ public class Application {
 				WritingClassUtils.writeClass(sootClass, classPathsOfConcern);
 			} catch(IOException e){
 				System.err.println("An exception was thrown when attempting to rewrite a class:");
-				System.err.println(e.getLocalizedMessage());
+				e.printStackTrace();
 				System.exit(1);
 			}
 		}
