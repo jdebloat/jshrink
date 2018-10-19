@@ -456,5 +456,24 @@ public class MethodWiperTest {
 
 		assertEquals(expected, output);
 	}
-}
 
+	//Interfaces don't ahve bodies to delete, therefore these cases should be handled gracefully
+
+	@Test
+	public void wipeInterfaceMethods_noReturnTypeNoParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		MethodWiper.wipeMethod(sootClass.getMethodByName("interface1"));
+	}
+
+	@Test
+	public void wipeInterfaceMethods_stringReturnTypeNoParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("interface2"), "TEST");
+	}
+
+	@Test
+	public void wipeInterfaceMethods_noReturnTypeOneParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("interface3"));
+	}
+}

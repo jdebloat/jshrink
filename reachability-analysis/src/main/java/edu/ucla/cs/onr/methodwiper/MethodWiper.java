@@ -99,8 +99,10 @@ public class MethodWiper {
 	 * @param sootMethod The method to be wiped
 	 */
 	public static void wipeMethod(SootMethod sootMethod) {
-		wipeMethodStart(sootMethod);
-		wipeMethodEnd(sootMethod);
+		if(!sootMethod.isAbstract()) {
+			wipeMethodStart(sootMethod);
+			wipeMethodEnd(sootMethod);
+		}
 	}
 
 	/**
@@ -111,9 +113,11 @@ public class MethodWiper {
 	 * @param toThrow    The Value to be thrown
 	 */
 	public static void wipeMethodAndInsertThrow(SootMethod sootMethod, Value toThrow) {
-		wipeMethodStart(sootMethod);
-		sootMethod.getActiveBody().getUnits().add(Jimple.v().newThrowStmt(toThrow));
-		wipeMethodEnd(sootMethod);
+		if(!sootMethod.isAbstract()) {
+			wipeMethodStart(sootMethod);
+			sootMethod.getActiveBody().getUnits().add(Jimple.v().newThrowStmt(toThrow));
+			wipeMethodEnd(sootMethod);
+		}
 	}
 
 	private static void addThrowRuntimeException(SootMethod sootMethod, Optional<String> message) {
@@ -154,9 +158,11 @@ public class MethodWiper {
 	 * @param message    The message to be thrown
 	 */
 	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
-		wipeMethodStart(sootMethod);
-		addThrowRuntimeException(sootMethod, Optional.of(message));
-		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+		if(!sootMethod.isAbstract()) {
+			wipeMethodStart(sootMethod);
+			addThrowRuntimeException(sootMethod, Optional.of(message));
+			// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+		}
 	}
 
 	/**
@@ -165,9 +171,11 @@ public class MethodWiper {
 	 * @param sootMethod The method to be wiped
 	 */
 	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod) {
-		wipeMethodStart(sootMethod);
-		addThrowRuntimeException(sootMethod, Optional.empty());
-		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+		if(!sootMethod.isAbstract()) {
+			wipeMethodStart(sootMethod);
+			addThrowRuntimeException(sootMethod, Optional.empty());
+			// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+		}
 	}
 
 }
