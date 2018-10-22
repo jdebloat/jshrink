@@ -75,6 +75,10 @@ public class SootUtils {
 			dirs.add(path.getAbsolutePath());
 		}
 
+		for(File path : libJarPath){
+			dirs.add(path.getAbsolutePath());
+		}
+
 		Options.v().set_process_dir(dirs);
 	}
 
