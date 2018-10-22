@@ -42,6 +42,11 @@ echo "project,is_lib,jar,size" >${ORIGINAL_SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,is_lib,jar,size" >${DEBLOAT_SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,lib_methods,app_methods,lib_methods_removed,app_methods_removed" >${METHOD_DATA_FILE}
 
+if [ ! -f "${DEBLOAT_APP}" ]; then
+	mvn -f ../reachability-analysis/pom.xml clean compile assembly:single >/dev/null
+	cp "../reachability-analysis/target/reachability-analysis-1.0-jar-with-dependencies.jar" .
+fi
+
 cat ${WORK_LIST} |  while read item; do
 	item_dir="${PROJECT_DIR}/${item}"
 	cd "${item_dir}"
