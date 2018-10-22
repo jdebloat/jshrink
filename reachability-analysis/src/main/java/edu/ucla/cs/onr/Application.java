@@ -1,7 +1,6 @@
 package edu.ucla.cs.onr;
 
 import java.io.*;
-import java.lang.reflect.Method;
 import java.util.*;
 
 import edu.ucla.cs.onr.reachability.MethodData;
@@ -109,9 +108,9 @@ public class Application {
 
 		for (MethodData methodToRemoveString : libMethodsToRemove) {
 			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-			if(sootClass.declaresMethod(methodToRemoveString.getSignature())){
-				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
 
+			if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSignature())){
+				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
 				if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
 					Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
 					classesToRewrite.add(sootClass);
@@ -133,7 +132,7 @@ public class Application {
 
 			for (MethodData methodToRemoveString : appMethodToRemove) {
 				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-				if(sootClass.declaresMethod(methodToRemoveString.getSignature())) {
+				if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSignature())) {
 					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
 
 					if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {

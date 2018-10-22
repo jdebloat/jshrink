@@ -116,6 +116,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
 	}
 
 	@Test
@@ -145,6 +146,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
 	}
 
 	@Test
@@ -174,6 +176,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
 	}
 
 	@Test
@@ -205,6 +208,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
 	}
 
 	@Test
@@ -234,5 +238,6 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,"LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
 	}
 }

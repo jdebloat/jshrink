@@ -26,9 +26,7 @@ public class WritingClassUtils {
 	public static final String ORIGINAL_FILE_POST_FIX="_original"; //package private as used by tests
 
 	private static Optional<File> getClassFile(SootClass sootClass, Collection<File> paths) {
-		String classPath = sootClass.getPackageName().replaceAll("\\.", File.separator)
-			+ File.separator + sootClass.getName() + ".class";
-
+		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
 
 		for (File p : paths) {
 			File test = new File(p + File.separator + classPath);
@@ -40,9 +38,7 @@ public class WritingClassUtils {
 	}
 
 	private static Optional<ZipFile> getJarFile(SootClass sootClass, Collection<File> paths) throws IOException{
-		String classPath = sootClass.getPackageName().replaceAll("\\.", File.separator)
-			+ (sootClass.getPackageName().isEmpty() ? "" : File.separator) + sootClass.getName() + ".class";
-
+		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
 		for (File p : paths) {
 			try {
 				JarFile jarFile = new JarFile(p);
@@ -113,7 +109,9 @@ public class WritingClassUtils {
 
 		//I don't fully understand why, but you need to retrieve the methods before writing to the fole
 		for (SootMethod sootMethod : sootClass.getMethods()) {
-			sootMethod.retrieveActiveBody();
+			if(sootMethod.isConcrete()){
+				sootMethod.retrieveActiveBody();
+			}
 		}
 
 		if(Application.isDebugMode()) {
