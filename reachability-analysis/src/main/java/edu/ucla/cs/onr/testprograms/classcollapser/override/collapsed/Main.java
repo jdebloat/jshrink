@@ -1,0 +1,10 @@
+package edu.ucla.cs.onr.testprograms.classcollapser.override.collapsed;
+
+public class Main {
+    public static void main(String[] args) {
+        A a = new A();
+        a.foo();
+        A b = new A();
+        b.foo();
+    }
+}
