@@ -1,15 +1,16 @@
 #!/bin/bash
 
+PWD=`pwd`
+
 # the list of GitHub repositories built by maven
-project_list="/media/troy/Disk2/ONR/BigQuery/sample-maven-projects.csv"
+project_list="${PWD}/sample-maven-projects.csv"
 
 # the destination path to the downloaded projects
-dest_dir="/media/troy/Disk2/ONR/BigQuery/sample-projects"
+dest_dir="${PWD}/sample-projects"
 
 # check whether the dest folder exists first
 if [ ! -d "$dest_dir" ]; then
-	printf "The download location does not exist. Please create it first.\n"
-	exit 1
+	mkdir $dest_dir
 fi
 
 printf "***************Start downloading the given GitHub projects**********************\n"
@@ -35,5 +36,10 @@ do
 	else
 		printf "$line already cloned. Skipp it.\n"
 	fi
+
+	#Checkout to a particular date (this keeps experiments constant across time)
+	git -C "${dest_dir}/${project}" checkout `git rev-list -n 1 --before="2018-10-15 12:00" master` >/dev/null 2>&1
+    	
+
 done < $project_list
 
