@@ -1,6 +1,5 @@
 package edu.ucla.cs.onr.util;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import edu.ucla.cs.onr.Application;
 import javafx.util.Pair;
 import net.lingala.zip4j.core.ZipFile;
@@ -14,9 +13,10 @@ import soot.jimple.JasminClass;
 import soot.util.JasminOutputStream;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.Optional;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -39,15 +39,14 @@ public class WritingClassUtils {
 
 	private static Optional<ZipFile> getJarFile(SootClass sootClass, Collection<File> paths) throws IOException{
 		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
+
 		for (File p : paths) {
 			try {
 				JarFile jarFile = new JarFile(p);
-				final Enumeration<JarEntry> entries = jarFile.entries();
-				while (entries.hasMoreElements()) {
-					JarEntry entry = entries.nextElement();
-					if (entry.getName().endsWith(classPath)) {
-						return Optional.of(new ZipFile(p));
-					}
+				JarEntry entry = jarFile.getJarEntry(classPath);
+				if (entry != null) {
+					jarFile.close();
+					return Optional.of(new ZipFile(p));
 				}
 			} catch (IOException e) {
 				continue;
@@ -73,7 +72,6 @@ public class WritingClassUtils {
 			}
 
 			assert (jarToReturn.isPresent());
-
 
 			try {
 				//Extract the jar file into a temporary directory
@@ -136,13 +134,25 @@ public class WritingClassUtils {
 				// Delete the .jar file
 				zFile.getFile().delete();
 				//... and compress the temp file to replace the deleted .jar file
-				ArrayList<File> fileList = new ArrayList<File>();
-				for(File f : tempFile.listFiles()){
-					fileList.add(f);
-				}
+				boolean created=false;
 				ZipParameters zipParameters = new ZipParameters();
-				zFile.getProgressMonitor().setState(ProgressMonitor.STATE_READY);
-				zFile.createZipFile(fileList, zipParameters);
+				for(File f : tempFile.listFiles()){
+					if(f.isDirectory()){
+						if(!created){
+							zFile.createZipFileFromFolder(f,zipParameters,false, 0);
+							created=true;
+						} else {
+							zFile.addFolder(f, zipParameters);
+						}
+					} else{
+						if(!created){
+							zFile.createZipFile(f, zipParameters);
+							created=true;
+						} else {
+							zFile.addFile(f, zipParameters);
+						}
+					}
+				}
 			}catch(ZipException e){
 				String exceptionString = "Failure to recompress file." + System.lineSeparator() +
 					"Failure to recompress file." + System.lineSeparator() +
@@ -222,10 +232,27 @@ public class WritingClassUtils {
 			//It's in a busy state otherwise... hope this is ok
 			jarFile.getProgressMonitor().setState(ProgressMonitor.STATE_READY);
 			ArrayList<File> fileList = new ArrayList<File>();
+			ArrayList<File> folderList = new ArrayList<File>();
+			//System.err.println("HERE");
+
+			boolean created=false;
 			for(File f : tempExtractionDir.listFiles()){
-				fileList.add(f);
+				if(f.isDirectory()){
+					if(!created){
+						jarFile.createZipFileFromFolder(f,zipParameters,false, 0);
+						created=true;
+					} else {
+						jarFile.addFolder(f, zipParameters);
+					}
+				} else{
+					if(!created){
+						jarFile.createZipFile(f, zipParameters);
+						created=true;
+					} else {
+						jarFile.addFile(f, zipParameters);
+					}
+				}
 			}
-			jarFile.createZipFile(fileList, zipParameters);
 		} catch(ZipException e){
 			throw new IOException("Unable to create zip (Jar) file '" + jarFile.getFile().getAbsolutePath() + "'" +
 				" Following exception thrown:" + System.lineSeparator() + e.getLocalizedMessage());
@@ -239,7 +266,7 @@ public class WritingClassUtils {
 			if(original.exists()){
 				try {
 					file.delete();
-					FileUtils.moveFile(original, file);
+					Files.move(Paths.get(original.getAbsolutePath()), Paths.get(file.getAbsolutePath()));
 				}catch(IOException e){
 					throw new IOException("Unable to move original file '" + original.getAbsolutePath() + " to '"+
 						file.getAbsolutePath() + "'. Exception thrown:" + System.lineSeparator() +

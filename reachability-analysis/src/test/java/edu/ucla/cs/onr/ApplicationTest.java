@@ -111,12 +111,13 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
 
 	@Test
@@ -141,12 +142,13 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
 
 	@Test
@@ -171,12 +173,13 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
 
 	@Test
@@ -204,11 +207,12 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
 		assertFalse(isPresent(methodsRemoved,"LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
 
 	@Test
@@ -233,11 +237,12 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","privateUntouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"LibraryClass","<init>"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
 }
