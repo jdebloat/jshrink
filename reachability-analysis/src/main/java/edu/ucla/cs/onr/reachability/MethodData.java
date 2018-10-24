@@ -1,5 +1,7 @@
 package edu.ucla.cs.onr.reachability;
 
+import soot.Scene;
+
 import java.io.IOException;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -27,6 +29,7 @@ public class MethodData {
 
 	private void setData(String methodName, String methodClassName, String methodReturnType,
 	                     String[] methodArgs, boolean isPublic, boolean isStatic){
+
 		this.name=methodName;
 		this.className = methodClassName;
 		this.args = methodArgs;
@@ -112,13 +115,17 @@ public class MethodData {
 		return this.annotation;
 	}
 
-	public String getSignature(){
+	public String getSubSignature(){
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(this.returnType +" " + this.name + "(");
+		//stringBuilder.append((this.returnType.equals("void") ? "void" : Scene.v().quotedNameOf(this.returnType))
+			//+ " " + Scene.v().quotedNameOf(this.name) + "(");
+		String returnTypeProcess = this.returnType.contains(".") ? Scene.v().quotedNameOf(this.returnType) : this.returnType;
+		stringBuilder.append(returnTypeProcess + " " + Scene.v().quotedNameOf(this.name) + "(");
 		for(int i=0; i< this.args.length; i++){
-			stringBuilder.append(this.args[i]);
+			String argProcess = this.args[i].contains(".") ? Scene.v().quotedNameOf(this.args[i]) : this.args[i];
+			stringBuilder.append(argProcess);
 			if(i < this.args.length -1){
-				stringBuilder.append(", ");
+				stringBuilder.append(",");
 			}
 		}
 		stringBuilder.append(")");
@@ -126,10 +133,9 @@ public class MethodData {
 		return stringBuilder.toString();
 	}
 
-	@Override
-	public String toString(){
+	public String getSignature(){
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("<" + this.className + ": ");
+		stringBuilder.append("<" + Scene.v().quotedNameOf(this.className) + ": ");
 
 		if(this.isPublicMethod){
 			stringBuilder.append("public ");
@@ -139,16 +145,14 @@ public class MethodData {
 			stringBuilder.append("static ");
 		}
 
-		stringBuilder.append(this.returnType +" " + this.name + "(");
-		for(int i=0; i< this.args.length; i++){
-			stringBuilder.append(this.args[i]);
-			if(i < this.args.length -1){
-				stringBuilder.append(", ");
-			}
-		}
-		stringBuilder.append(")>");
+		stringBuilder.append(getSubSignature() + ")>");
 
 		return stringBuilder.toString();
+	}
+
+	@Override
+	public String toString(){
+		return getSignature();
 	}
 
 	@Override

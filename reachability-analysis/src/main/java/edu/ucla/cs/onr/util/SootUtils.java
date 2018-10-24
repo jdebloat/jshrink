@@ -132,7 +132,7 @@ public class SootUtils {
 	@Deprecated
 	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
-		String signature = m.getSignature();
+		String signature = m.getSubSignature();
 		// remove the brackets before and after the method signature
 		signature = signature.substring(1, signature.length() - 1);
 		if(!visited.contains(signature)) {

@@ -109,8 +109,8 @@ public class Application {
 		for (MethodData methodToRemoveString : libMethodsToRemove) {
 			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
 
-			if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSignature())){
-				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
+			if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())){
+				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
 				if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
 					Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
 					classesToRewrite.add(sootClass);
@@ -132,8 +132,8 @@ public class Application {
 
 			for (MethodData methodToRemoveString : appMethodToRemove) {
 				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-				if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSignature())) {
-					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSignature());
+				if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
+					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
 
 					if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
 						Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));

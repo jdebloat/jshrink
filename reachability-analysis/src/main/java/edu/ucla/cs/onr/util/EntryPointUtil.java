@@ -105,7 +105,7 @@ public class EntryPointUtil {
 		for(MethodData s : methods) {
 			SootClass entryClass = Scene.v().loadClassAndSupport(s.getClassName());
 			Scene.v().loadNecessaryClasses();
-			SootMethod entryMethod = entryClass.getMethodByName(s.getName());
+			SootMethod entryMethod = entryClass.getMethod(s.getSubSignature());
 			entryPoints.add(entryMethod);
 		}
 		return entryPoints;
