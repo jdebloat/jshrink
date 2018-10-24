@@ -136,6 +136,7 @@ public class WritingClassUtils {
 				//... and compress the temp file to replace the deleted .jar file
 				boolean created=false;
 				ZipParameters zipParameters = new ZipParameters();
+				zipParameters.setCompressionLevel(9);
 				for(File f : tempFile.listFiles()){
 					if(f.isDirectory()){
 						if(!created){
@@ -229,6 +230,7 @@ public class WritingClassUtils {
 		try {
 			jarFile.getFile().delete();
 			ZipParameters zipParameters = new ZipParameters();
+			zipParameters.setCompressionLevel(9);
 			//It's in a busy state otherwise... hope this is ok
 			jarFile.getProgressMonitor().setState(ProgressMonitor.STATE_READY);
 			ArrayList<File> fileList = new ArrayList<File>();
