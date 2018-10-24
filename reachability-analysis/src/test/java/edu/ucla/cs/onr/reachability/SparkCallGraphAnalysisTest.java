@@ -7,7 +7,7 @@ import org.junit.Test;
 import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
-import edu.ucla.cs.onr.util.MavenLogUtils;
+import edu.ucla.cs.onr.util.MavenUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,7 +38,7 @@ public class SparkCallGraphAnalysisTest {
         		File.separator + project_folder + File.separator + "onr_classpath_new.log";       
 		lib_class_paths = new ArrayList<File>();
 		// TODO: currently we assume the maven project does not have any submodules
-		String firstClassPaths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next();
+		String firstClassPaths = MavenUtils.getClasspaths(cp_log).values().iterator().next();
         String[] paths = firstClassPaths.split(File.pathSeparator);
 		for(String path: paths){
 			lib_class_paths.add(new File(path));
@@ -71,33 +71,9 @@ public class SparkCallGraphAnalysisTest {
 	@Test
 	public void testApacheCommonsLang() {
 		String project_folder = "apache_commons-lang";
-
-		List<File> app_class_path = new ArrayList<File>();
-		app_class_path.add(new File(root_path + File.separator +
-				project_folder + File.separator + "target/classes"));
-
-		List<File> app_test_path = new ArrayList<File>();
-		app_test_path.add(new File(root_path + File.separator +
-				project_folder + File.separator + "target/test-classes"));
-
-		// 9 library dependencies
-		String cp_log = root_path + File.separator + 
-				project_folder + File.separator + "onr_classpath_new.log";
-
-		List<File> lib_class_path = new ArrayList<File>();
-
-
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
-		for(String path : paths){
-			lib_class_path.add(new File(path));
-		}
-
-		File test_log_path = new File( root_path + File.separator +
-				project_folder + File.separator + "onr_test.log");
-		
+		setup(project_folder);
 		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_path, app_class_path, app_test_path,
-					EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path));
+				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -119,7 +95,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -151,7 +127,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -183,7 +159,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -215,7 +191,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -247,7 +223,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -279,7 +255,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -311,7 +287,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -343,7 +319,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -375,7 +351,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}
@@ -407,7 +383,7 @@ public class SparkCallGraphAnalysisTest {
 		List<File> lib_class_path = new ArrayList<File>();
 
 
-		String[] paths = MavenLogUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
+		String[] paths = MavenUtils.getClasspaths(cp_log).values().iterator().next().split(File.pathSeparator);
 		for(String path : paths){
 			lib_class_path.add(new File(path));
 		}

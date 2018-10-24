@@ -1,22 +1,16 @@
 package edu.ucla.cs.onr.reachability;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.*;
-
-import org.apache.commons.io.FileUtils;
 
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
 import soot.Scene;
-import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
-import soot.options.Options;
 
 public class SparkCallGraphAnalysis {
 	public static boolean DEBUG = true;
