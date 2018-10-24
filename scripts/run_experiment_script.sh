@@ -1,14 +1,15 @@
 #!/bin/bash
 
 get_file_size(){
-	if [[ $OSTYPE == darwin* ]]; then
-		echo $(stat -f%z $1)
-	elif [[ $OSTYPE == linux-gnu ]]; then
-		return $(stat --printf="%s" $1)
-	else
-		>&2 echo "Unsupported OS Type: "$OSTYPE
-		exit 1
-	fi
+	#if [[ $OSTYPE == darwin* ]]; then
+	#	echo $(stat -f%z $1)
+	#elif [[ $OSTYPE == linux-gnu ]]; then
+	#	return $(stat --printf="%s" $1)
+	#else
+	#	>&2 echo "Unsupported OS Type: "$OSTYPE
+	#	exit 1
+	#fi
+	du -sk $1 | cut -f1
 }
 
 
@@ -38,10 +39,11 @@ if [ -f ${METHOD_DATA_FILE} ]; then
 	echo 1
 fi
 
-echo "project,is_lib,jar,size" >${ORIGINAL_SIZE_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,is_lib,jar,size" >${DEBLOAT_SIZE_FILE}
+echo "project,is_lib,jar,size_in_kB" >${ORIGINAL_SIZE_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,is_lib,jar,size_in_kB" >${DEBLOAT_SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,lib_methods,app_methods,lib_methods_removed,app_methods_removed" >${METHOD_DATA_FILE}
 
+echo "Setting up 'reachability-analysis' tool"
 if [ ! -f "${DEBLOAT_APP}" ]; then
 	mvn -f ../reachability-analysis/pom.xml clean compile assembly:single >/dev/null
 	cp "../reachability-analysis/target/reachability-analysis-1.0-jar-with-dependencies.jar" .
@@ -58,37 +60,36 @@ cat ${WORK_LIST} |  while read item; do
 
 	lib_path=""
 	#Get the size of the library jars
-	while read lib; do
+	for lib in $(ls target/lib); do
+		
+		#Unpack the jars
+		mv "target/lib/${lib}" .
+		mkdir "target/lib/${lib}"
+		unzip "${lib}" -d "target/lib/${lib}" 2>&1 >/dev/null
+		rm "${lib}"		
+
 		echo ${item},1,${lib},$(get_file_size "target/lib/${lib}") >>${ORIGINAL_SIZE_FILE}
 		if [[ ${lib_path} != "" ]]; then
 			lib_path+=":"
 		fi
 		lib_path+="${item_dir}/target/lib/${lib}"
-	done <<< $(ls target/lib)
-
-	#Get the size of the app jars (don't know why they'd be more than one, but might as well support the possibility)
-	ls target/*.jar | while read app; do
-		echo ${item},0,$(basename "${app}"),$(get_file_size "${app}") >>${ORIGINAL_SIZE_FILE}
 	done
+
+	#Get the size of the application
+	echo ${item},0,APP,$(get_file_size "target/classes") >>${ORIGINAL_SIZE_FILE}
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	${JAVA} -jar ${DEBLOAT_APP} --app-classpath target/classes --lib-classpath ${lib_path} --test-classpath target/test-classes --main-entry --prune-app >$temp_file 
+	${JAVA} -jar ${DEBLOAT_APP} --app-classpath target/classes --lib-classpath ${lib_path} --test-classpath target/test-classes --public-entry --prune-app >$temp_file 
 
 
-	#Rebuild the jar package from the modified *.class files
-	mvn jar:jar 2>&1 >/dev/null
-
-	#Get the size of the library jars for main class as an entry point
-
+	#Get the size of the library sizes
 	ls target/lib | while read lib; do
 		echo ${item},0,1,0,,1,1,${lib},$(get_file_size "target/lib/${lib}") >>${DEBLOAT_SIZE_FILE}
 	done
 
-	#Get the size of the app jars for main class as an entry point
-	ls target/*.jar | while read app; do
-		echo ${item},0,1,0,,1,0,$(basename "${app}"),$(get_file_size "${app}") >>${DEBLOAT_SIZE_FILE}
-	done
+	#Get the application size
+	echo ${item},0,1,0,,1,0,APP,$(get_file_size "target/classes") >>${DEBLOAT_SIZE_FILE}
 
 	#Get the number of methods/methods wiped for main class as an entry point
 	lib_methods=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods"){print $2}')
