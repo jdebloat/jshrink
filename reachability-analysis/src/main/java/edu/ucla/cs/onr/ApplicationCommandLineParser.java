@@ -10,6 +10,8 @@ import java.util.*;
 
 public class ApplicationCommandLineParser {
 
+	private final static String APPLICATION_STATUS = "[APP]";
+
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
 	private final List<File> testClassPath;
@@ -23,6 +25,15 @@ public class ApplicationCommandLineParser {
 	private final boolean doRemoveMethods;
 
 
+	private static void printHelp(CommandLine commandLine){
+		HelpFormatter helpFormatter = new HelpFormatter();
+		String header = "An application to get the call-graph analysis of an application and to wipe unused methods";
+		String footer = "";
+
+		helpFormatter.printHelp(APPLICATION_STATUS, header, getOptions(),footer, true);
+		System.out.println();
+	}
+
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
 		CommandLineParser parser = new DefaultParser();
 		CommandLine commandLine = null;
@@ -30,8 +41,14 @@ public class ApplicationCommandLineParser {
 		try{
 			commandLine = parser.parse(ApplicationCommandLineParser.getOptions(), args);
 		} catch (ParseException e){
+			printHelp(commandLine);
 			throw new ParseException("Could not parse arguments" + System.lineSeparator()
 			+ "Exception information:" + System.lineSeparator() + e.getLocalizedMessage());
+		}
+
+		if(commandLine.hasOption('h')){
+			printHelp(commandLine);
+			System.exit(1);
 		}
 
 		assert(commandLine != null);
@@ -78,6 +95,7 @@ public class ApplicationCommandLineParser {
 					try {
 						customEntryPoints.add(new MethodData(toAdd.toString()));
 					} catch(IOException e){
+						printHelp(commandLine);
 						throw new ParseException("Could not create method from input string " +
 							"'" + toAdd.toString() + "' Exception thrown:"
 							+ System.lineSeparator() + e.getLocalizedMessage());
@@ -91,6 +109,7 @@ public class ApplicationCommandLineParser {
 		}
 
 		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
+			printHelp(commandLine);
 			throw new ParseException("No entry point was specified");
 		}
 
@@ -197,6 +216,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option helpOption = Option.builder("h")
+			.desc("Help")
+			.longOpt("help")
+			.hasArg(false)
+			.required(false)
+			.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -209,6 +235,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
+		toReturn.addOption(helpOption);
 
 		return toReturn;
 	}
