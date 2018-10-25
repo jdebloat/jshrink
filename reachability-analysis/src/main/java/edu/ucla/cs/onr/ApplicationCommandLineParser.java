@@ -23,6 +23,7 @@ public class ApplicationCommandLineParser {
 	private final boolean verbose;
 	private final Set<MethodData> customEntryPoints;
 	private final boolean doRemoveMethods;
+	private final Set<MethodData> methodsToRemove;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -83,37 +84,46 @@ public class ApplicationCommandLineParser {
 
 		customEntryPoints = new HashSet<MethodData>();
 		if(commandLine.hasOption('c')){
-			String[] values = commandLine.getOptionValues('c');
-			StringBuilder toAdd = new StringBuilder();
-			for(String val : values){
+			customEntryPoints.addAll(getMethodData(commandLine.getOptionValues('c'), commandLine));
+		}
+
+		this.doRemoveMethods = commandLine.hasOption('r');
+		methodsToRemove = new HashSet<MethodData>();
+		if(this.doRemoveMethods && (commandLine.getOptionValues('r') != null)){
+			methodsToRemove.addAll(getMethodData(commandLine.getOptionValues('r'), commandLine));
+		}
+
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()
+			&& (!this.doRemoveMethods || this.methodsToRemove.isEmpty())){
+			printHelp(commandLine);
+			throw new ParseException("No entry point, or methods to remove, were specified");
+		}
+	}
+
+	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
+		List<MethodData> toReturn = new ArrayList<MethodData>();
+		StringBuilder toAdd = new StringBuilder();
+		for(String val : values) {
 				/*
 				Due to the weird way the Apache Commons CLI library works, i need to stitch
 				together the strings as they may contain spaces
 				 */
-				if(val.endsWith(">")){
-					toAdd.append(val);
-					try {
-						customEntryPoints.add(new MethodData(toAdd.toString()));
-					} catch(IOException e){
-						printHelp(commandLine);
-						throw new ParseException("Could not create method from input string " +
-							"'" + toAdd.toString() + "' Exception thrown:"
-							+ System.lineSeparator() + e.getLocalizedMessage());
-					}
-					toAdd = new StringBuilder();
-				} else {
-					toAdd.append(val +" ");
+			if (val.endsWith(">")) {
+				toAdd.append(val);
+				try {
+					toReturn.add(new MethodData(toAdd.toString()));
+				} catch (IOException e) {
+					printHelp(commandLine);
+					throw new ParseException("Could not create method from input string " +
+						"'" + toAdd.toString() + "' Exception thrown:"
+						+ System.lineSeparator() + e.getLocalizedMessage());
 				}
-
+				toAdd = new StringBuilder();
+			} else {
+				toAdd.append(val + " ");
 			}
 		}
-
-		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
-			printHelp(commandLine);
-			throw new ParseException("No entry point was specified");
-		}
-
-		this.doRemoveMethods = commandLine.hasOption('r');
+		return toReturn;
 	}
 
 	private static List<File> pathToFiles(String path) throws FileNotFoundException {
@@ -210,9 +220,10 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option removeMethodsOption = Option.builder("r")
-			.desc("Run remove the untouched methods")
+			.desc("Run remove methods. If no arguments specified will determine through call-graph analysis")
 			.longOpt("remove-methods")
-			.hasArg(false)
+			.hasArgs()
+			.optionalArg(true)
 			.required(false)
 			.build();
 
@@ -282,5 +293,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean removeMethods(){
 		return doRemoveMethods;
+	}
+
+	public Set<MethodData> methodsToRemove(){
+		return methodsToRemove;
 	}
 }

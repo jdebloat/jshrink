@@ -304,4 +304,40 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 	}
+
+	@Test
+	public void mainTest_deleteSpecificMethods(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--remove-methods <StandardStuff: public void publicAndTestedButUntouched()> " +
+			"<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()> ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved,
+			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,
+			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertFalse(isPresent(methodsRemoved,
+			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertFalse(isPresent(methodsRemoved,
+			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+	}
 }
