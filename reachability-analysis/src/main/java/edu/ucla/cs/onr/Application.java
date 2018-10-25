@@ -159,7 +159,7 @@ public class Application {
 	}
 
 	private static String getExceptionMessage(SootMethod sootMethod) {
-		return "Method '" + sootMethod.getSignature() + "' has been removed";
+		return "Method has been removed";
 	}
 
 	private static Set<MethodData> getEntryPoints(ApplicationCommandLineParser commandLineParser) {

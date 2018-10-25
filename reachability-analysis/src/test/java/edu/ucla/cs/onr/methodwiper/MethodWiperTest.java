@@ -418,26 +418,6 @@ public class MethodWiperTest {
 		assertEquals(expected, output);
 	}
 
-	@Test
-	public void wipeMethodAndInsertRuntimeException_TestWithoutMessage(){
-		SootClass sootClass = getSootClassFromResources("Test15");
-		assertTrue(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams")));
-		String output = runClass(sootClass);
-
-		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
-		expected += "staticIntMethodNoParams touched" + System.lineSeparator();
-		expected += "staticStringMethodNoParams touched" + System.lineSeparator();
-		expected += "staticDoubleMethodNoParams touched" + System.lineSeparator();
-		expected += "staticVoidMethodTwoParams touched" + System.lineSeparator();
-		expected += "staticIntMethodTwoParams touched" + System.lineSeparator();
-		expected += "methodNoParams touched" + System.lineSeparator();
-		expected += "intMethodNoParams touched" + System.lineSeparator();
-		expected += "Exception in thread \"main\" java.lang.RuntimeException" + System.lineSeparator() +
-			"\tat Test15.intMethodTwoParams(Test15.java)" + System.lineSeparator() +
-			"\tat Test15.main(Test15.java)" + System.lineSeparator();
-
-		assertEquals(expected, output);
-	}
 
 	@Test
 	public void wipeMethodAndInsertRuntimeException_TestWithMessage(){
@@ -479,5 +459,12 @@ public class MethodWiperTest {
 	public void wipeInterfaceMethods_noReturnTypeOneParameter(){
 		SootClass sootClass = getSootClassFromResources("InterfaceTest");
 		assertFalse(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("interface3")));
+	}
+
+	@Test
+	public void wipeTinyMethod(){
+		SootClass sootClass = getSootClassFromResources("TinyMethodTest");
+		assertFalse(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("getNum")
+			,"THIS IS A PURPOSELY LONG EXCEPTION SO THAT THE EXCEPTION CODE IS BIGGER THAN WHAT IT REPLACES"));
 	}
 }

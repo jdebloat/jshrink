@@ -18,7 +18,22 @@ import soot.SootClass;
 import soot.SootMethod;
 
 public class EntryPointUtil {
-	
+
+	public static Set<String> testAnnotations(){
+		Set<String> toReturn = new HashSet<String>();
+		toReturn.add("org.junit.Test");
+		toReturn.add("org.junit.Before");
+		toReturn.add("org.junit.After");
+		toReturn.add("org.junit.AfterClass");
+		toReturn.add("org.junit.BeforeClass");
+		toReturn.add("org.junit.runner.Runwith");
+		toReturn.add("org.junit.Rule");
+		toReturn.add("org.junit.experimental.theories.Theory");
+		toReturn.add("org.junit.experimental.theories.DataPoint");
+
+		return toReturn;
+	}
+
 	/**
 	 * This method gets a list of test methods from a test log file.
 	 * Now we consider all methods in a test class as test methods, 
@@ -87,7 +102,7 @@ public class EntryPointUtil {
 
 		for(MethodData methodData: methods){
 			if(methodData.getAnnotation().isPresent()
-				&& methodData.getAnnotation().get().equals("org.junit.Test")){
+				&& testAnnotations().contains(methodData.getAnnotation().get())){
 				testMethods.add(methodData);
 			}
 		}
