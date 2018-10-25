@@ -95,16 +95,17 @@ public class MavenProjectAnalysis {
 						for(String path: paths){
 							lib_class_paths.add(new File(path));
 						}
-						Set<String> entryPoints = new HashSet<String>();
+						Set<MethodData> entryPoints = new HashSet<MethodData>();
 						// get main methods
 						HashSet<String> appClasses = new HashSet<String>();
-						HashSet<String> appMethods = new HashSet<String>();
+						HashSet<MethodData> appMethods = new HashSet<MethodData>();
 						ASMUtils.readClassFromDirectory(app_class_path, appClasses, appMethods);
-						Set<String> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(appMethods);
+						Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(appMethods);
 						entryPoints.addAll(mainMethods);
 						
 						// get test methods
-				        Set<String> testMethods = EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path);
+				        Set<MethodData> testMethods = 
+				        		EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path, app_test_path);
 				        entryPoints.addAll(testMethods);
 						
 						SparkCallGraphAnalysis runner = 

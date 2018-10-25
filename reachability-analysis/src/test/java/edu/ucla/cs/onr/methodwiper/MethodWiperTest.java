@@ -1,6 +1,9 @@
 package edu.ucla.cs.onr.methodwiper;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import soot.*;
 import soot.jimple.JasminClass;
 import soot.options.Options;
@@ -132,7 +135,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_Test1_staticVoidMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test2");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticIntMethodNoParams touched" + System.lineSeparator();
@@ -154,7 +157,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticIntMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test3");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -176,7 +179,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticStringMethodNoParam() {
 		SootClass sootClass = getSootClassFromResources("Test4");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticStringMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticStringMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -198,7 +201,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticDoubleMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test5");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticDoubleMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticDoubleMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -220,7 +223,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticVoidMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test6");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodTwoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticVoidMethodTwoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -242,7 +245,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticIntMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test7");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodTwoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticIntMethodTwoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -264,7 +267,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_methodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test8");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("methodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("methodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -286,7 +289,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_intMethodNoParams() {
 		SootClass sootClass = getSootClassFromResources("Test9");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -308,7 +311,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_intMethodTwoParams() {
 		SootClass sootClass = getSootClassFromResources("Test10");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodTwoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("intMethodTwoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -330,7 +333,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticBooleanMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test11");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticBooleanMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticBooleanMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -352,7 +355,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticCharMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test12");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticCharMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticCharMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -374,7 +377,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticByteMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test13");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticByteMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticByteMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -396,7 +399,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodTest_staticShortMethodNoParams(){
 		SootClass sootClass = getSootClassFromResources("Test14");
-		MethodWiper.wipeMethod(sootClass.getMethodByName("staticShortMethodNoParams"));
+		assertTrue(MethodWiper.wipeMethod(sootClass.getMethodByName("staticShortMethodNoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -418,7 +421,7 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodAndInsertRuntimeException_TestWithoutMessage(){
 		SootClass sootClass = getSootClassFromResources("Test15");
-		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams"));
+		assertTrue(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams")));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -439,7 +442,8 @@ public class MethodWiperTest {
 	@Test
 	public void wipeMethodAndInsertRuntimeException_TestWithMessage(){
 		SootClass sootClass = getSootClassFromResources("Test15");
-		MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("intMethodTwoParams"), "TEST");
+		assertTrue(MethodWiper.wipeMethodAndInsertRuntimeException(
+			sootClass.getMethodByName("intMethodTwoParams"), "TEST"));
 		String output = runClass(sootClass);
 
 		String expected = "staticVoidMethodNoParams touched" + System.lineSeparator();
@@ -456,5 +460,24 @@ public class MethodWiperTest {
 
 		assertEquals(expected, output);
 	}
-}
 
+	//Interfaces don't ahve bodies to delete, therefore these cases should be handled gracefully
+
+	@Test
+	public void wipeInterfaceMethods_noReturnTypeNoParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		assertFalse(MethodWiper.wipeMethod(sootClass.getMethodByName("interface1")));
+	}
+
+	@Test
+	public void wipeInterfaceMethods_stringReturnTypeNoParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		assertFalse(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("interface2"), "TEST"));
+	}
+
+	@Test
+	public void wipeInterfaceMethods_noReturnTypeOneParameter(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		assertFalse(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("interface3")));
+	}
+}

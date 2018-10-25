@@ -97,10 +97,18 @@ public class MethodWiper {
 	 * Wipes the method contents of a method's body and adds the bare minimum to ensure it remains compilable.
 	 *
 	 * @param sootMethod The method to be wiped
+	 * @return boolean specifying whether the method was successfully wiped or not
 	 */
-	public static void wipeMethod(SootMethod sootMethod) {
+	public static boolean wipeMethod(SootMethod sootMethod) {
+
+		if(sootMethod.isAbstract()){
+			return false;
+		}
+
 		wipeMethodStart(sootMethod);
 		wipeMethodEnd(sootMethod);
+
+		return true;
 	}
 
 	/**
@@ -109,11 +117,21 @@ public class MethodWiper {
 	 *
 	 * @param sootMethod The method to be wiped
 	 * @param toThrow    The Value to be thrown
+	 * @return boolean specifying whether the method was successfully wiped or not
 	 */
-	public static void wipeMethodAndInsertThrow(SootMethod sootMethod, Value toThrow) {
+	public static boolean wipeMethodAndInsertThrow(SootMethod sootMethod, Value toThrow) {
+
+		if(sootMethod.isAbstract()){
+			return false;
+		}
+
+
 		wipeMethodStart(sootMethod);
 		sootMethod.getActiveBody().getUnits().add(Jimple.v().newThrowStmt(toThrow));
 		wipeMethodEnd(sootMethod);
+
+		return true;
+
 	}
 
 	private static void addThrowRuntimeException(SootMethod sootMethod, Optional<String> message) {
@@ -152,22 +170,38 @@ public class MethodWiper {
 	 *
 	 * @param sootMethod The method to be wiped
 	 * @param message    The message to be thrown
+	 * @return boolean specifying whether the method was successfully wiped or not
 	 */
-	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
+	public static boolean wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
+
+		if(sootMethod.isAbstract()){
+			return false;
+		}
+
 		wipeMethodStart(sootMethod);
 		addThrowRuntimeException(sootMethod, Optional.of(message));
 		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+
+		return true;
 	}
 
 	/**
 	 * Wipes the contents of a methods body and inserts a throw statement; throws a RuntimeException
 	 *
 	 * @param sootMethod The method to be wiped
+	 * @return boolean specifying whether the method was successfully wiped or not
 	 */
-	public static void wipeMethodAndInsertRuntimeException(SootMethod sootMethod) {
+	public static boolean wipeMethodAndInsertRuntimeException(SootMethod sootMethod) {
+
+		if(sootMethod.isAbstract()){
+			return false;
+		}
+
 		wipeMethodStart(sootMethod);
 		addThrowRuntimeException(sootMethod, Optional.empty());
 		// No 'wipeMethodEnd' --- if an exception is thrown, no return statement is required
+
+		return true;
 	}
 
 }

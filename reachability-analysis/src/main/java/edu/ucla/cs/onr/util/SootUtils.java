@@ -3,9 +3,11 @@ package edu.ucla.cs.onr.util;
 import java.io.File;
 import java.util.*;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import soot.MethodOrMethodContext;
 import soot.Scene;
 import soot.SootMethod;
+import soot.Type;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
@@ -41,7 +43,68 @@ public class SootUtils {
 		return sb.toString();
 	}
 
-	public static void setup(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+	public static MethodData sootMethodToMethodData(SootMethod sootMethod){
+		String methodName = sootMethod.getName();
+		String methodClassName = sootMethod.getDeclaringClass().getName();
+		String methodReturnType = sootMethod.getReturnType().toString();
+		boolean isPublic = sootMethod.isPublic();
+		boolean isStatic = sootMethod.isStatic();
+
+		String[] methodArgs = new String[sootMethod.getParameterCount()];
+		for(int i=0; i<sootMethod.getParameterTypes().size(); i++){
+			Type type = sootMethod.getParameterTypes().get(i);
+			methodArgs[i] = type.toString();
+		}
+
+		return new MethodData(methodName,methodClassName,methodReturnType,methodArgs,isPublic, isStatic);
+	}
+
+	public static void setup_trimming(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+		String cp = SootUtils.getJREJars();
+		cp += listToPathString(libJarPath);
+		cp += listToPathString(appClassPath);
+		cp += listToPathString(appTestPath);
+		Options.v().set_soot_classpath(cp);
+		Options.v().set_whole_program(true);
+		Options.v().set_allow_phantom_refs(true);
+		// try the following two options to ignore the static field error in the Jython lib 
+		// the first one does not work but the second one works (why?)
+		// check the following links for reference:
+		// https://github.com/petablox-project/petablox/issues/6
+		// https://github.com/Sable/soot/issues/410
+		// https://github.com/Sable/soot/issues/717 
+//		Options.v().setPhaseOption("jb.tr", "ignore-wrong-staticness:true");
+		Options.v().set_wrong_staticness(Options.wrong_staticness_ignore);
+
+		// set the application directories
+		List<String> dirs = new ArrayList<String>();
+
+		for(File path : appClassPath) {
+			// double check whether the file path exists
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+			
+		}
+
+		for(File path : appTestPath) {
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+		}
+
+		for(File path : libJarPath){
+			dirs.add(path.getAbsolutePath());
+		}
+
+		Options.v().set_process_dir(dirs);
+	}
+	
+	public static void setup_analysis(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
 		String cp = SootUtils.getJREJars();
 		cp += listToPathString(libJarPath);
 		cp += listToPathString(appClassPath);
@@ -81,7 +144,7 @@ public class SootUtils {
 
 		Options.v().set_process_dir(dirs);
 	}
-	
+
 	public static HashMap<String, String> getSparkOpt() {
 		HashMap<String, String> opt = new HashMap<String, String>();
 		opt.put("enabled","true");
@@ -130,7 +193,7 @@ public class SootUtils {
 	@Deprecated
 	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
-		String signature = m.getSignature();
+		String signature = m.getSubSignature();
 		// remove the brackets before and after the method signature
 		signature = signature.substring(1, signature.length() - 1);
 		if(!visited.contains(signature)) {
@@ -146,19 +209,19 @@ public class SootUtils {
 		}
 	}
 	
-	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
+	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> visited) {
 		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
 		methods_to_visit.add(m);
 		while(!methods_to_visit.isEmpty()) {
 			SootMethod first = methods_to_visit.pop();
-			String className = first.getDeclaringClass().toString();
-			String signature = first.getSignature();
-			// remove the brackets before and after the method signature
-			signature = signature.substring(1, signature.length() - 1);
-			if(!visited.contains(signature)) {
+			MethodData firstMethodData = sootMethodToMethodData(first);
+
+			String className = firstMethodData.getClassName();
+
+			if(!visited.contains(firstMethodData)) {
 				// avoid recursion
-				usedClass.add(className);
-				visited.add(signature);
+				usedClass.add(firstMethodData.getClassName());
+				visited.add(firstMethodData);
 				
 				// add callees to the stack
 				Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(first));

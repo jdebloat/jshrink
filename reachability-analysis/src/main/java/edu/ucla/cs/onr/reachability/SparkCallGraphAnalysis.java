@@ -3,6 +3,7 @@ package edu.ucla.cs.onr.reachability;
 import java.io.File;
 import java.util.*;
 
+import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -13,39 +14,38 @@ import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
 public class SparkCallGraphAnalysis {
-	public static boolean DEBUG = true;
-	
+
 	private List<File> libJarPath;
 	private List<File> appClassPath;
 	private List<File> appTestPath;
-	private Set<String> entryMethods; // in the 'className:methodName' format
+	private Set<MethodData> entryMethods;
 
 	private Set<String> libClasses;
-	private Set<String> libMethods;
+	private Set<MethodData> libMethods;
 	private Set<String> appClasses;
-	private Set<String> appMethods;
+	private Set<MethodData> appMethods;
 	private Set<String> usedLibClasses;
-	private Set<String> usedLibMethods;
+	private Set<MethodData> usedLibMethods;
 	private Set<String> usedAppClasses;
-	private Set<String> usedAppMethods;
+	private Set<MethodData> usedAppMethods;
 
 	public SparkCallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
 	                              List<File> appTestPath, 
-	                              Set<String> entryMethods) {
+	                              Set<MethodData> entryMethods) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
 		this.entryMethods = entryMethods;
 
 		libClasses = new HashSet<String>();
-		libMethods = new HashSet<String>();
+		libMethods = new HashSet<MethodData>();
 		appClasses = new HashSet<String>();
-		appMethods = new HashSet<String>();
+		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
-		usedLibMethods = new HashSet<String>();
+		usedLibMethods = new HashSet<MethodData>();
 		usedAppClasses = new HashSet<String>();
-		usedAppMethods = new HashSet<String>();
+		usedAppMethods = new HashSet<MethodData>();
 	}
 
 	public void run() {
@@ -58,40 +58,54 @@ public class SparkCallGraphAnalysis {
 
 	private void findAllClassesAndMethods() {
 		for (File lib : this.libJarPath) {
-			ASMUtils.readClassFromJarFile(lib, libClasses, libMethods);
+			ASMUtils.readClass(lib, libClasses, libMethods);
 		}
 
 		for (File appPath : appClassPath) {
-			ASMUtils.readClassFromDirectory(appPath, appClasses, appMethods);
+			ASMUtils.readClass(appPath, appClasses, appMethods);
 		}
 
-		for (File testPath : appTestPath) {
-			ASMUtils.readClassFromDirectory(testPath, appClasses, appMethods);
-		}
-		
-		if(DEBUG) {
-			System.out.println("Num of library classes : " + libClasses.size());
-			System.out.println("Num of library methods : " + libMethods.size());
-			System.out.println("Num of application classes : " + appClasses.size());
-			System.out.println("Num of application methods : " + appMethods.size());
+		if(Application.isDebugMode()) {
+			System.out.println("number_lib_classes, " + libClasses.size());
+			System.out.println("number_lib_methods, " + libMethods.size());
+			System.out.println("number_app_classes, " + appClasses.size());
+			System.out.println("number_app_methods, " + appMethods.size());
 		}
 	}
 
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
-		SootUtils.setup(this.libJarPath, this.appClassPath, this.appTestPath);
+		SootUtils.setup_analysis(this.libJarPath, this.appClassPath, this.appTestPath);
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
+		if(Application.isVerboseMode()) {
+			System.out.println();
+			System.out.println("The following entry points were specified:");
+			for (SootMethod sootMethod : entryPoints) {
+				System.out.println(sootMethod.getSignature());
+			}
+		}
+
 		Scene.v().setEntryPoints(entryPoints);
 
-		CHATransformer.v().transform();
-//		Map<String, String> opt = SootUtils.getSparkOpt();
-//		SparkTransformer.v().transform("", opt);
+//		CHATransformer.v().transform();
+		Map<String, String> opt = SootUtils.getSparkOpt();
+		SparkTransformer.v().transform("", opt);
+
+		if(Application.isVerboseMode()){
+			System.out.println();
+			System.out.println("Running the callgraph analysis...");
+		}
 
 		CallGraph cg = Scene.v().getCallGraph();
 
-		Set<String> usedMethods = new HashSet<String>();
+		if(Application.isVerboseMode()){
+			System.out.println();
+			System.out.println("Callgraph analysis complete.");
+		}
+
+		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();
 
 		for (SootMethod entryMethod : entryPoints) {
@@ -110,11 +124,11 @@ public class SparkCallGraphAnalysis {
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
 		
-		if(DEBUG) {
-			System.out.println("Num of used library classes : " + usedLibClasses.size());
-			System.out.println("Num of used library methods : " + usedLibMethods.size());
-			System.out.println("Num of used application classes : " + usedAppClasses.size());
-			System.out.println("Num of used application methods : " + usedAppMethods.size());
+		if(Application.isDebugMode()) {
+			System.out.println("number_used_lib_classes, " + usedLibClasses.size());
+			System.out.println("number_used_lib_methods, " + usedLibMethods.size());
+			System.out.println("number_used_app_classes, " + usedAppClasses.size());
+			System.out.println("number_used_app_method, " + usedAppMethods.size());
 		}
 	}
 
@@ -122,7 +136,7 @@ public class SparkCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
 
-	public Set<String> getLibMethods() {
+	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
@@ -130,7 +144,7 @@ public class SparkCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
 
-	public Set<String> getAppMethods() {
+	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
@@ -138,7 +152,7 @@ public class SparkCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
 
-	public Set<String> getUsedLibMethods() {
+	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
 	}
 
@@ -146,7 +160,7 @@ public class SparkCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.usedAppClasses);
 	}
 
-	public Set<String> getUsedAppMethods() {
+	public Set<MethodData> getUsedAppMethods() {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 }

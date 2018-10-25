@@ -1,25 +1,25 @@
 package edu.ucla.cs.onr;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.*;
 
 public class ApplicationCommandLineParser {
-
-	enum ENTRY_POINT{
-		MAIN,
-		PUBLIC,
-		TESTS
-	}
 
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
 	private final List<File> testClassPath;
 	private final boolean pruneApp;
-	private final ENTRY_POINT entryPoint;
+	private final boolean mainEntryPoint;
+	private final boolean publicEntryPoints;
+	private final boolean testEntryPoints;
+	private final boolean debug;
+	private final boolean verbose;
+	private final Set<MethodData> customEntryPoints;
 
 
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
@@ -36,18 +36,6 @@ public class ApplicationCommandLineParser {
 		assert(commandLine != null);
 
 		this.pruneApp = commandLine.hasOption("p");
-		String entryPointString = commandLine.getOptionValue('e').toLowerCase().trim();
-
-		if(entryPointString.equals("main")){
-			entryPoint = ENTRY_POINT.MAIN;
-		} else if(entryPointString.equals("public")){
-			entryPoint = ENTRY_POINT.PUBLIC;
-		} else if(entryPointString.equals("tests")){
-			entryPoint = ENTRY_POINT.TESTS;
-		} else {
-			throw new ParseException(
-				"Could not parse argument for 'entry-point' option. Must be 'main', 'public', or 'tests'");
-		}
 
 		if(commandLine.hasOption("a")){
 			appClassPath = pathToFiles(commandLine.getOptionValue("a"));
@@ -56,15 +44,53 @@ public class ApplicationCommandLineParser {
 		}
 
 		if(commandLine.hasOption('l')){
-			libClassPath = pathToFiles(commandLine.getOptionValue("a"));
+			libClassPath = pathToFiles(commandLine.getOptionValue("l"));
 		} else {
 			libClassPath = new ArrayList<File>();
 		}
 
 		if(commandLine.hasOption('t')){
-			testClassPath = pathToFiles(commandLine.getOptionValue("a"));
+			testClassPath = pathToFiles(commandLine.getOptionValue("t"));
 		} else {
 			testClassPath = new ArrayList<File>();
+		}
+
+		debug = commandLine.hasOption('d');
+
+		verbose = commandLine.hasOption('v');
+
+		mainEntryPoint = commandLine.hasOption('m');
+		publicEntryPoints = commandLine.hasOption('u');
+		testEntryPoints = commandLine.hasOption('s');
+
+		customEntryPoints = new HashSet<MethodData>();
+		if(commandLine.hasOption('c')){
+			String[] values = commandLine.getOptionValues('c');
+			StringBuilder toAdd = new StringBuilder();
+			for(String val : values){
+				/*
+				Due to the weird way the Apache Commons CLI library works, i need to stitch
+				together the strings as they may contain spaces
+				 */
+				if(val.endsWith(">")){
+					toAdd.append(val);
+					try {
+						customEntryPoints.add(new MethodData(toAdd.toString()));
+					} catch(IOException e){
+						throw new ParseException("Could not create method from input string " +
+							"'" + toAdd.toString() + "' Exception thrown:"
+							+ System.lineSeparator() + e.getLocalizedMessage());
+					}
+					toAdd = new StringBuilder();
+				} else {
+					toAdd.append(val +" ");
+				}
+
+			}
+		}
+
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
+			throw new ParseException("No entry point was specified");
 		}
 
 	}
@@ -116,24 +142,63 @@ public class ApplicationCommandLineParser {
 			.hasArg(true)
 			.required(false)
 			.optionalArg(false)
-			.hasArg(true)
 			.build();
 
-		Option entryPointOption = Option.builder("e")
-			.desc("The entry point option ('main', 'public', or 'tests'")
-			.longOpt("entry-point")
-			.hasArg(true)
-			.optionalArg(false)
-			.required()
+		Option mainEntryPointOption = Option.builder("m")
+			.desc("Include the main method as the entry point")
+			.longOpt("main-entry")
+			.hasArg(false)
+			.required(false)
 			.build();
 
+		Option publicEntryPointOption = Option.builder("u")
+			.desc("Include public methods as entry points")
+			.longOpt("public-entry")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option  testEntryPointOption = Option.builder("s")
+			.desc("Include the test methods as entry points")
+			.longOpt("test-entry")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option customEntryPointOption = Option.builder("c")
+			.desc("Specify custom entry points in syntax of " +
+				"'<[classname]:[public?] [static?] [returnType] [methodName]([args...?])>'")
+			.longOpt("custom-entry")
+			.hasArgs()
+			.valueSeparator()
+			.required(false)
+			.build();
+
+		Option debugOption = Option.builder("d")
+			.desc("Run the program in 'debug' mode. Used for testing")
+			.longOpt("debug")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option verboseMove = Option.builder("v")
+			.desc("Run the program in 'verbose' mode. Useful for debugging")
+			.longOpt("verbose")
+			.hasArg(false)
+			.required(false)
+			.build();
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
 		toReturn.addOption(testClassPathOption);
-		toReturn.addOption(entryPointOption);
+		toReturn.addOption(mainEntryPointOption);
+		toReturn.addOption(publicEntryPointOption);
+		toReturn.addOption(testEntryPointOption);
 		toReturn.addOption(pruneAppOption);
+		toReturn.addOption(customEntryPointOption);
+		toReturn.addOption(debugOption);
+		toReturn.addOption(verboseMove);
 
 		return toReturn;
 	}
@@ -154,9 +219,27 @@ public class ApplicationCommandLineParser {
 		return pruneApp;
 	}
 
-	public ENTRY_POINT getEntryPoint() {
-		return entryPoint;
+	public boolean isDebug(){
+		return debug;
 	}
 
+	public boolean isVerbose(){
+		return verbose;
+	}
 
+	public boolean includeMainEntryPoint(){
+		return mainEntryPoint;
+	}
+
+	public boolean includePublicEntryPoints(){
+		return publicEntryPoints;
+	}
+
+	public boolean includeTestEntryPoints(){
+		return testEntryPoints;
+	}
+
+	public Set<MethodData> getCustomEntryPoints(){
+		return Collections.unmodifiableSet(customEntryPoints);
+	}
 }

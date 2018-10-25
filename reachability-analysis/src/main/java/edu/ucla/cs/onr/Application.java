@@ -1,139 +1,198 @@
 package edu.ucla.cs.onr;
 
 import java.io.*;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
+import edu.ucla.cs.onr.util.ASMUtils;
+import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
-import edu.ucla.cs.onr.ApplicationCommandLineParser.ENTRY_POINT;
 import edu.ucla.cs.onr.methodwiper.MethodWiper;
+import edu.ucla.cs.onr.util.WritingClassUtils;
 
-import org.apache.commons.io.FileUtils;
-
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
-import soot.SourceLocator;
-import soot.jimple.JasminClass;
-import soot.options.Options;
-import soot.util.JasminOutputStream;
+import org.apache.log4j.PropertyConfigurator;
+import soot.*;
 
 public class Application {
 
-	public static void main(String[] args){
+	private static boolean DEBUG_MODE = true; //Enabled by default, needed for testing
+	private static boolean VERBOSE_MODE = false;
+
+	//I use this for testing, to see if the correct methods have been removed
+	/*package*/ static Set<MethodData> removedMethods = new HashSet<MethodData>();
+
+	public static boolean isDebugMode() {
+		return DEBUG_MODE;
+	}
+
+	public static boolean isVerboseMode(){
+		return VERBOSE_MODE;
+	}
+
+	public static void main(String[] args) {
+
+		//Re-initialise this each time Application is run (for testing)
+		removedMethods.clear();
+
+		//I just put this in to stop an error
+		PropertyConfigurator.configure(
+			Application.class.getClassLoader().getResourceAsStream("log4j.properties"));
 
 		//Load the command line arguments
 		ApplicationCommandLineParser commandLineParser = null;
 
 		try {
 			commandLineParser = new ApplicationCommandLineParser(args);
-		} catch (Exception e){
-			System.err.println(e.getLocalizedMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
 			System.exit(1);
 		}
 
-		assert(commandLineParser != null);
+		assert (commandLineParser != null);
+
+		DEBUG_MODE = commandLineParser.isDebug();
+		VERBOSE_MODE = commandLineParser.isVerbose();
 
 		//Get the entry points
-		Set<String> entryPoints =  getEntryPoints(commandLineParser);
+		Set<MethodData> entryPoints = getEntryPoints(commandLineParser);
 
 		//Run the call graph analysis
 		SparkCallGraphAnalysis callGraphAnalysis = new SparkCallGraphAnalysis(commandLineParser.getLibClassPath(),
-			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(),entryPoints);
+			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPoints);
 		callGraphAnalysis.run();
 
-		//Load the classes to Soot
-		SootUtils.setup(commandLineParser.getLibClassPath(),
+		// Setup soot
+		// (should have already been done, but not taking any chances, little cost for doing so again)
+		SootUtils.setup_trimming(commandLineParser.getLibClassPath(),
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
 
-		Set<SootClass> classesToRewrite = new HashSet<SootClass>();
+		if(Application.isVerboseMode()) {
+			System.out.println();
+			System.out.println("Lib methods:");
+			for (MethodData method : callGraphAnalysis.getLibMethods()) {
+				System.out.println(method.toString());
+			}
 
-		//Remove the unused library methods
-		Set<String> libMethodsToRemove = new HashSet<String>();
+			System.out.println();
+			System.out.println("App methods:");
+			for (MethodData method : callGraphAnalysis.getAppMethods()) {
+				System.out.println(method.toString());
+			}
+
+			System.out.println();
+			System.out.println("Lib methods touched:");
+			for (MethodData method : callGraphAnalysis.getUsedLibMethods()) {
+				System.out.println(method.toString());
+			}
+
+			System.out.println();
+			System.out.println("App methods touched:");
+			for (MethodData method : callGraphAnalysis.getUsedAppMethods()) {
+				System.out.println(method.toString());
+			}
+
+			System.out.println();
+		}
+
+		Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
+		Set<SootClass> classesToRewrite = new HashSet<SootClass>(); //Take note of all classes that have changed
+		Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
+
+		//Remove the unused library methods and classes
+		Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
 		libMethodsToRemove.addAll(callGraphAnalysis.getLibMethods());
 		libMethodsToRemove.removeAll(callGraphAnalysis.getUsedLibMethods());
 
-		for(String methodToRemoveString : libMethodsToRemove) {
-			SootMethod sootMethod = Scene.v().getMethod(methodToRemoveString);
-			MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMethod(sootMethod));
-			classesToRewrite.add(sootMethod.getDeclaringClass());
+		classPathsOfConcern.addAll(commandLineParser.getLibClassPath());
+
+		for (MethodData methodToRemoveString : libMethodsToRemove) {
+			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
+
+			if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())){
+				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
+				if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
+					Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+					classesToRewrite.add(sootClass);
+					libMethodsRemoved.add(methodToRemoveString);
+				}
+			}
 		}
 
+		System.out.println("number_lib_methods_removed," + libMethodsRemoved.size());
+
+		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
 		//Remove the unused app methods (if applicable)
-		if(commandLineParser.isPruneAppInstance()) {
-			Set<String> appMethodToRemove = new HashSet<String>();
+		if (commandLineParser.isPruneAppInstance()) {
+			classPathsOfConcern.addAll(commandLineParser.getAppClassPath());
+
+			Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
 			appMethodToRemove.addAll(callGraphAnalysis.getAppMethods());
 			appMethodToRemove.removeAll(callGraphAnalysis.getUsedAppMethods());
 
-			for(String methodToRemoveString: appMethodToRemove){
-				SootMethod sootMethod = Scene.v().getMethod(methodToRemoveString);
-				MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMethod(sootMethod));
-				classesToRewrite.add(sootMethod.getDeclaringClass());
-			}
-		}
-	}
+			for (MethodData methodToRemoveString : appMethodToRemove) {
+				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
+				if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
+					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
 
-	private static void writeMethod(SootClass sootClass){
-		//TODO: Will this work for jars?
-		for(SootMethod sootMethod : sootClass.getMethods()){
-			sootMethod.retrieveActiveBody();
-		}
-
-		try {
-			String fileName = SourceLocator.v().getFileNameFor(sootClass, Options.output_format_class);
-
-			File fileToReturn = new File(fileName);
-			if(fileToReturn.exists()){ //We overwrite but we create a backup
-				File copyLocation = new File(fileToReturn.getAbsolutePath() + "_original");
-				FileUtils.copyFile(fileToReturn,copyLocation);
-			}
-			OutputStream streamOut = new JasminOutputStream(new FileOutputStream(fileToReturn));
-			PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
-
-			JasminClass jasminClass = new soot.jimple.JasminClass(sootClass);
-			jasminClass.print(writerOut);
-			writerOut.flush();
-			streamOut.close();
-
-		}catch(Exception e){
-			System.err.println("Exception thrown: " + e.getMessage());
-			System.exit(1);
-		}
-
-	}
-
-	private static String getExceptionMethod(SootMethod sootMethod){
-		return "Method '" + sootMethod.getSignature() +"' has been removed";
-	}
-
-	private static Set<String> getEntryPoints(ApplicationCommandLineParser commandLineParser){
-		Set<String> toReturn = new HashSet<String>();
-
-		SootUtils.setup(commandLineParser.getLibClassPath(),
-			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
-
-		if(commandLineParser.getEntryPoint() == ENTRY_POINT.MAIN){
-			SootClass mainClass = Scene.v().getMainClass();
-			SootMethod mainMethod = mainClass.getMethodByName("main");
-			toReturn.add(mainMethod.getSubSignature()); //TODO: Check name, is this right?
-		} else if(commandLineParser.getEntryPoint() == ENTRY_POINT.PUBLIC){
-			for(File appFile : commandLineParser.getAppClassPath()){
-				SootClass sootClass = Scene.v().getSootClass(
-					appFile.getName().replace(".class", ""));
-				for(SootMethod sootMethod : sootClass.getMethods()){
-					if(sootMethod.isPublic()) {
-						toReturn.add(sootMethod.getSubSignature());
+					if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
+						Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+						classesToRewrite.add(sootClass);
+						appMethodsRemoved.add(methodToRemoveString);
 					}
 				}
 			}
-		} else if(commandLineParser.getEntryPoint() == ENTRY_POINT.TESTS){
-			//TODO: Need to complete this
-			System.err.println("[Bobby R. Bruce] : I have not implemented the ability to declare entry-points via"
-				+ " tests yet, sorry!");
-			System.exit(1);
-		} else { //Error
-			System.err.println("ERROR: Unknown entry-point specified.");
+		}
+
+		System.out.println("number_app_methods_removed," + appMethodsRemoved.size());
+
+		//Rewrite the modified classes
+		for (SootClass sootClass : classesToRewrite) {
+			try {
+				WritingClassUtils.writeClass(sootClass, classPathsOfConcern);
+			} catch(IOException e){
+				System.err.println("An exception was thrown when attempting to rewrite a class:");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+	}
+
+	private static String getExceptionMessage(SootMethod sootMethod) {
+		return "Method '" + sootMethod.getSignature() + "' has been removed";
+	}
+
+	private static Set<MethodData> getEntryPoints(ApplicationCommandLineParser commandLineParser) {
+		Set<MethodData> toReturn = new HashSet<MethodData>();
+
+		//Get the app methods
+		Set<MethodData> appMethods = new HashSet<MethodData>();
+		for (File appPath : commandLineParser.getAppClassPath()) {
+			ASMUtils.readClass(appPath, new HashSet<String>(), appMethods);
+		}
+
+		//Get the test methods
+		Set<MethodData> testMethods = new HashSet<MethodData>();
+		for(File testPath :  commandLineParser.getTestClassPath()){
+			ASMUtils.readClass(testPath, new HashSet<String>(), testMethods);
+		}
+
+		if (commandLineParser.includeMainEntryPoint()) {
+			toReturn.addAll(EntryPointUtil.getMainMethodsAsEntryPoints(appMethods));
+		}
+
+		if (commandLineParser.includePublicEntryPoints()) {
+			toReturn.addAll(EntryPointUtil.getPublicMethodsAsEntryPoints(appMethods));
+		}
+
+		if (commandLineParser.includeTestEntryPoints()) {
+			toReturn.addAll(EntryPointUtil.getTestMethodsAsEntryPoints(testMethods));
+		}
+
+		toReturn.addAll(commandLineParser.getCustomEntryPoints());
+
+		if(toReturn.isEmpty()){ //Error
+			System.err.println("No entry points specified.");
 			System.exit(1);
 		}
 
