@@ -88,17 +88,7 @@ public class SparkCallGraphAnalysis {
 
 		CHATransformer.v().transform();
 
-		if(Application.isVerboseMode()){
-			System.out.println();
-			System.out.println("Running the callgraph analysis...");
-		}
-
 		CallGraph cg = Scene.v().getCallGraph();
-
-		if(Application.isVerboseMode()){
-			System.out.println();
-			System.out.println("Callgraph analysis complete.");
-		}
 
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();

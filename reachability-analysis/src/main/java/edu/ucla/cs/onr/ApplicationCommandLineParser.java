@@ -20,6 +20,7 @@ public class ApplicationCommandLineParser {
 	private final boolean debug;
 	private final boolean verbose;
 	private final Set<MethodData> customEntryPoints;
+	private final boolean doRemoveMethods;
 
 
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
@@ -93,6 +94,7 @@ public class ApplicationCommandLineParser {
 			throw new ParseException("No entry point was specified");
 		}
 
+		this.doRemoveMethods = commandLine.hasOption('r');
 	}
 
 	private static List<File> pathToFiles(String path) throws FileNotFoundException {
@@ -182,8 +184,15 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option verboseMove = Option.builder("v")
-			.desc("Run the program in 'verbose' mode. Useful for debugging")
+			.desc("Run the program in 'verbose' mode. Outputs methods analysed and methods touched")
 			.longOpt("verbose")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option removeMethodsOption = Option.builder("r")
+			.desc("Run remove the untouched methods")
+			.longOpt("remove-methods")
 			.hasArg(false)
 			.required(false)
 			.build();
@@ -199,6 +208,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
+		toReturn.addOption(removeMethodsOption);
 
 		return toReturn;
 	}
@@ -241,5 +251,9 @@ public class ApplicationCommandLineParser {
 
 	public Set<MethodData> getCustomEntryPoints(){
 		return Collections.unmodifiableSet(customEntryPoints);
+	}
+
+	public boolean removeMethods(){
+		return doRemoveMethods;
 	}
 }

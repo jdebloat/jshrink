@@ -68,94 +68,88 @@ public class Application {
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
 
 		if(Application.isVerboseMode()) {
-			System.out.println();
-			System.out.println("Lib methods:");
 			for (MethodData method : callGraphAnalysis.getLibMethods()) {
-				System.out.println(method.toString());
+				System.out.println("lib_method," + method.toString());
 			}
 
-			System.out.println();
-			System.out.println("App methods:");
 			for (MethodData method : callGraphAnalysis.getAppMethods()) {
-				System.out.println(method.toString());
+				System.out.println("app_method," + method.toString());
 			}
 
-			System.out.println();
-			System.out.println("Lib methods touched:");
 			for (MethodData method : callGraphAnalysis.getUsedLibMethods()) {
-				System.out.println(method.toString());
+				System.out.println("lib_method_touched," + method.toString());
 			}
 
-			System.out.println();
-			System.out.println("App methods touched:");
 			for (MethodData method : callGraphAnalysis.getUsedAppMethods()) {
-				System.out.println(method.toString());
+				System.out.println("lib_method_touched," + method.toString());
 			}
-
-			System.out.println();
 		}
 
 		Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
-		Set<SootClass> classesToRewrite = new HashSet<SootClass>(); //Take note of all classes that have changed
-		Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
+		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
 
-		//Remove the unused library methods and classes
-		Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
-		libMethodsToRemove.addAll(callGraphAnalysis.getLibMethods());
-		libMethodsToRemove.removeAll(callGraphAnalysis.getUsedLibMethods());
+		if(commandLineParser.removeMethods()) {
+			Set<SootClass> classesToRewrite = new HashSet<SootClass>(); //Take note of all classes that have changed
+			Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
 
-		classPathsOfConcern.addAll(commandLineParser.getLibClassPath());
+			//Remove the unused library methods and classes
+			Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
+			libMethodsToRemove.addAll(callGraphAnalysis.getLibMethods());
+			libMethodsToRemove.removeAll(callGraphAnalysis.getUsedLibMethods());
 
-		for (MethodData methodToRemoveString : libMethodsToRemove) {
-			SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
+			classPathsOfConcern.addAll(commandLineParser.getLibClassPath());
 
-			if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())){
-				SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
-				if(MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
-					Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-					classesToRewrite.add(sootClass);
-					libMethodsRemoved.add(methodToRemoveString);
+			for (MethodData methodToRemoveString : libMethodsToRemove) {
+				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
+
+				if (!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
+					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
+					if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
+						Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+						classesToRewrite.add(sootClass);
+						libMethodsRemoved.add(methodToRemoveString);
+					}
+				}
+			}
+
+			//Remove the unused app methods (if applicable)
+			if (commandLineParser.isPruneAppInstance()) {
+				classPathsOfConcern.addAll(commandLineParser.getAppClassPath());
+
+				Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
+				appMethodToRemove.addAll(callGraphAnalysis.getAppMethods());
+				appMethodToRemove.removeAll(callGraphAnalysis.getUsedAppMethods());
+
+				for (MethodData methodToRemoveString : appMethodToRemove) {
+					SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
+					if (!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
+						SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
+
+						if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod,
+							getExceptionMessage(sootMethod))) {
+							Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+							classesToRewrite.add(sootClass);
+							appMethodsRemoved.add(methodToRemoveString);
+						}
+					}
+				}
+			}
+
+
+			//Rewrite the modified classes
+			for (SootClass sootClass : classesToRewrite) {
+				try {
+					WritingClassUtils.writeClass(sootClass, classPathsOfConcern);
+				} catch (IOException e) {
+					System.err.println("An exception was thrown when attempting to rewrite a class:");
+					e.printStackTrace();
+					System.exit(1);
 				}
 			}
 		}
 
 		System.out.println("number_lib_methods_removed," + libMethodsRemoved.size());
-
-		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
-		//Remove the unused app methods (if applicable)
-		if (commandLineParser.isPruneAppInstance()) {
-			classPathsOfConcern.addAll(commandLineParser.getAppClassPath());
-
-			Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
-			appMethodToRemove.addAll(callGraphAnalysis.getAppMethods());
-			appMethodToRemove.removeAll(callGraphAnalysis.getUsedAppMethods());
-
-			for (MethodData methodToRemoveString : appMethodToRemove) {
-				SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-				if(!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
-					SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
-
-					if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod, getExceptionMessage(sootMethod))) {
-						Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-						classesToRewrite.add(sootClass);
-						appMethodsRemoved.add(methodToRemoveString);
-					}
-				}
-			}
-		}
-
 		System.out.println("number_app_methods_removed," + appMethodsRemoved.size());
-
-		//Rewrite the modified classes
-		for (SootClass sootClass : classesToRewrite) {
-			try {
-				WritingClassUtils.writeClass(sootClass, classPathsOfConcern);
-			} catch(IOException e){
-				System.err.println("An exception was thrown when attempting to rewrite a class:");
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
 	}
 
 	private static String getExceptionMessage(SootMethod sootMethod) {
