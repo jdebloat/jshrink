@@ -5,6 +5,7 @@ import edu.ucla.cs.onr.util.WritingClassUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import soot.G;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +69,7 @@ public class ApplicationTest {
 		files.addAll(getLibClassPath());
 		files.addAll(getTestClassPath());
 		WritingClassUtils.rectifyChanges(files);
+		G.reset();
 	}
 
 	@Before

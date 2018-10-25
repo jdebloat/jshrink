@@ -75,7 +75,7 @@ public class SparkCallGraphAnalysis {
 
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
-		SootUtils.setup_analysis(this.libJarPath, this.appClassPath, this.appTestPath);
+		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
@@ -89,7 +89,7 @@ public class SparkCallGraphAnalysis {
 
 		Scene.v().setEntryPoints(entryPoints);
 
-//		CHATransformer.v().transform();
+	//	CHATransformer.v().transform();
 		Map<String, String> opt = SootUtils.getSparkOpt();
 		SparkTransformer.v().transform("", opt);
 

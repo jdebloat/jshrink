@@ -112,11 +112,12 @@ public class Application {
 			SparkCallGraphAnalysis callGraphAnalysis = new SparkCallGraphAnalysis(commandLineParser.getLibClassPath(),
 				commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPoints);
 			callGraphAnalysis.run();
-
-			// Setup soot
-			// (should have already been done, but not taking any chances, little cost for doing so again)
+			
+			G.reset();
 			SootUtils.setup_trimming(commandLineParser.getLibClassPath(),
 				commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
+			Scene.v().loadNecessaryClasses();
+
 
 			if(Application.isVerboseMode()) {
 				for (MethodData method : callGraphAnalysis.getLibMethods()) {
@@ -132,7 +133,7 @@ public class Application {
 				}
 
 				for (MethodData method : callGraphAnalysis.getUsedAppMethods()) {
-					System.out.println("lib_method_touched," + method.toString());
+					System.out.println("app_method_touched," + method.toString());
 				}
 			}
 
