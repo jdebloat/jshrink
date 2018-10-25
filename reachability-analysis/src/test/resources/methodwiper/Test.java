@@ -1,27 +1,27 @@
-public class Test4 {
+public class Test {
 
-	public Test4(){
+	public Test(){
 		int i=0;
 		i++;
 	}
 
 	public static void main(String[] args) {
-		Test4.staticVoidMethodNoParams();
-		int i1 = Test4.staticIntMethodNoParams();
-		String s1 = Test4.staticStringMethodNoParams();
-		Double d1 = Test4.staticDoubleMethodNoParams();
-		Test4.staticVoidMethodTwoParams(10, 20);
-		int i2 = Test4.staticIntMethodTwoParams(10, 20);
+		Test.staticVoidMethodNoParams();
+		int i1 = Test.staticIntMethodNoParams();
+		String s1 = Test.staticStringMethodNoParams();
+		Double d1 = Test.staticDoubleMethodNoParams();
+		Test.staticVoidMethodTwoParams(10, 20);
+		int i2 = Test.staticIntMethodTwoParams(10, 20);
 
-		Test4 test1 = new Test4();
+		Test test1 = new Test();
 		test1.methodNoParams();
 		int i3 = test1.intMethodNoParams();
 		int i4 = test1.intMethodTwoParams(10, 20);
 
-		Test4.staticBooleanMethodNoParams();
-		Test4.staticCharMethodNoParams();
-		Test4.staticByteMethodNoParams();
-		Test4.staticShortMethodNoParams();
+		Test.staticBooleanMethodNoParams();
+		Test.staticCharMethodNoParams();
+		Test.staticByteMethodNoParams();
+		Test.staticShortMethodNoParams();
 	}
 
 	public static void staticVoidMethodNoParams() {
@@ -63,6 +63,7 @@ public class Test4 {
 
 	public int intMethodTwoParams(int one, int two) {
 		System.out.println("intMethodTwoParams touched");
+		String x = "Helloworld, Bye, Foobarr, xxx";
 		return one + two;
 	}
 
