@@ -65,18 +65,6 @@ public class Application {
 			classPathsOfConcern.addAll(commandLineParser.getLibClassPath());
 			classPathsOfConcern.addAll(commandLineParser.getTestClassPath());
 
-
-			//Set<MethodData> entryPoints = new HashSet<MethodData>();
-			//try {
-			//	entryPoints.add(new MethodData("<StandardStuff: public void publicAndTestedButUntouched()>"));
-			//} catch (IOException e) {
-			//	e.printStackTrace();
-			//}
-			//Run the call graph analysis
-			//SparkCallGraphAnalysis callGraphAnalysis = new SparkCallGraphAnalysis(commandLineParser.getLibClassPath(),
-			//	commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPoints);
-			//callGraphAnalysis.run();
-
 			SootUtils.setup_trimming(commandLineParser.getLibClassPath(),
 				commandLineParser.getAppClassPath(),commandLineParser.getTestClassPath());
 			Scene.v().loadNecessaryClasses();
