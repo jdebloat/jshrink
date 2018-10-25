@@ -2,8 +2,11 @@ package edu.ucla.cs.onr.reachability;
 
 import java.io.File;
 
+import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
+import soot.G;
 import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
@@ -23,6 +26,7 @@ public class SparkCallGraphAnalysisTest {
 	Set<MethodData> entryPoints;
 	
 	private void setup(String project_folder) {
+		System.out.println("Processing " + project_folder + " ...");
 		app_class_paths = new ArrayList<File>();
 		File app_class_path;
 		if(project_folder.equals("thinkgem_jeesite")) {
@@ -88,6 +92,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testSquareJavapoet() {
 		String project_folder = "square_javapoet";
 		setup(project_folder);
@@ -99,6 +104,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testJJWT() {
 		String project_folder = "jwtk_jjwt";
 		setup(project_folder);
@@ -110,6 +116,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testDensityConverter() {
 		String project_folder = "patrickfav_density-converter";
 		setup(project_folder);
@@ -121,6 +128,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testAmazonEcho() {
 		String project_folder = "armzilla_amazon-echo-ha-bridge";
 		setup(project_folder);
@@ -132,6 +140,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testElasticSearch() {
 		String project_folder = "NLPchina_elasticsearch";
 		setup(project_folder);
@@ -143,6 +152,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testSpringRestServiceOauth() {
 		String project_folder = "royclarkson_spring-rest-service-oauth";
 		setup(project_folder);
@@ -154,6 +164,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testSolo() {
 		String project_folder = "b3log_solo";
 		setup(project_folder);
@@ -165,6 +176,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testLittleProxy() {
 		String project_folder = "adamfisk_LittleProxy";
 		setup(project_folder);
@@ -176,6 +188,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testJeesite() {
 		String project_folder = "thinkgem_jeesite";
 		setup(project_folder);
@@ -187,6 +200,7 @@ public class SparkCallGraphAnalysisTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testDddsampleCore() {
 		String project_folder = "citerus_dddsample-core";
 		setup(project_folder);
@@ -195,5 +209,11 @@ public class SparkCallGraphAnalysisTest {
 		SparkCallGraphAnalysis runner = 
 				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
+	}
+	
+	@After
+	public void cleanup() {
+		System.out.println("Resetting Soot...");
+		G.reset();
 	}
 }
