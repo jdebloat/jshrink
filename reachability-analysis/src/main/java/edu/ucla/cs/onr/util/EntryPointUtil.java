@@ -4,11 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import edu.ucla.cs.onr.reachability.MethodData;
+
 import org.apache.commons.io.FileUtils;
 
 import soot.Scene;
@@ -40,10 +42,43 @@ public class EntryPointUtil {
 	 * @param testLog
 	 * @return
 	 */
-	public static Set<String> getTestMethodsAsEntryPoints(File testLog) {
-		Set<String> methods = new HashSet<String>();
+	public static Set<MethodData> getTestMethodsAsEntryPoints(File test_log, File test_classes) {
+		HashSet<String> testClasses = new HashSet<String>();
+		Set<MethodData> testMethods = new HashSet<MethodData>();
+		ASMUtils.readClass(test_classes, testClasses, testMethods);
+		
+		Set<String> executedTests = getTestMethodsAsEntryPoints(test_log);
+		
+		Set<MethodData> executedTestMethods = new HashSet<MethodData>();
+        for(String s : executedTests) {
+        	String[] ss = s.split(":");
+			String className = ss[0];
+			String methodName = ss[1];
+			if(methodName.equals("*")) {
+				// all methods in this class are considered as entry points
+				for(MethodData testMethod : testMethods) {
+					if(testMethod.getClassName().equals(className)) {
+						executedTestMethods.add(testMethod);
+					}
+				}
+			} else {
+				for(MethodData testMethod : testMethods) {
+					if(testMethod.getClassName().equals(className) 
+							&& testMethod.getName().equals(methodName)) {
+						executedTestMethods.add(testMethod);
+					}
+				}
+			}
+        }
+
+		return executedTestMethods;
+	}
+	
+	
+	public static Set<String> getTestMethodsAsEntryPoints(File test_log) {
+		Set<String> executedTests = new HashSet<String>();
 		try {
-			List<String> lines = FileUtils.readLines(testLog,
+			List<String> lines = FileUtils.readLines(test_log,
 					Charset.defaultCharset());
 			for (String line : lines) {
 				if (line.contains("Running ")) {
@@ -51,15 +86,15 @@ public class EntryPointUtil {
 							.substring(line.indexOf("Running ") + 8);
 					if(testClass.matches("^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z0-9_\\$]+)+$")) {
 						// double check whether this is a fully qualified class name
-						methods.add(testClass + ":*");
+						executedTests.add(testClass + ":*");
 					}
 				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		return methods;
+		
+		return executedTests;
 	}
 
 	public static Set<MethodData> getTestMethodsAsEntryPoints(Set<MethodData> methods){
@@ -107,8 +142,7 @@ public class EntryPointUtil {
 	}
 	
 	/**
-	 * Convert java methods in the 'className:methodName' format to Soot methods. Class names must 
-	 * be fully qualified. Method names can be * to represent any methods in a class.
+	 * Convert java methods in the MethodData format to SootMethod objects. 
 	 * 
 	 * Make sure you set the class path and process directory of Soot before calling this method.
 	 * 
@@ -116,12 +150,29 @@ public class EntryPointUtil {
 	 * @return
 	 */
 	public static List<SootMethod> convertToSootMethod(Set<MethodData> methods) {
+		// aggregate the methods by their containing classes first so that we do not have to load the same class repetitively in the next step
+		HashMap<String, HashSet<MethodData>> methodByClass = new HashMap<String, HashSet<MethodData>>();
+		for(MethodData md : methods) {
+			String clsName = md.getClassName();
+			HashSet<MethodData> set;
+			if(methodByClass.containsKey(clsName)) {
+				set = methodByClass.get(clsName);
+			} else {
+				set = new HashSet<MethodData>();
+			}
+			set.add(md);
+			methodByClass.put(clsName, set);
+		}
 		List<SootMethod> entryPoints = new ArrayList<SootMethod>();
-		for(MethodData s : methods) {
-			SootClass entryClass = Scene.v().loadClassAndSupport(s.getClassName());
+		for(String cls : methodByClass.keySet()) {
+			SootClass entryClass = Scene.v().loadClassAndSupport(cls);
 			Scene.v().loadNecessaryClasses();
-			SootMethod entryMethod = entryClass.getMethod(s.getSubSignature());
-			entryPoints.add(entryMethod);
+			HashSet<MethodData> ms = methodByClass.get(cls);
+			for(MethodData md : ms) {
+				SootMethod entryMethod = entryClass.getMethod(md.getSubSignature());
+				entryPoints.add(entryMethod);
+//				System.out.println("Loading " + entryMethod);
+			}
 		}
 		return entryPoints;
 	}

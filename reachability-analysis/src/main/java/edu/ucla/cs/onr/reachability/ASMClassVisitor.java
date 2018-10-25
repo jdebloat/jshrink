@@ -11,7 +11,6 @@ import org.objectweb.asm.Type;
 
 public class ASMClassVisitor extends ClassVisitor{
 	private String currentClass;
-	private String currentMethod;
 	private Set<String> classes;
 	private Set<MethodData> methods;
 	
@@ -34,9 +33,7 @@ public class ASMClassVisitor extends ClassVisitor{
 			String desc, String signature, String[] exceptions) {
 		String returnType = Type.getReturnType(desc).getClassName();
 		Type[] ts = Type.getArgumentTypes(desc);
-
-		this.currentMethod = name;
-
+		
 		// No idea why this works, but it do.
 		String args = "";
 		for(int i = 0; i < ts.length - 1; i++) {

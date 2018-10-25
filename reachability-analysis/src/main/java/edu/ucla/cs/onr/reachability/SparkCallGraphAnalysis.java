@@ -9,6 +9,7 @@ import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
 import soot.Scene;
 import soot.SootMethod;
+import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
@@ -64,15 +65,17 @@ public class SparkCallGraphAnalysis {
 			ASMUtils.readClass(appPath, appClasses, appMethods);
 		}
 
-		System.out.println("number_lib_classes," + libClasses.size());
-		System.out.println("number_lib_methods," + libMethods.size());
-		System.out.println("number_app_classes," + appClasses.size());
-		System.out.println("number_app_methods," + appMethods.size());
+		if(Application.isDebugMode()) {
+			System.out.println("number_lib_classes, " + libClasses.size());
+			System.out.println("number_lib_methods, " + libMethods.size());
+			System.out.println("number_app_classes, " + appClasses.size());
+			System.out.println("number_app_methods, " + appMethods.size());
+		}
 	}
 
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
-		SootUtils.setup(this.libJarPath, this.appClassPath, this.appTestPath);
+		SootUtils.setup_analysis(this.libJarPath, this.appClassPath, this.appTestPath);
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
@@ -86,7 +89,9 @@ public class SparkCallGraphAnalysis {
 
 		Scene.v().setEntryPoints(entryPoints);
 
-		CHATransformer.v().transform();
+//		CHATransformer.v().transform();
+		Map<String, String> opt = SootUtils.getSparkOpt();
+		SparkTransformer.v().transform("", opt);
 
 		CallGraph cg = Scene.v().getCallGraph();
 
@@ -108,6 +113,13 @@ public class SparkCallGraphAnalysis {
 		this.usedAppClasses.retainAll(usedClasses);
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
+		
+		if(Application.isDebugMode()) {
+			System.out.println("number_used_lib_classes, " + usedLibClasses.size());
+			System.out.println("number_used_lib_methods, " + usedLibMethods.size());
+			System.out.println("number_used_app_classes, " + usedAppClasses.size());
+			System.out.println("number_used_app_method, " + usedAppMethods.size());
+		}
 	}
 
 	public Set<String> getLibClasses() {

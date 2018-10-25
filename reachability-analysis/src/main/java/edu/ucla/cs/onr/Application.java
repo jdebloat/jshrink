@@ -77,7 +77,7 @@ public class Application {
 			//	commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPoints);
 			//callGraphAnalysis.run();
 
-			SootUtils.setup(commandLineParser.getLibClassPath(),
+			SootUtils.setup_trimming(commandLineParser.getLibClassPath(),
 				commandLineParser.getAppClassPath(),commandLineParser.getTestClassPath());
 			Scene.v().loadNecessaryClasses();
 
@@ -115,7 +115,7 @@ public class Application {
 
 			// Setup soot
 			// (should have already been done, but not taking any chances, little cost for doing so again)
-			SootUtils.setup(commandLineParser.getLibClassPath(),
+			SootUtils.setup_trimming(commandLineParser.getLibClassPath(),
 				commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath());
 
 			if(Application.isVerboseMode()) {

@@ -15,16 +15,18 @@ import org.objectweb.asm.Opcodes;
 
 
 public class ASMUtils {
-    private static void readClassFromJarFile(JarFile jarFile, Set<String> classes, Set<MethodData> methods) {
+
+	public static void readClassFromJarFile(JarFile jarFile, Set<String> classes,
+    		Set<MethodData> methods) {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
-            final JarEntry entry = entries.nextElement();
+        	final JarEntry entry = entries.nextElement();
             if (entry.getName().endsWith(".class")) {
-                try {
-                    ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
-                    cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+            	try {
+                	ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
+                	cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
                 } catch (IllegalArgumentException ex) {
-                    continue;
+                	continue;
                 } catch (IOException ex){
 	                //TODO: Fix this. Not sure if here is the best way to handle it, but ok for the meantime
                     System.err.println("An an exception was thrown when reading data from .jar file:");
@@ -35,8 +37,15 @@ public class ASMUtils {
         }
     }
     
-    private static void readClassFromDirectory(File dirPath, Set<String> classes, Set<MethodData> methods) {
-
+    public static void readClassFromDirectory(File dirPath, Set<String> classes,
+    		Set<MethodData> methods) {
+    	
+    	if(!dirPath.exists()) {
+    		// fix NPE due to non-existent file
+    		System.err.println(dirPath.getAbsolutePath() + " does not exist.");
+    		return;
+    	}
+    	
     	for(File f : dirPath.listFiles()) {
     		if(f.isDirectory()) {
     			readClassFromDirectory(f, classes, methods);
@@ -55,21 +64,19 @@ public class ASMUtils {
     }
 
     public static void readClass(File dir, Set<String> classes, Set<MethodData> methods){
-    	if(dir.isDirectory() || dir.getName().endsWith(".class")){
+    	if(dir.isDirectory()){
     		readClassFromDirectory(dir,classes,methods);
-	    } else {
+	    } else if (dir.getName().endsWith(".jar")) {
     		JarFile j = null;
     		try {
     			j = new JarFile(dir);
+    			readClassFromJarFile(j,classes,methods);
 		    } catch (IOException e){
-    			//TODO: Fix this. Not sure if here is the best way to handle it, but ok for the meantime
-    			System.err.println("File '" + dir.getAbsolutePath() +"' is neither a directory, '.class' file " +
-				    "or a jar." + "Cannot process.");
-    			System.exit(1);
+    			e.printStackTrace();
 		    }
-
-		    assert(j != null);
-    		readClassFromJarFile(j,classes,methods);
+	    } else {
+	    	System.err.println("Cannot read classes from '" + dir.getAbsolutePath() +
+	    			"'. It is neither a directory or a jar.");
 	    }
     }
 }

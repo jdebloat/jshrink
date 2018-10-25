@@ -34,7 +34,11 @@ public class SootUtils {
 	private static String listToPathString(List<File> paths){
 		StringBuilder sb = new StringBuilder();
 		for(File path : paths){
-			sb.append(File.pathSeparator + path.getAbsolutePath());
+			if(path.exists()) {
+				sb.append(File.pathSeparator + path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
 		}
 		return sb.toString();
 	}
@@ -55,7 +59,7 @@ public class SootUtils {
 		return new MethodData(methodName,methodClassName,methodReturnType,methodArgs,isPublic, isStatic);
 	}
 
-	public static void setup(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+	public static void setup_trimming(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
 		String cp = SootUtils.getJREJars();
 		cp += listToPathString(libJarPath);
 		cp += listToPathString(appClassPath);
@@ -63,16 +67,34 @@ public class SootUtils {
 		Options.v().set_soot_classpath(cp);
 		Options.v().set_whole_program(true);
 		Options.v().set_allow_phantom_refs(true);
+		// try the following two options to ignore the static field error in the Jython lib 
+		// the first one does not work but the second one works (why?)
+		// check the following links for reference:
+		// https://github.com/petablox-project/petablox/issues/6
+		// https://github.com/Sable/soot/issues/410
+		// https://github.com/Sable/soot/issues/717 
+//		Options.v().setPhaseOption("jb.tr", "ignore-wrong-staticness:true");
+		Options.v().set_wrong_staticness(Options.wrong_staticness_ignore);
 
 		// set the application directories
 		List<String> dirs = new ArrayList<String>();
 
 		for(File path : appClassPath) {
-			dirs.add(path.getAbsolutePath());
+			// double check whether the file path exists
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+			
 		}
 
 		for(File path : appTestPath) {
-			dirs.add(path.getAbsolutePath());
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
 		}
 
 		for(File path : libJarPath){
@@ -81,8 +103,48 @@ public class SootUtils {
 
 		Options.v().set_process_dir(dirs);
 	}
+	
+	public static void setup_analysis(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
+		String cp = SootUtils.getJREJars();
+		cp += listToPathString(libJarPath);
+		cp += listToPathString(appClassPath);
+		cp += listToPathString(appTestPath);
+		Options.v().set_soot_classpath(cp);
+		Options.v().set_whole_program(true);
+		Options.v().set_allow_phantom_refs(true);
+		// try the following two options to ignore the static field error in the Jython lib 
+		// the first one does not work but the second one works (why?)
+		// check the following links for reference:
+		// https://github.com/petablox-project/petablox/issues/6
+		// https://github.com/Sable/soot/issues/410
+		// https://github.com/Sable/soot/issues/717 
+//		Options.v().setPhaseOption("jb.tr", "ignore-wrong-staticness:true");
+		Options.v().set_wrong_staticness(Options.wrong_staticness_ignore);
 
-	/*
+		// set the application directories
+		List<String> dirs = new ArrayList<String>();
+
+		for(File path : appClassPath) {
+			// double check whether the file path exists
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+			
+		}
+
+		for(File path : appTestPath) {
+			if(path.exists()) {
+				dirs.add(path.getAbsolutePath());
+			} else {
+				System.err.println(path.getAbsolutePath() + " does not exist.");
+			}
+		}
+
+		Options.v().set_process_dir(dirs);
+	}
+
 	public static HashMap<String, String> getSparkOpt() {
 		HashMap<String, String> opt = new HashMap<String, String>();
 		opt.put("enabled","true");
@@ -128,7 +190,6 @@ public class SootUtils {
 	 * @param usedClass
 	 * @param visited
 	 */
-	/*
 	@Deprecated
 	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
 		String className = m.getDeclaringClass().toString();
@@ -146,7 +207,7 @@ public class SootUtils {
 				visitMethod(method, cg, usedClass, visited);
 			}
 		}
-	}*/
+	}
 	
 	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> visited) {
 		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
