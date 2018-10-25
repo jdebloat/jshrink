@@ -4,14 +4,17 @@ public class StandardStuff {
 	private final int integer;
 
 	public StandardStuff(){
+		String temp = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 		this.integer = 6;
 	}
 
 	public String getString(){
+		String temp = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
 		return getStringStatic(this.integer);
 	}
 
 	private static String getStringStatic(int theInteger){
+		String temp = "EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE";
 		System.out.println("getStringStatic touched");
 		if(theInteger == 6){
 			return HELLO_WORLD_STRING;
@@ -23,11 +26,15 @@ public class StandardStuff {
 	}
 
 	public void publicAndTestedButUntouched(){
+		String temp = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";
+		String temp2 = "YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY";
+		String temp3 = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
 		System.out.println("publicAndTestedButUntouched touched");
 		publicAndTestedButUntouchedCallee();
 	}
 
 	public void publicAndTestedButUntouchedCallee(){
+		String temp = "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC";
 		System.out.println("publicAndTestedButUntouchedCallee touched");
 		int i=0;
 		i++;
@@ -35,11 +42,13 @@ public class StandardStuff {
 	}
 
 	public void publicNotTestedButUntouched(){
+		String temp = "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB";
 		System.out.println("publicNotTestedButUntouched touched");
 		publicNotTestedButUntouchedCallee();
 	}
 
 	public void publicNotTestedButUntouchedCallee(){
+		String temp = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 		System.out.println("publicNotTestedButUntouchedCallee touched");
 		int i=0;
 		i++;
@@ -47,6 +56,7 @@ public class StandardStuff {
 	}
 
 	private int privateAndUntouched(){
+		String temp = "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ";
 		System.out.println("privateAndUntouched touched");
 		int i=0;
 		i++;
