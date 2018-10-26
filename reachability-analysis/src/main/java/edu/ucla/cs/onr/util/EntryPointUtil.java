@@ -121,8 +121,9 @@ public class EntryPointUtil {
 	public static Set<MethodData> getMainMethodsAsEntryPoints(Set<MethodData> methods) {
 		Set<MethodData> mainMethods = new HashSet<MethodData>();
 		for(MethodData s : methods) {
-			//TODO: Am I representing all possible implementations of main? What are the rules? Need to do some research
-			if(s.isPublic() && s.isStatic() && s.getName().equals("main")){
+			if(s.isPublic() && s.isStatic() && s.getName().equals("main")
+					&& s.getReturnType().equals("void") 
+					&& s.getArgs().length == 1 && s.getArgs()[0].equals("java.lang.String[]")){
 				mainMethods.add(s);
 			}
 		}

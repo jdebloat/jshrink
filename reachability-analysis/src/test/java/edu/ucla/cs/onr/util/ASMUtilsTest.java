@@ -1,4 +1,4 @@
-package edu.ucla.cs.onr.reachability;
+package edu.ucla.cs.onr.util;
 
 import static org.junit.Assert.assertEquals;
 
@@ -7,6 +7,7 @@ import java.util.HashSet;
 
 import org.junit.Test;
 
+import edu.ucla.cs.onr.reachability.MethodData;
 import edu.ucla.cs.onr.util.ASMUtils;
 
 public class ASMUtilsTest {
