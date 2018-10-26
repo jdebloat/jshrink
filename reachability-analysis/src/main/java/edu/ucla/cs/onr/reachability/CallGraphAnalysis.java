@@ -76,7 +76,7 @@ public class CallGraphAnalysis {
 
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
-		SootUtils.setup_analysis(this.libJarPath, this.appClassPath, this.appTestPath);
+		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
@@ -98,17 +98,7 @@ public class CallGraphAnalysis {
 		}
 		
 
-		if(Application.isVerboseMode()){
-			System.out.println();
-			System.out.println("Running the callgraph analysis...");
-		}
-
 		CallGraph cg = Scene.v().getCallGraph();
-
-		if(Application.isVerboseMode()){
-			System.out.println();
-			System.out.println("Callgraph analysis complete.");
-		}
 
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();

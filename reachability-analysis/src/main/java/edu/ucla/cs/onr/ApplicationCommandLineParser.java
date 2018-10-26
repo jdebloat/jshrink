@@ -10,6 +10,8 @@ import java.util.*;
 
 public class ApplicationCommandLineParser {
 
+	private final static String APPLICATION_STATUS = "[APP]";
+
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
 	private final List<File> testClassPath;
@@ -20,7 +22,18 @@ public class ApplicationCommandLineParser {
 	private final boolean debug;
 	private final boolean verbose;
 	private final Set<MethodData> customEntryPoints;
+	private final boolean doRemoveMethods;
+	private final Set<MethodData> methodsToRemove;
 
+
+	private static void printHelp(CommandLine commandLine){
+		HelpFormatter helpFormatter = new HelpFormatter();
+		String header = "An application to get the call-graph analysis of an application and to wipe unused methods";
+		String footer = "";
+
+		helpFormatter.printHelp(APPLICATION_STATUS, header, getOptions(),footer, true);
+		System.out.println();
+	}
 
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
 		CommandLineParser parser = new DefaultParser();
@@ -29,8 +42,14 @@ public class ApplicationCommandLineParser {
 		try{
 			commandLine = parser.parse(ApplicationCommandLineParser.getOptions(), args);
 		} catch (ParseException e){
+			printHelp(commandLine);
 			throw new ParseException("Could not parse arguments" + System.lineSeparator()
 			+ "Exception information:" + System.lineSeparator() + e.getLocalizedMessage());
+		}
+
+		if(commandLine.hasOption('h')){
+			printHelp(commandLine);
+			System.exit(1);
 		}
 
 		assert(commandLine != null);
@@ -65,34 +84,46 @@ public class ApplicationCommandLineParser {
 
 		customEntryPoints = new HashSet<MethodData>();
 		if(commandLine.hasOption('c')){
-			String[] values = commandLine.getOptionValues('c');
-			StringBuilder toAdd = new StringBuilder();
-			for(String val : values){
+			customEntryPoints.addAll(getMethodData(commandLine.getOptionValues('c'), commandLine));
+		}
+
+		this.doRemoveMethods = commandLine.hasOption('r');
+		methodsToRemove = new HashSet<MethodData>();
+		if(this.doRemoveMethods && (commandLine.getOptionValues('r') != null)){
+			methodsToRemove.addAll(getMethodData(commandLine.getOptionValues('r'), commandLine));
+		}
+
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()
+			&& (!this.doRemoveMethods || this.methodsToRemove.isEmpty())){
+			printHelp(commandLine);
+			throw new ParseException("No entry point, or methods to remove, were specified");
+		}
+	}
+
+	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
+		List<MethodData> toReturn = new ArrayList<MethodData>();
+		StringBuilder toAdd = new StringBuilder();
+		for(String val : values) {
 				/*
 				Due to the weird way the Apache Commons CLI library works, i need to stitch
 				together the strings as they may contain spaces
 				 */
-				if(val.endsWith(">")){
-					toAdd.append(val);
-					try {
-						customEntryPoints.add(new MethodData(toAdd.toString()));
-					} catch(IOException e){
-						throw new ParseException("Could not create method from input string " +
-							"'" + toAdd.toString() + "' Exception thrown:"
-							+ System.lineSeparator() + e.getLocalizedMessage());
-					}
-					toAdd = new StringBuilder();
-				} else {
-					toAdd.append(val +" ");
+			if (val.endsWith(">")) {
+				toAdd.append(val);
+				try {
+					toReturn.add(new MethodData(toAdd.toString()));
+				} catch (IOException e) {
+					printHelp(commandLine);
+					throw new ParseException("Could not create method from input string " +
+						"'" + toAdd.toString() + "' Exception thrown:"
+						+ System.lineSeparator() + e.getLocalizedMessage());
 				}
-
+				toAdd = new StringBuilder();
+			} else {
+				toAdd.append(val + " ");
 			}
 		}
-
-		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
-			throw new ParseException("No entry point was specified");
-		}
-
+		return toReturn;
 	}
 
 	private static List<File> pathToFiles(String path) throws FileNotFoundException {
@@ -182,8 +213,23 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option verboseMove = Option.builder("v")
-			.desc("Run the program in 'verbose' mode. Useful for debugging")
+			.desc("Run the program in 'verbose' mode. Outputs methods analysed and methods touched")
 			.longOpt("verbose")
+			.hasArg(false)
+			.required(false)
+			.build();
+
+		Option removeMethodsOption = Option.builder("r")
+			.desc("Run remove methods. If no arguments specified will determine through call-graph analysis")
+			.longOpt("remove-methods")
+			.hasArgs()
+			.optionalArg(true)
+			.required(false)
+			.build();
+
+		Option helpOption = Option.builder("h")
+			.desc("Help")
+			.longOpt("help")
 			.hasArg(false)
 			.required(false)
 			.build();
@@ -199,6 +245,8 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
+		toReturn.addOption(removeMethodsOption);
+		toReturn.addOption(helpOption);
 
 		return toReturn;
 	}
@@ -241,5 +289,13 @@ public class ApplicationCommandLineParser {
 
 	public Set<MethodData> getCustomEntryPoints(){
 		return Collections.unmodifiableSet(customEntryPoints);
+	}
+
+	public boolean removeMethods(){
+		return doRemoveMethods;
+	}
+
+	public Set<MethodData> methodsToRemove(){
+		return methodsToRemove;
 	}
 }
