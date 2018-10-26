@@ -108,8 +108,8 @@ public class MavenProjectAnalysis {
 				        		EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path, app_test_path);
 				        entryPoints.addAll(testMethods);
 						
-						SparkCallGraphAnalysis runner = 
-								new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+						CallGraphAnalysis runner = 
+								new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 						runner.run();
 						
 						String record = proj_name + "\t"

@@ -7,7 +7,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import soot.G;
-import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
+import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.MavenUtils;
@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SparkCallGraphAnalysisTest {
+public class SparkCallGraphAnalysisStressTest {
 	private static String root_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects";
 	
 	private List<File> app_class_paths;
@@ -77,8 +77,8 @@ public class SparkCallGraphAnalysisTest {
 	public void testJUnit4() {
         String project_folder = "junit-team_junit4";
 		setup(project_folder);
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -86,8 +86,8 @@ public class SparkCallGraphAnalysisTest {
 	public void testApacheCommonsLang() {
 		String project_folder = "apache_commons-lang";
 		setup(project_folder);
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -98,8 +98,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//19 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -110,8 +110,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//30 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -122,8 +122,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//40 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -134,8 +134,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//68 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -146,8 +146,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//71 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -158,8 +158,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//75 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -170,8 +170,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//78 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -182,8 +182,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//116 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -194,8 +194,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//136 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
@@ -206,8 +206,8 @@ public class SparkCallGraphAnalysisTest {
 		setup(project_folder);
 		
 		//152 library dependencies
-		SparkCallGraphAnalysis runner = 
-				new SparkCallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+		CallGraphAnalysis runner = 
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
 	}
 	
