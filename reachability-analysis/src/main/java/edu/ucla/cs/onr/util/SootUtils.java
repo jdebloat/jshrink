@@ -220,7 +220,7 @@ public class SootUtils {
 
 			if(!visited.contains(firstMethodData)) {
 				// avoid recursion
-				usedClass.add(firstMethodData.getClassName());
+				usedClass.add(className);
 				visited.add(firstMethodData);
 				
 				// add callees to the stack

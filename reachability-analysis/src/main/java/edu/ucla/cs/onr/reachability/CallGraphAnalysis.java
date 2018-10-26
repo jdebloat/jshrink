@@ -13,7 +13,8 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
-public class SparkCallGraphAnalysis {
+public class CallGraphAnalysis {
+	public static boolean useSpark = true; // use Spark by default
 
 	private List<File> libJarPath;
 	private List<File> appClassPath;
@@ -29,7 +30,7 @@ public class SparkCallGraphAnalysis {
 	private Set<String> usedAppClasses;
 	private Set<MethodData> usedAppMethods;
 
-	public SparkCallGraphAnalysis(List<File> libJarPath,
+	public CallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
 	                              List<File> appTestPath, 
 	                              Set<MethodData> entryMethods) {
@@ -89,9 +90,13 @@ public class SparkCallGraphAnalysis {
 
 		Scene.v().setEntryPoints(entryPoints);
 
-//		CHATransformer.v().transform();
-		Map<String, String> opt = SootUtils.getSparkOpt();
-		SparkTransformer.v().transform("", opt);
+		if(useSpark) {
+			Map<String, String> opt = SootUtils.getSparkOpt();
+			SparkTransformer.v().transform("", opt);
+		} else {
+			CHATransformer.v().transform();
+		}
+		
 
 		if(Application.isVerboseMode()){
 			System.out.println();

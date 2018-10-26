@@ -4,7 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import edu.ucla.cs.onr.reachability.MethodData;
-import edu.ucla.cs.onr.reachability.SparkCallGraphAnalysis;
+import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -58,7 +58,7 @@ public class Application {
 		Set<MethodData> entryPoints = getEntryPoints(commandLineParser);
 
 		//Run the call graph analysis
-		SparkCallGraphAnalysis callGraphAnalysis = new SparkCallGraphAnalysis(commandLineParser.getLibClassPath(),
+		CallGraphAnalysis callGraphAnalysis = new CallGraphAnalysis(commandLineParser.getLibClassPath(),
 			commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPoints);
 		callGraphAnalysis.run();
 
