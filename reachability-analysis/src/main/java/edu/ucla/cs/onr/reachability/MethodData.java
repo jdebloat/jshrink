@@ -145,7 +145,7 @@ public class MethodData {
 			stringBuilder.append("static ");
 		}
 
-		stringBuilder.append(getSubSignature() + ")>");
+		stringBuilder.append(getSubSignature() + ">");
 
 		return stringBuilder.toString();
 	}
