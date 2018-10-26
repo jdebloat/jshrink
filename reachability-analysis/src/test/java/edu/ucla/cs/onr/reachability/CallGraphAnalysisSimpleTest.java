@@ -13,12 +13,16 @@ import org.junit.Test;
 
 import soot.G;
 
-public class SparkCallGraphAnalysisSimpleTest {
+public class CallGraphAnalysisSimpleTest {
 	
 	/* Class Hierarchy for the sample project
 	 *    A
 	 *   / \
 	 *  B   C
+	 *  
+	 * There are four main classes that demonstrate different usage scenarios.
+	 * There are is also one test file with three test cases. 
+	 *  
 	 */
 	
 	/**
@@ -35,7 +39,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	 */
 	@Test
 	public void testSparkOnDynamicDispatching1() {
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -56,7 +60,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	public void testCHAOnDynamicDispatching1() {
 		// disable Spark and use CHA instead
 		CallGraphAnalysis.useSpark = false;
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -88,7 +92,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	 */
 	@Test
 	public void testSparkOnDynamicDispatching2() {
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -109,7 +113,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	public void testCHAOnDynamicDispatching2() {
 		// disable Spark and use CHA instead
 		CallGraphAnalysis.useSpark = false;
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -148,7 +152,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	 */
 	@Test
 	public void testSparkOnDynamicDispatching3() {
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -169,7 +173,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	public void testCHAOnDynamicDispatching3() {
 		// disable Spark and use CHA instead
 		CallGraphAnalysis.useSpark = false;
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -207,7 +211,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	 */
 	@Test
 	public void testSparkOnDynamicDispatching4() {
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
@@ -228,7 +232,7 @@ public class SparkCallGraphAnalysisSimpleTest {
 	public void testCHAOnDynamicDispatching4() {
 		// disable Spark and use CHA instead
 		CallGraphAnalysis.useSpark = false;
-		ClassLoader classLoader = SparkCallGraphAnalysisSimpleTest.class.getClassLoader();
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
 		List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project2/target/classes").getFile()));
