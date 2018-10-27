@@ -168,7 +168,15 @@ public class EntryPointUtil {
 		List<SootMethod> entryPoints = new ArrayList<SootMethod>();
 		for(String cls : methodByClass.keySet()) {
 			SootClass entryClass = Scene.v().loadClassAndSupport(cls);
-			Scene.v().loadNecessaryClasses();
+			try {
+				Scene.v().loadNecessaryClasses();
+			} catch (IllegalArgumentException e) {
+				// If a project uses jars built by Java 9, there will be a module-info.class
+				// in the jar, which causes IllegalArgumentException in Soot
+				// as an example, check the asm-6.2 library in cglib/cglib project
+				// suppress it silently as a temporary workaround
+			}
+			
 			HashSet<MethodData> ms = methodByClass.get(cls);
 			for(MethodData md : ms) {
 				SootMethod entryMethod = entryClass.getMethod(md.getSubSignature());
