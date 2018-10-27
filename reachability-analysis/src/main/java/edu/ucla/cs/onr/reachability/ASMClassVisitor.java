@@ -13,11 +13,13 @@ public class ASMClassVisitor extends ClassVisitor{
 	private String currentClass;
 	private Set<String> classes;
 	private Set<MethodData> methods;
+	private boolean isJUnit3Test;
 	
 	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods) {
 		super(api);
 		this.classes = classes;
-		this.methods = methods;  
+		this.methods = methods; 
+		isJUnit3Test = false;
 	}
 	
 	@Override
@@ -26,6 +28,10 @@ public class ASMClassVisitor extends ClassVisitor{
 		String name2 = name.replaceAll(Pattern.quote("/"), ".");
 		currentClass = name2;
 		classes.add(name2);
+		if(superName.equals("junit/framework/TestCase")) {
+			// this is a test case written in JUnit 3
+			isJUnit3Test = true;
+		}
 	}
 	
 	@Override
@@ -49,11 +55,14 @@ public class ASMClassVisitor extends ClassVisitor{
 				argsList.add(arg);
 			}
 		}
-
-
+		
 		MethodData methodData = new MethodData(name, currentClass,returnType,
 			argsList.toArray(new String[argsList.size()]),
 			(access & 1) !=0, (access & 8) != 0); //1 == public; 8 == Static
+		if(isJUnit3Test && 
+				(name.startsWith("test") || name.equals("setup") || name.equals("tearDown"))) {
+			methodData.setAsJUnit3Test();
+		}
 		methods.add(methodData);
 
 		return new ASMMethodAnnotationScanner(this.api, methodData);

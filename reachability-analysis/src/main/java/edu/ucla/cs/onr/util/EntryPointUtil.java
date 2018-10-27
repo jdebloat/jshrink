@@ -101,8 +101,9 @@ public class EntryPointUtil {
 		Set<MethodData> testMethods = new HashSet<MethodData>();
 
 		for(MethodData methodData: methods){
-			if(methodData.getAnnotation().isPresent()
-				&& testAnnotations().contains(methodData.getAnnotation().get())){
+			if((methodData.getAnnotation().isPresent()
+				&& testAnnotations().contains(methodData.getAnnotation().get())) 
+				|| methodData.isJUnit3Test()){
 				testMethods.add(methodData);
 			}
 		}

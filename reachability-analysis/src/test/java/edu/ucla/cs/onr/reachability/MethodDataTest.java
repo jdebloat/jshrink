@@ -1,8 +1,14 @@
 package edu.ucla.cs.onr.reachability;
 
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -48,7 +54,7 @@ public class MethodDataTest {
 		boolean isStatic = true;
 		MethodData methodData = new MethodData(methodName, className, methodReturnType, args, isPublic, isStatic);
 
-		String expected = "<com.example.Class1: public static void method_1(java.util.String, com.example.Class2, int)>";
+		String expected = "<com.example.Class1: public static void method_1(java.util.String,com.example.Class2,int)>";
 		assertEquals(expected, methodData.toString());
 	}
 
@@ -90,4 +96,17 @@ public class MethodDataTest {
 
 	}
 
+	@Test
+	public void testJUnit3Test() throws FileNotFoundException, IOException {
+		String testClassPath = "src/test/resources/RepeatedTestTest.class";
+		ClassReader cr = new ClassReader(new FileInputStream(testClassPath));
+		Set<String> classes = new HashSet<String>();
+		Set<MethodData> methods = new HashSet<MethodData>();
+		cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+		for(MethodData md : methods) {
+			if(md.getName().startsWith("test")) {
+				assertTrue(md.isJUnit3Test());
+			}
+		}
+	}
 }

@@ -15,6 +15,17 @@ public class MethodData {
 	private String returnType;
 	private boolean isStaticMethod;
 	private Optional<String> annotation;
+	
+	/* Handle test cases written in JUnit 3*/
+	private boolean isJUnit3Test = false;
+	
+	public boolean isJUnit3Test() {
+		return isJUnit3Test;
+	}
+	
+	public void setAsJUnit3Test() {
+		isJUnit3Test = true;
+	}
 
 	/*
 	Note: We only record whether a method is public or not. We do not record other access information.

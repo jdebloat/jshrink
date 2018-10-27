@@ -69,7 +69,9 @@ public class CallGraphAnalysisStressTest {
                                       project_folder + File.separator + "onr_test.log");
         Set<MethodData> executedTests = 
         		EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path, app_test_path);
-        
+//        for(MethodData test : executedTests) {
+//        	System.out.println(test);
+//        }
         entryPoints.addAll(executedTests);
 	}
 	
