@@ -53,10 +53,7 @@ public class Application {
 		}
 
 		Document doc = getDocumentFromFile(f);
-
-		if(doc.getElementsByTagName("dependencies").getLength() != 1){
-			System.out.println("Here");
-		}
+		
 		Node dependencies = doc.getElementsByTagName("dependencies").item(0);
 		List<Node> dependencyList = new ArrayList<Node>();
 		for(int i=0; i<dependencies.getChildNodes().getLength(); i++){
