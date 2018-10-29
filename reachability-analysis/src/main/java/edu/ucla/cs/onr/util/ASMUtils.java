@@ -54,8 +54,10 @@ public class ASMUtils {
     			String fName = f.getName();
     			if(fName.endsWith(".class")) {
     				try {
-						ClassReader cr = new ClassReader(new FileInputStream(f));
+    					FileInputStream fis = new FileInputStream(f);
+						ClassReader cr = new ClassReader(fis);
 						cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+						fis.close();
 					} catch (IOException e) {
 						e.printStackTrace();
 					}
