@@ -17,5 +17,7 @@ public interface IClassCollapser {
 	 * @param touchedMethods The touched methods
 	 *
 	 */
-	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<MethodData> touchedMethods);
+	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<MethodData> touchedMethods,
+								Set<MethodData> unTouchedMethods, Set<String> touchedClasses,
+								Set<String> unTouchedClasses);
 }
