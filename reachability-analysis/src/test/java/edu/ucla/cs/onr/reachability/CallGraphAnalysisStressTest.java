@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SparkCallGraphAnalysisStressTest {
+public class CallGraphAnalysisStressTest {
 	private static String root_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects";
 	
 	private List<File> app_class_paths;
@@ -69,7 +69,9 @@ public class SparkCallGraphAnalysisStressTest {
                                       project_folder + File.separator + "onr_test.log");
         Set<MethodData> executedTests = 
         		EntryPointUtil.getTestMethodsAsEntryPoints(test_log_path, app_test_path);
-        
+//        for(MethodData test : executedTests) {
+//        	System.out.println(test);
+//        }
         entryPoints.addAll(executedTests);
 	}
 	
@@ -194,6 +196,8 @@ public class SparkCallGraphAnalysisStressTest {
 		setup(project_folder);
 		
 		//136 library dependencies
+		// disable spark since it will be out of memory
+		CallGraphAnalysis.useSpark = false;
 		CallGraphAnalysis runner = 
 				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();
@@ -206,6 +210,8 @@ public class SparkCallGraphAnalysisStressTest {
 		setup(project_folder);
 		
 		//152 library dependencies
+		// disable spark since it will be out of memory
+		CallGraphAnalysis.useSpark = false;
 		CallGraphAnalysis runner = 
 				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
 		runner.run();

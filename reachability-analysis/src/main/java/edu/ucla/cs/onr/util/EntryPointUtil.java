@@ -101,8 +101,9 @@ public class EntryPointUtil {
 		Set<MethodData> testMethods = new HashSet<MethodData>();
 
 		for(MethodData methodData: methods){
-			if(methodData.getAnnotation().isPresent()
-				&& testAnnotations().contains(methodData.getAnnotation().get())){
+			if((methodData.getAnnotation().isPresent()
+				&& testAnnotations().contains(methodData.getAnnotation().get())) 
+				|| methodData.isJUnit3Test()){
 				testMethods.add(methodData);
 			}
 		}
@@ -121,8 +122,9 @@ public class EntryPointUtil {
 	public static Set<MethodData> getMainMethodsAsEntryPoints(Set<MethodData> methods) {
 		Set<MethodData> mainMethods = new HashSet<MethodData>();
 		for(MethodData s : methods) {
-			//TODO: Am I representing all possible implementations of main? What are the rules? Need to do some research
-			if(s.isPublic() && s.isStatic() && s.getName().equals("main")){
+			if(s.isPublic() && s.isStatic() && s.getName().equals("main")
+					&& s.getReturnType().equals("void") 
+					&& s.getArgs().length == 1 && s.getArgs()[0].equals("java.lang.String[]")){
 				mainMethods.add(s);
 			}
 		}
@@ -166,7 +168,15 @@ public class EntryPointUtil {
 		List<SootMethod> entryPoints = new ArrayList<SootMethod>();
 		for(String cls : methodByClass.keySet()) {
 			SootClass entryClass = Scene.v().loadClassAndSupport(cls);
-			Scene.v().loadNecessaryClasses();
+			try {
+				Scene.v().loadNecessaryClasses();
+			} catch (IllegalArgumentException e) {
+				// If a project uses jars built by Java 9, there will be a module-info.class
+				// in the jar, which causes IllegalArgumentException in Soot
+				// as an example, check the asm-6.2 library in cglib/cglib project
+				// suppress it silently as a temporary workaround
+			}
+			
 			HashSet<MethodData> ms = methodByClass.get(cls);
 			for(MethodData md : ms) {
 				SootMethod entryMethod = entryClass.getMethod(md.getSubSignature());
