@@ -12,9 +12,13 @@ import java.util.Set;
 
 public class ClassCollapser implements IClassCollapser {
 
-    public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<MethodData> touchedMethods) {
-
-    }
+	@Override
+	public void collapseClasses(List<File> libClassPath,
+			List<File> appClassPath, Set<MethodData> touchedMethods,
+			Set<MethodData> unTouchedMethods, Set<String> touchedClasses,
+			Set<String> unTouchedClasses) {
+		
+	}
 
     /**
      * Merges one soot class into another
