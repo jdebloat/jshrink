@@ -28,13 +28,17 @@ do
 	project="${username}_${reponame}"
 
 	if [ -d "${project_dir}/${project}" ]; then
-		printf "Begin to build $line\n"
-		`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
-		exit_status=$?
-		if [[ ${exit_status} != 0 ]]; then
-			printf "Failed to build project ${line}\n\n"
+		if [ ! -f "${project_dir}/${project}/onr_build.log" ];then
+			printf "Begin to build $line\n"
+			`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
+			exit_status=$?
+			if [[ ${exit_status} != 0 ]]; then
+				printf "Failed to build project ${line}\n\n"
+			else
+				printf "Finish building $line\n\n"
+			fi
 		else
-			printf "Finish building $line\n\n"
+			printf "$line has already been processed. Please see it's onr_build.log file\n\n"
 		fi
 	else
 		printf "The project folder of $line does not exits.\n\n"
