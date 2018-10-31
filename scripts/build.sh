@@ -1,10 +1,11 @@
 #!/bin/bash
 
+PWD=`pwd`
 # the list of GitHub repositories built by maven
-project_list="/media/troy/Disk2/ONR/BigQuery/sample-maven-projects.csv"
+project_list=${PWD}"/sample-maven-projects.csv"
 
 # the root directory that contains the Java projects downloaded from GitHub
-project_dir="/media/troy/Disk2/ONR/BigQuery/sample-projects"
+project_dir=${PWD}"/sample-projects"
 
 
 # check whether the project directory exists first
@@ -27,11 +28,12 @@ do
 	project="${username}_${reponame}"
 
 	if [ -d "${project_dir}/${project}" ]; then
-		if [ -f "${project_dir}/${project}/onr_build.log" ]; then
-			printf "$line has already been built.\n\n"
+		printf "Begin to build $line\n"
+		`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
+		exit_status=$?
+		if [[ ${exit_status} != 0 ]]; then
+			printf "Failed to build project ${line}\n\n"
 		else
-			printf "Begin to build $line\n"
-			`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
 			printf "Finish building $line\n\n"
 		fi
 	else
