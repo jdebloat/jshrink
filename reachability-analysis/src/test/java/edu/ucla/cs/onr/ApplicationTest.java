@@ -1,7 +1,7 @@
 package edu.ucla.cs.onr;
 
 import edu.ucla.cs.onr.reachability.MethodData;
-import edu.ucla.cs.onr.util.WritingClassUtils;
+import edu.ucla.cs.onr.util.ClassFileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,6 +39,13 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
+	private boolean jarIntact(){
+        ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+        File f =
+                new File(classLoader.getResource("simple-test-project/libs/standard-stuff-library.jar").getFile());
+        return f.exists() && !f.isDirectory();
+    }
+
 	private static List<File> getTestClassPath(){
 		List<File> toReturn = new ArrayList<File>();
 
@@ -69,7 +76,7 @@ public class ApplicationTest {
 		files.addAll(getAppClassPath());
 		files.addAll(getLibClassPath());
 		files.addAll(getTestClassPath());
-		WritingClassUtils.rectifyChanges(files);
+		ClassFileUtils.rectifyChanges(files);
 		G.reset();
 	}
 
@@ -126,6 +133,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+		assertTrue(jarIntact());
 	}
 
 	@Test
@@ -162,6 +170,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -197,6 +206,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -235,6 +245,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Ignore @Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
@@ -271,6 +282,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -306,6 +318,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+		assertTrue(jarIntact());
 	}
 
 	@Test
@@ -342,5 +355,6 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 }

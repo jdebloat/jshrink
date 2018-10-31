@@ -66,11 +66,11 @@ public class CallGraphAnalysis {
 			ASMUtils.readClass(appPath, appClasses, appMethods);
 		}
 
-		if(Application.isDebugMode()) {
-			System.out.println("number_lib_classes, " + libClasses.size());
-			System.out.println("number_lib_methods, " + libMethods.size());
-			System.out.println("number_app_classes, " + appClasses.size());
-			System.out.println("number_app_methods, " + appMethods.size());
+		if(Application.isVerboseMode()) {
+			System.out.println("number_lib_classes," + libClasses.size());
+			System.out.println("number_lib_methods," + libMethods.size());
+			System.out.println("number_app_classes," + appClasses.size());
+			System.out.println("number_app_methods," + appMethods.size());
 		}
 	}
 
@@ -81,10 +81,8 @@ public class CallGraphAnalysis {
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 
 		if(Application.isVerboseMode()) {
-			System.out.println();
-			System.out.println("The following entry points were specified:");
 			for (SootMethod sootMethod : entryPoints) {
-				System.out.println(sootMethod.getSignature());
+				System.out.println("entry_point," + sootMethod.getSignature());
 			}
 		}
 
@@ -119,11 +117,11 @@ public class CallGraphAnalysis {
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
 		
-		if(Application.isDebugMode()) {
-			System.out.println("number_used_lib_classes, " + usedLibClasses.size());
-			System.out.println("number_used_lib_methods, " + usedLibMethods.size());
-			System.out.println("number_used_app_classes, " + usedAppClasses.size());
-			System.out.println("number_used_app_method, " + usedAppMethods.size());
+		if(Application.isVerboseMode()) {
+			System.out.println("number_used_lib_classes," + usedLibClasses.size());
+			System.out.println("number_used_lib_methods," + usedLibMethods.size());
+			System.out.println("number_used_app_classes," + usedAppClasses.size());
+			System.out.println("number_used_app_method," + usedAppMethods.size());
 		}
 	}
 
