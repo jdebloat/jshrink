@@ -5,7 +5,6 @@ import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.progress.ProgressMonitor;
-import net.lingala.zip4j.util.Zip4jConstants;
 import org.apache.commons.io.FileUtils;
 import soot.SootClass;
 import soot.SootMethod;
@@ -18,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ClassFileUtils {
@@ -83,17 +81,8 @@ public class ClassFileUtils {
 			jarToReturn.getFile().delete();
 			FileUtils.moveDirectory(tempDir, jarToReturn.getFile());
 
-			//Search for the classfile within the directory
-		//	Collection<File> tempF = new ArrayList<>();
-		//	tempF.add(tempDir);
-		//	fileToReturn = getClassFile(sootClass, tempF);
-		//	assert(fileToReturn.isPresent()); //If returned by 'getJarFile', the jar should contain the class
-
-			// Take a note of the expanded (temp) file and it's original .jar source
-			//recompress = Optional.of(new Pair<ZipFile, File>(jarToReturn.get(),tempDir));
-
 		} catch(IOException e){
-			new IOException("Failed to create a temporary directory. The following exception was thrown:"
+			throw new IOException("Failed to create a temporary directory. The following exception was thrown:"
 					+ System.lineSeparator() + e.getLocalizedMessage());
 		}
 	}
@@ -138,70 +127,9 @@ public class ClassFileUtils {
 		}
 	}
 
-	private static Optional<ZipFile> getJarFile(SootClass sootClass, Collection<File> paths) throws IOException{
-		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
-
-		for (File p : paths) {
-			try {
-				JarFile jarFile = new JarFile(p);
-				JarEntry entry = jarFile.getJarEntry(classPath);
-				if (entry != null) {
-					jarFile.close();
-					return Optional.of(new ZipFile(p));
-				}
-			} catch (IOException e) {
-				continue;
-			} catch (ZipException e){
-				throw new IOException("Failure to case JarFile to ZipFile. Following Exception thrown:" +
-					System.lineSeparator() + e.getLocalizedMessage());
-			}
-		}
-
-		return Optional.empty();
-	}
-
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
 
-		//Optional<Pair<ZipFile,File>> recompress = Optional.empty();
-
 		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
-		/*if (!fileToReturn.isPresent()) { //If the '.class' file could not be found in a classpath, it may be in a jar
-			Optional<ZipFile> jarToReturn = getJarFile(sootClass, classPath); //Check the jar files...
-			if (!jarToReturn.isPresent()) {
-				throw new IOException("Source file for class '" + sootClass.getName() + "' could not be found!");
-			}
-
-			assert (jarToReturn.isPresent());
-
-			try {
-				//Extract the jar file into a temporary directory
-				File tempDir = File.createTempFile("jar_expansion", "tmp");
-				tempDir.delete();
-				if(!tempDir.mkdir()){
-					throw new IOException("Could not 'mkdir " + tempDir.getAbsolutePath() + "'");
-				}
-
-				try {
-					jarToReturn.get().extractAll(tempDir.getAbsolutePath());
-				} catch(ZipException e){
-					throw new IOException("Failed to extract .jar file. Following exception thrown:" +
-						System.lineSeparator() + e.getLocalizedMessage());
-				}
-
-				//Search for the classfile within the directory
-				Collection<File> tempF = new ArrayList<>();
-				tempF.add(tempDir);
-				fileToReturn = getClassFile(sootClass, tempF);
-				assert(fileToReturn.isPresent()); //If returned by 'getJarFile', the jar should contain the class
-
-				// Take a note of the expanded (temp) file and it's original .jar source
-				recompress = Optional.of(new Pair<ZipFile, File>(jarToReturn.get(),tempDir));
-
-			} catch(IOException e){
-				new IOException("Failed to create a temporary directory. The following exception was thrown:"
-						+ System.lineSeparator() + e.getLocalizedMessage());
-			}
-		}*/
 
 		if(!fileToReturn.isPresent()){
 			throw new IOException("Cannot find file for class '" + sootClass.getName() + "'");
@@ -228,47 +156,6 @@ public class ClassFileUtils {
 		jasminClass.print(writerOut);
 		writerOut.flush();
 		streamOut.close();
-
-		//If the class were contained within a compressed Jar, recompression is required
-		/*if(recompress.isPresent()){
-			ZipFile zFile = recompress.get().getKey();
-			File tempFile = recompress.get().getValue();
-
-			try {
-				// Delete the .jar file
-				zFile.getFile().delete();
-				//... and compress the temp file to replace the deleted .jar file
-				boolean created=false;
-				ZipParameters zipParameters = new ZipParameters();
-				zipParameters.setCompressionLevel(9);
-				for(File f : tempFile.listFiles()){
-					if(f.isDirectory()){
-						if(!created){
-							zFile.createZipFileFromFolder(f,zipParameters,false, 0);
-							created=true;
-						} else {
-							zFile.addFolder(f, zipParameters);
-						}
-					} else{
-						if(!created){
-							zFile.createZipFile(f, zipParameters);
-							created=true;
-						} else {
-							zFile.addFile(f, zipParameters);
-						}
-					}
-				}
-			}catch(ZipException e){
-				String exceptionString = "Failure to recompress file." + System.lineSeparator() +
-					"Failure to recompress file." + System.lineSeparator() +
-					"TempFile: " + tempFile.getAbsolutePath() + System.lineSeparator() +
-					"ZipFile: " + zFile.getFile().getAbsolutePath() + System.lineSeparator() +
-					"The following exception was thrown: " + System.lineSeparator() +
-					"Failure to recompress file." +System.lineSeparator() +
-					e.getLocalizedMessage();
-				throw new IOException(exceptionString);
-			}
-		}*/
 	}
 
 
@@ -283,14 +170,6 @@ public class ClassFileUtils {
 				}
 
 				if(jarFile != null) {
-					/*ZipFile zipFile = null;
-					try {
-						zipFile = new ZipFile(f);
-					} catch(ZipException e){
-						throw new IOException("File '" + f.getAbsolutePath() + "' is a zip file" +
-							System.lineSeparator() + e.getLocalizedMessage());
-					}
-					assert(zipFile != null);*/
 					rectifyJarChanges(f);
 				}
 			} else if(f.isDirectory()){
@@ -305,26 +184,6 @@ public class ClassFileUtils {
 
 	private static void rectifyJarChanges(File jarFile) throws IOException{
 
-		//Extract the jarFile to a temporary directory
-	/*	File tempExtractionDir = null;
-
-		try {
-			tempExtractionDir =File.createTempFile("temp_jar_dir","");
-			if(!tempExtractionDir.delete() || !tempExtractionDir.mkdir()){
-				throw new IOException("Unable to mkdir '" + tempExtractionDir.getAbsolutePath() + "'");
-			}
-			assert(tempExtractionDir.exists());
-			assert(tempExtractionDir.isDirectory());
-
-			jarFile.extractAll(tempExtractionDir.getAbsolutePath());
-
-		} catch(ZipException e){
-			throw new IOException("Unable to extract jarFile '" + jarFile.getFile().getAbsolutePath() + "'. " +
-				"The following exception was thrown:" + System.lineSeparator() + e.getLocalizedMessage());
-		}
-
-		assert(tempExtractionDir != null);*/
-
 		ClassFileUtils.decompressJar(jarFile);
 
 		//Rectify any changes within the temporary directory
@@ -334,40 +193,6 @@ public class ClassFileUtils {
 		rectifyChanges(jarFileCollection);
 
 		ClassFileUtils.compressJar(jarFile);
-
-		//Archive/compress the directory back to the original; overwriting the original jar file
-		/*try {
-			jarFile.getFile().delete();
-			ZipParameters zipParameters = new ZipParameters();
-			zipParameters.setCompressionLevel(9);
-			//It's in a busy state otherwise... hope this is ok
-			jarFile.getProgressMonitor().setState(ProgressMonitor.STATE_READY);
-			ArrayList<File> fileList = new ArrayList<File>();
-			ArrayList<File> folderList = new ArrayList<File>();
-			//System.err.println("HERE");
-
-			boolean created=false;
-			for(File f : tempExtractionDir.listFiles()){
-				if(f.isDirectory()){
-					if(!created){
-						jarFile.createZipFileFromFolder(f,zipParameters,false, 0);
-						created=true;
-					} else {
-						jarFile.addFolder(f, zipParameters);
-					}
-				} else{
-					if(!created){
-						jarFile.createZipFile(f, zipParameters);
-						created=true;
-					} else {
-						jarFile.addFile(f, zipParameters);
-					}
-				}
-			}
-		} catch(ZipException e){
-			throw new IOException("Unable to create zip (Jar) file '" + jarFile.getFile().getAbsolutePath() + "'" +
-				" Following exception thrown:" + System.lineSeparator() + e.getLocalizedMessage());
-		}*/
 	}
 
 	private static void rectifyClassChanges(File file) throws IOException{

@@ -1,18 +1,15 @@
 package edu.ucla.cs.onr.reachability;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
+import org.apache.commons.io.FileUtils;
 import soot.G;
 import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.MavenUtils;
+import soot.util.ArraySet;
 
 /**
  * 
@@ -32,19 +29,24 @@ import edu.ucla.cs.onr.util.MavenUtils;
  * @author Tianyi Zhang
  *
  */
-public class MavenSingleProjectAnalyzer {
+public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private String project_path;
 	
-	private Set<String> libClasses;
-	private Set<MethodData> libMethods;
-	private Set<String> appClasses;
-	private Set<MethodData> appMethods;
-	private Set<String> usedLibClasses;
-	private Set<MethodData> usedLibMethods;
-	private Set<String> usedAppClasses;
-	private Set<MethodData> usedAppMethods;
+	private final Set<String> libClasses;
+	private final Set<MethodData> libMethods;
+	private final Set<String> appClasses;
+	private final Set<MethodData> appMethods;
+	private final Set<String> usedLibClasses;
+	private final Set<MethodData> usedLibMethods;
+	private final Set<String> usedAppClasses;
+	private final Set<MethodData> usedAppMethods;
+	private final Map<String,List<File>> app_class_paths;
+	private final Map<String,List<File>> app_test_paths;
+	private final Map<String,List<File>> lib_class_paths;
+	private final HashMap<String, String> classpaths;
+	private final EntryPointProcessor entryPointProcessor;
 	
-	public MavenSingleProjectAnalyzer(String pathToMavenProject) {
+	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc) {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
@@ -55,89 +57,153 @@ public class MavenSingleProjectAnalyzer {
 		usedLibMethods = new HashSet<MethodData>();
 		usedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashSet<MethodData>();
+		app_class_paths = new HashMap<String, List<File>>();
+		app_test_paths = new HashMap<String, List<File>>();
+		lib_class_paths = new HashMap<String, List<File>>();
+		classpaths = new HashMap<String, String>();
+		entryPointProcessor = entryPointProc;
 	}
-	
-	public void run() {
-		if(Application.isDebugMode() || Application.isVerboseMode()) {
-			System.out.println("Start analyzing " + project_path);
+
+	public void cleanup(){
+		//This is just used for cleaning up after testing. It just runs "mvn clean"
+		File pomFile = new File(project_path + File.separator + "pom.xml");
+		File libsDir = new File(project_path + File.separator + "libs");
+
+		try{
+			Process process = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() + " " +
+					"clean");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String line;
+			while((line=reader.readLine()) != null);
+			reader.close();
+
+			try {
+				FileUtils.forceDelete(libsDir);
+			}catch(FileNotFoundException e){
+				//Do nothing
+			}
+
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
 		}
-		
+	}
+
+	public void setup(){
+		File root_dir = new File(project_path);
+
+		// find all submodules if any
+		HashMap<String, File> modules = new HashMap<String, File>();
+		MavenUtils.getModules(root_dir, modules);
+
+
+		// get all classpaths for submodules if any
+		String classpathInfo = "";
+
+		try {
+			 File pomFile = new File(root_dir + File.separator + "pom.xml");
+			 File libsDir = new File(root_dir + File.separator + "libs");
+
+			//Ensure the project is compiled.
+			 Process process1 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
+				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --batch-mode -fn");
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+			String line;
+			while((line=reader.readLine()) != null);
+			reader.close();
+
+			//Get the classpath information
+			Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
+					" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
+					" -DincludeScope=compile --batch-mode");
+
+			reader = new BufferedReader(new InputStreamReader(process2.getInputStream()));
+			while((line=reader.readLine()) != null){
+				classpathInfo += line + System.lineSeparator();
+			}
+			reader.close();
+
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+
+		classpaths.putAll(MavenUtils.getClasspaths(classpathInfo));
+
+		for(String artifact_id : modules.keySet()) {
+			// Note that not all submodules are built
+			if(classpaths.containsKey(artifact_id)) {
+
+				String cp = classpaths.get(artifact_id);
+				File dir = modules.get(artifact_id);
+
+				// make sure there are src and target directories in this submodule
+				File srcDir =
+						new File(dir.getAbsolutePath() + File.separator + "src");
+				File targetDir =
+						new File(dir.getAbsolutePath() + File.separator + "target");
+				if(!srcDir.exists() || !targetDir.exists()) {
+					System.err.println("There are no src or target directories in "
+							+ dir.getAbsolutePath());
+					continue;
+				}
+
+				// initialize the arguments for CallGraphAnalaysis
+				File app_class_path =
+						new File(dir.getAbsolutePath() + File.separator + "target/classes");
+				if(app_class_path.exists()) {
+					app_class_paths.put(artifact_id, Arrays.asList(app_class_path));
+				}
+
+				File app_test_path =
+						new File(dir.getAbsolutePath() + File.separator + "target/test-classes");
+				if(app_test_path.exists()) {
+					app_test_paths.put(artifact_id, Arrays.asList(app_test_path));
+				}
+
+				String[] cps = cp.split(File.pathSeparator);
+				lib_class_paths.put(artifact_id, new ArrayList<File>());
+				for(String path: cps){
+					if(!path.isEmpty()) {
+						lib_class_paths.get(artifact_id).add(new File(path));
+					}
+				}
+			}
+		}
+	}
+
+	@Override
+	public void run() {
 		File root_dir = new File(project_path);
 		
 		// find all submodules if any
 		HashMap<String, File> modules = new HashMap<String, File>();
 		MavenUtils.getModules(root_dir, modules);
-		
-		
-		// get all classpaths for submodules if any
-		String cp_log = project_path + File.separator + "onr_classpath_new.log";
-		HashMap<String, String> classpaths = MavenUtils.getClasspaths(cp_log);
+
 		
 		int count = 0;
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
 			if(classpaths.containsKey(artifact_id)) {
-				if((Application.isDebugMode() || Application.isVerboseMode()) && modules.size() > 1) {
-					System.out.println("submodule---" + artifact_id);
-				}
-				
-				String cp = classpaths.get(artifact_id);
-				File dir = modules.get(artifact_id);
-				
-				// make sure there are src and target directories in this submodule
-				File srcDir = 
-						new File(dir.getAbsolutePath() + File.separator + "src");
-				File targetDir = 
-						new File(dir.getAbsolutePath() + File.separator + "target");
-				if(!srcDir.exists() || !targetDir.exists()) {
-					System.err.println("There are no src or target directories in " 
-							+ dir.getAbsolutePath());
-					continue;
-				}
 				
 				// increment the count of analyzed modules
 				count++;
-				
-				// initialize the arguments for CallGraphAnalaysis
-				List<File> app_class_paths = new ArrayList<File>();
-				File app_class_path = 
-						new File(dir.getAbsolutePath() + File.separator + "target/classes");
-				app_class_paths.add(app_class_path);
-				
-				List<File> app_test_paths = new ArrayList<File>();
-				File app_test_path = 
-						new File(dir.getAbsolutePath() + File.separator + "target/test-classes");
-				app_test_paths.add(app_test_path);
-				
-				List<File> lib_class_paths = new ArrayList<File>();
-				String[] cps = cp.split(File.pathSeparator);
-				for(String path: cps){
-					if(!path.isEmpty()) {
-						lib_class_paths.add(new File(path));
-					}
-				}
-				
-				Set<MethodData> entryPoints = new HashSet<MethodData>();
-				// get main methods
-				HashSet<String> appClasses = new HashSet<String>();
-				HashSet<MethodData> appMethods = new HashSet<MethodData>();
-				ASMUtils.readClassFromDirectory(app_class_path, appClasses, appMethods);
-				Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(appMethods);
-				entryPoints.addAll(mainMethods);
-				
-				// get test methods
-				HashSet<String> testClasses = new HashSet<String>();
-				HashSet<MethodData> testMethods = new HashSet<MethodData>();
-				ASMUtils.readClassFromDirectory(app_test_path, testClasses, testMethods);
-		        Set<MethodData> tests = 
-		        		EntryPointUtil.getTestMethodsAsEntryPoints(testMethods);
-//		        for(MethodData test : tests) {
-//		        	System.out.println(test);
-//		        }
-		        entryPoints.addAll(tests);
-				
+
+				List<File> localLibClassPaths =
+					(lib_class_paths.containsKey(artifact_id) ? lib_class_paths.get(artifact_id) : new ArrayList<File>());
+
+				List<File> localAppClassPaths =
+					(app_class_paths.containsKey(artifact_id) ? app_class_paths.get(artifact_id) : new ArrayList<File>());
+
+				List<File> localTestClassPaths =
+					(app_test_paths.containsKey(artifact_id) ? app_test_paths.get(artifact_id) : new ArrayList<File>());
+
 				CallGraphAnalysis runner = 
-						new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, entryPoints);
+						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
+								localTestClassPaths, entryPointProcessor);
+				runner.setup();
 				runner.run();
 				
 				// aggregate the analysis result of the submodule
@@ -174,53 +240,97 @@ public class MavenSingleProjectAnalyzer {
 			this.usedLibMethods.removeAll(used_lib_methods_copy);
 			this.usedAppMethods.addAll(used_lib_methods_copy);
 			
-			if(Application.isDebugMode() || Application.isVerboseMode()) {
-				System.out.println("---summary of " + count + " modules---");
-				System.out.println("number_lib_classes, " + this.libClasses.size());
-				System.out.println("number_lib_methods, " + this.libMethods.size());
-				System.out.println("number_app_classes, " + this.appClasses.size());
-				System.out.println("number_app_methods, " + this.appMethods.size());
-				System.out.println("number_used_lib_classes, " + this.usedLibClasses.size());
-				System.out.println("number_used_lib_methods, " + this.usedLibMethods.size());
-				System.out.println("number_used_app_classes, " + this.usedAppClasses.size());
-				System.out.println("number_used_app_method, " + this.usedAppMethods.size());
+			if(Application.isVerboseMode()) {
+				System.out.println("module_count," + count);
+				System.out.println("number_lib_classes," + this.libClasses.size());
+				System.out.println("number_lib_methods," + this.libMethods.size());
+				System.out.println("number_app_classes," + this.appClasses.size());
+				System.out.println("number_app_methods," + this.appMethods.size());
+				System.out.println("number_used_lib_classes," + this.usedLibClasses.size());
+				System.out.println("number_used_lib_methods," + this.usedLibMethods.size());
+				System.out.println("number_used_app_classes," + this.usedAppClasses.size());
+				System.out.println("number_used_app_method," + this.usedAppMethods.size());
 			}
 		}
-				
-		if(Application.isDebugMode() || Application.isVerboseMode()) {
-			System.out.println("Finish analyzing " + project_path);
-		}
 	}
-	
+
+	@Override
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
 
+	@Override
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
+	@Override
 	public Set<String> getAppClasses() {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
 
+	@Override
 	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
+	@Override
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
 
+	@Override
 	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
 	}
 
+	@Override
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
 	}
 
+	@Override
 	public Set<MethodData> getUsedAppMethods() {
 		return Collections.unmodifiableSet(this.usedAppMethods);
+	}
+
+	@Override
+	public List<File> getAppClasspaths() {
+		return Collections.unmodifiableList(getClassPath(this.app_class_paths));
+	}
+
+	@Override
+	public List<File> getLibClasspaths() {
+		return Collections.unmodifiableList(getClassPath(this.lib_class_paths));
+	}
+
+	@Override
+	public List<File> getTestClasspaths() {
+		return Collections.unmodifiableList(getClassPath(this.app_test_paths));
+	}
+
+	private List<File> getClassPath(Map<String, List<File>> paths){
+		List<File> toReturn = new ArrayList<File>();
+		for(Map.Entry<String, List<File>> mapEntry : paths.entrySet()){
+			for(File file : mapEntry.getValue()){
+				if(!toReturn.contains(file)){
+					toReturn.add(file);
+				}
+			}
+		}
+
+		return toReturn;
+	}
+
+	@Override
+	public Set<MethodData> getEntryPoints(){
+	    //TODO : Is this function really needed?
+	//	Set<MethodData> toReturn = new HashSet<MethodData>();
+	//	for(Map.Entry<String, Set<MethodData>> mapEntry : this.entryPoints.entrySet()){
+	//		toReturn.addAll(mapEntry.getValue());
+	//	}
+
+	//	return Collections.unmodifiableSet(toReturn);
+        throw new RuntimeException("WOW! I havn't wrote this yet MavenSingleProjectAnalyzer: getEntryPoints");
 	}
 }
