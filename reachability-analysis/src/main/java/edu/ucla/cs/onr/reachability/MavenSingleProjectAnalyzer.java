@@ -45,6 +45,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Map<String,List<File>> lib_class_paths;
 	private final HashMap<String, String> classpaths;
 	private final EntryPointProcessor entryPointProcessor;
+	private final Set<MethodData> entryPoints;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc) {
 		project_path = pathToMavenProject;
@@ -62,6 +63,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		lib_class_paths = new HashMap<String, List<File>>();
 		classpaths = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
+		entryPoints = new HashSet<MethodData>();
 	}
 
 	public void cleanup(){
@@ -89,6 +91,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 	}
 
+	//TODO: I'm not a fan of splitting things up between setup and run. Perhaps I should just merge them back
 	public void setup(){
 		File root_dir = new File(project_path);
 
@@ -202,7 +205,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 				CallGraphAnalysis runner = 
 						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
-								localTestClassPaths, entryPointProcessor);
+								localTestClassPaths, entryPointProcessor,false);
 				runner.setup();
 				runner.run();
 				
@@ -215,6 +218,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				this.usedLibMethods.addAll(runner.getUsedLibMethods());
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				this.usedAppMethods.addAll(runner.getUsedAppMethods());
+				this.entryPoints.addAll(runner.getEntryPoints());
 				
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
@@ -250,6 +254,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				System.out.println("number_used_lib_methods," + this.usedLibMethods.size());
 				System.out.println("number_used_app_classes," + this.usedAppClasses.size());
 				System.out.println("number_used_app_method," + this.usedAppMethods.size());
+				for(MethodData methodData: this.entryPoints){
+					System.out.println("entry_point," + methodData.getSignature());
+				}
 			}
 		}
 	}
@@ -324,13 +331,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	@Override
 	public Set<MethodData> getEntryPoints(){
-	    //TODO : Is this function really needed?
-	//	Set<MethodData> toReturn = new HashSet<MethodData>();
-	//	for(Map.Entry<String, Set<MethodData>> mapEntry : this.entryPoints.entrySet()){
-	//		toReturn.addAll(mapEntry.getValue());
-	//	}
-
-	//	return Collections.unmodifiableSet(toReturn);
-        throw new RuntimeException("WOW! I havn't wrote this yet MavenSingleProjectAnalyzer: getEntryPoints");
+		return this.entryPoints;
 	}
 }

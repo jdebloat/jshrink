@@ -65,7 +65,8 @@ public class Application {
 					commandLineParser.getMavenDirectory().get().getAbsolutePath(), entryPointProcessor);
 		} else {
 			projectAnalyser =  new CallGraphAnalysis(commandLineParser.getLibClassPath(),
-					commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPointProcessor);
+					commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPointProcessor,
+					commandLineParser.isVerbose());
 		}
 
 		assert(projectAnalyser != null);

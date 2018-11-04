@@ -31,11 +31,13 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
+	private final boolean verbose;
 
 	public CallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
 	                              List<File> appTestPath, 
-	                              EntryPointProcessor entryPointProc) {
+	                              EntryPointProcessor entryPointProc,
+							 		boolean isVerbose) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
@@ -52,6 +54,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		entryPointProcessor = entryPointProc;
+		verbose = isVerbose;
 	}
 
 	@Override
@@ -86,14 +89,13 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		// must call this first, and we only need to call it once
 		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
 
-		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
-
-		if(Application.isVerboseMode()) {
-			for (SootMethod sootMethod : entryPoints) {
-				System.out.println("entry_point," + sootMethod.getSignature());
+		if(this.verbose) {
+			for (MethodData methodData : entryMethods) {
+				System.out.println("entry_point," + methodData.getSignature());
 			}
 		}
 
+		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 		Scene.v().setEntryPoints(entryPoints);
 
 		if(useSpark) {
@@ -125,7 +127,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
 		
-		if(Application.isVerboseMode()) {
+		if(this.verbose) {
 			System.out.println("number_lib_classes," + libClasses.size());
 			System.out.println("number_lib_methods," + libMethods.size());
 			System.out.println("number_app_classes," + appClasses.size());
