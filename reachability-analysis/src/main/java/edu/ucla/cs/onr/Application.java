@@ -12,6 +12,9 @@ import edu.ucla.cs.onr.util.ClassFileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import soot.*;
 
+// TODO: We rely on the output of this application when in "--verbose" mode. This is currently a bit of a mess
+// ,I suggest we use a logger to manage this better
+
 public class Application {
 
 	private static boolean DEBUG_MODE = true; //Enabled by default, needed for testing
