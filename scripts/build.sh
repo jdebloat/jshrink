@@ -38,7 +38,7 @@ do
 				printf "Finish building $line\n\n"
 			fi
 		else
-			printf "$line has already been processed. Please see it's onr_build.log file\n\n"
+			printf "$line has already been processed. Please see its onr_build.log file\n\n"
 		fi
 	else
 		printf "The project folder of $line does not exits.\n\n"
