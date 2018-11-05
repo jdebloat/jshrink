@@ -9,7 +9,6 @@ METHOD_DATA_FILE="${PWD}/method_data.csv"
 TEST_DATA_FILE="${PWD}/test_data.csv"
 JAVA="/usr/lib/jvm/java-8-oracle/bin/java"
 TEST_SCRIPT="${PWD}/test_script.sh"
-CLASSPATH_PROCESSOR="${PWD}/maven-classpath-processor-1.0-jar-with-dependencies.jar"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -47,40 +46,37 @@ if [ ! -f "${DEBLOAT_APP}" ]; then
 	cp "../reachability-analysis/target/reachability-analysis-1.0-jar-with-dependencies.jar" .
 fi
 
-echo "Setting up 'maven-classpath-processor' tool"
-if [ ! -f "${CLASSPATH_PROCESSOR}" ]; then
-	mvn -f ../maven-classpath-processor/pom.xml clean compile assmebly:single 2>&1 >/dev/null
-	exit_status=$?
-	if [[ ${exit_status} != 0 ]]; then
-		echo "Cannot build 'maven-classpath-processor' tool"
-		exit 1
-	fi
-fi
-
 cat ${WORK_LIST} |  while read item; do
 	item_dir="${PROJECT_DIR}/${item}"
 	cd "${item_dir}"
 
 	echo "Processing : "${item}
 
-	temp_file=$(mkdir /tmp/XXXX)
-	${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods 2>&1 >$temp_file 
+	mvn -f "${item_dir}/pom.xml" install -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
+		echo "Compiled successfully"
+		temp_file=$(mkdir /tmp/XXXX)
+		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods 2>&1 >$temp_file 
+		exit_status=$?
+		if [[ ${exit_status} == 0 ]]; then
 
-		#TODO: Need to process more data from ${temp_file} to get more data
-		#app/lib size before and after debloat should be obtainable from ${temp_file}
-		#Testing is going to prove more difficult
+			#TODO: Need to process more data from ${temp_file} to get more data
+			#app/lib size before and after debloat should be obtainable from ${temp_file}
+			#Testing is going to prove more difficult
 
-		#Get the number of methods/methods wiped for main class as an entry point
-		lib_methods=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods"){print $2}')
-		app_methods=$(cat ${temp_file} | awk -F, '($1=="number_app_methods"){print $2}')
-		lib_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods_removed"){print $2}')
-		app_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_app_methods_removed"){print $2}')
-		echo ${item},0,1,0,,1,${lib_methods},${app_methods},${lib_methods_removed},${app_methods_removed},,, >>${METHOD_DATA_FILE}
+			#Get the number of methods/methods wiped for main class as an entry point
+			lib_methods=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods"){print $2}')
+			app_methods=$(cat ${temp_file} | awk -F, '($1=="number_app_methods"){print $2}')
+			lib_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods_removed"){print $2}')
+			app_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_app_methods_removed"){print $2}')
+			echo ${item},0,1,0,,1,${lib_methods},${app_methods},${lib_methods_removed},${app_methods_removed},,, >>${METHOD_DATA_FILE}
+		else
+			echo "Could not properly process "${item}
+			echo "Output the following: "
+			cat ${temp_file}
+		fi
 	else
-		echo "Could not properly process "${item}
-		echo "Output the following: "
-		cat ${temp_file}
+		echo "Failed to compile"
 	fi
 done
