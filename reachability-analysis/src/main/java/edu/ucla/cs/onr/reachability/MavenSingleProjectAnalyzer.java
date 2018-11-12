@@ -92,7 +92,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	}
 
 	//TODO: I'm not a fan of splitting things up between setup and run. Perhaps I should just merge them back
-	public void setup(){
+	private  void setup(){
 		File root_dir = new File(project_path);
 
 		// find all submodules if any
@@ -179,6 +179,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	@Override
 	public void run() {
+		setup();
 		File root_dir = new File(project_path);
 		
 		// find all submodules if any
@@ -206,7 +207,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				CallGraphAnalysis runner = 
 						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
 								localTestClassPaths, entryPointProcessor,false);
-				runner.setup();
 				runner.run();
 				
 				// aggregate the analysis result of the submodule

@@ -74,8 +74,6 @@ public class Application {
 
 		assert(projectAnalyser != null);
 
-		projectAnalyser.setup();
-
 		try {
 
 			if(Application.isVerboseMode()){

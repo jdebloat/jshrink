@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 public interface IProjectAnalyser {
-    public void setup();
     public void run();
     public Set<String> getLibClasses();
     public Set<MethodData> getLibMethods();

@@ -58,16 +58,14 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public void setup() {
-		// 1. use ASM to find all classes and methods
-		//TODO: We assume "setup()" has not already been run; there is potential for errors.
-		this.findAllClassesAndMethods();
-		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
-	}
-
-	@Override
 	public void run() {
-		// 2. use Spark to construct the call graph and compute the reachable classes and methods
+		// 1. use ASM to find all classes and methods
+		this.findAllClassesAndMethods();
+
+		// 2. get Entry methods
+		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+
+		// 3. use Spark to construct the call graph and compute the reachable classes and methods
 		this.runCallGraphAnalysis();
 	}
 
