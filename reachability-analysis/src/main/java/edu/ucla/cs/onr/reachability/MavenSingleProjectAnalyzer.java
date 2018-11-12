@@ -5,11 +5,7 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import soot.G;
-import edu.ucla.cs.onr.Application;
-import edu.ucla.cs.onr.util.ASMUtils;
-import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.MavenUtils;
-import soot.util.ArraySet;
 
 /**
  * 
@@ -206,7 +202,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 				CallGraphAnalysis runner = 
 						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
-								localTestClassPaths, entryPointProcessor,false);
+								localTestClassPaths, entryPointProcessor);
 				runner.run();
 				
 				// aggregate the analysis result of the submodule
@@ -243,21 +239,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			used_lib_methods_copy.retainAll(this.appMethods);
 			this.usedLibMethods.removeAll(used_lib_methods_copy);
 			this.usedAppMethods.addAll(used_lib_methods_copy);
-			
-			if(Application.isVerboseMode()) {
-				System.out.println("module_count," + count);
-				System.out.println("number_lib_classes," + this.libClasses.size());
-				System.out.println("number_lib_methods," + this.libMethods.size());
-				System.out.println("number_app_classes," + this.appClasses.size());
-				System.out.println("number_app_methods," + this.appMethods.size());
-				System.out.println("number_used_lib_classes," + this.usedLibClasses.size());
-				System.out.println("number_used_lib_methods," + this.usedLibMethods.size());
-				System.out.println("number_used_app_classes," + this.usedAppClasses.size());
-				System.out.println("number_used_app_method," + this.usedAppMethods.size());
-				for(MethodData methodData: this.entryPoints){
-					System.out.println("entry_point," + methodData.getSignature());
-				}
-			}
 		}
 	}
 

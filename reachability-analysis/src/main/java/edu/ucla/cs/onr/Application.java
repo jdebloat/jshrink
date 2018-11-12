@@ -1,6 +1,7 @@
 package edu.ucla.cs.onr;
 
 import java.io.*;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.JarFile;
 
@@ -68,8 +69,7 @@ public class Application {
 					commandLineParser.getMavenDirectory().get().getAbsolutePath(), entryPointProcessor);
 		} else {
 			projectAnalyser =  new CallGraphAnalysis(commandLineParser.getLibClassPath(),
-					commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPointProcessor,
-					commandLineParser.isVerbose());
+					commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPointProcessor);
 		}
 
 		assert(projectAnalyser != null);
@@ -149,6 +149,21 @@ public class Application {
 
 
 				if(Application.isVerboseMode()) {
+
+					System.out.println("number_lib_classes," + projectAnalyser.getLibClasses().size());
+					System.out.println("number_lib_methods," + projectAnalyser.getLibMethods().size());
+					System.out.println("number_app_classes," + projectAnalyser.getAppClasses().size());
+					System.out.println("number_app_methods," + projectAnalyser.getAppMethods().size());
+					System.out.println("number_used_lib_classes," + projectAnalyser.getUsedLibClasses().size());
+					System.out.println("number_used_lib_methods," + projectAnalyser.getUsedLibMethods().size());
+					System.out.println("number_used_app_classes," + projectAnalyser.getUsedLibClasses().size());
+					System.out.println("number_used_app_methods," + projectAnalyser.getUsedAppMethods().size());
+
+					for(MethodData entrypoint : projectAnalyser.getEntryPoints()){
+						System.out.println("entry_point," + entrypoint.getSignature());
+					}
+
+					/* Removed these as I don't need them and they are a bit spammy
 					for (MethodData method : projectAnalyser.getLibMethods()) {
 						System.out.println("lib_method," + method.toString());
 					}
@@ -164,6 +179,7 @@ public class Application {
 					for (MethodData method : projectAnalyser.getUsedAppMethods()) {
 						System.out.println("app_method_touched," + method.toString());
 					}
+					*/
 				}
 
 				Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();

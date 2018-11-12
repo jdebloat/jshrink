@@ -3,7 +3,6 @@ package edu.ucla.cs.onr.reachability;
 import java.io.File;
 import java.util.*;
 
-import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -31,13 +30,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
-	private final boolean verbose;
 
 	public CallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
 	                              List<File> appTestPath, 
-	                              EntryPointProcessor entryPointProc,
-							 		boolean isVerbose) {
+	                              EntryPointProcessor entryPointProc) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
@@ -54,7 +51,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		entryPointProcessor = entryPointProc;
-		verbose = isVerbose;
 	}
 
 	@Override
@@ -87,12 +83,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		// must call this first, and we only need to call it once
 		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
 
-		if(this.verbose) {
-			for (MethodData methodData : entryMethods) {
-				System.out.println("entry_point," + methodData.getSignature());
-			}
-		}
-
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 		Scene.v().setEntryPoints(entryPoints);
 
@@ -124,17 +114,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.usedAppClasses.retainAll(usedClasses);
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
-		
-		if(this.verbose) {
-			System.out.println("number_lib_classes," + libClasses.size());
-			System.out.println("number_lib_methods," + libMethods.size());
-			System.out.println("number_app_classes," + appClasses.size());
-			System.out.println("number_app_methods," + appMethods.size());
-			System.out.println("number_used_lib_classes," + usedLibClasses.size());
-			System.out.println("number_used_lib_methods," + usedLibMethods.size());
-			System.out.println("number_used_app_classes," + usedAppClasses.size());
-			System.out.println("number_used_app_method," + usedAppMethods.size());
-		}
 	}
 
 	@Override
