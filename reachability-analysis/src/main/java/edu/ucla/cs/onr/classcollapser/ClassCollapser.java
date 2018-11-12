@@ -1,9 +1,8 @@
 package edu.ucla.cs.onr.classcollapser;
 
 import edu.ucla.cs.onr.reachability.MethodData;
-import soot.SootClass;
-import soot.SootField;
-import soot.SootMethod;
+import soot.*;
+import soot.jimple.*;
 
 import java.io.File;
 import java.util.HashMap;
@@ -43,10 +42,65 @@ public class ClassCollapser implements IClassCollapser {
             originalMethods.put(method.getName(), method);
         }
         for (SootMethod method : from.getMethods()) {
-            if (originalMethods.containsKey(method.getName())) {
-                to.getMethods().remove(originalMethods.get(method.getName()));
+            if (!method.getName().equals("<init>")) {
+                if (originalMethods.containsKey(method.getName())) {
+                    to.getMethods().remove(originalMethods.get(method.getName()));
+                }
+                to.getMethods().add(method);
             }
-            to.getMethods().add(method);
         }
+    }
+
+    /**
+     * Changes class names in the body of all methods of a class
+     * @param c The class in which we are modifying the bodies
+     * @param changeFrom The original name of the class to be changed
+     * @param changeTo The new name of the class to be changed
+     */
+    public static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
+        assert c != changeFrom && c != changeTo;
+        boolean changed = false;
+        for (SootField f: c.getFields()) {
+            if (f.getType() == Scene.v().getType(changeFrom.getName())) {
+                f.setType(Scene.v().getType(changeTo.getName()));
+                changed = true;
+            }
+        }
+        for (SootMethod m: c.getMethods()) {
+            changed = changed || changeClassNamesInMethod(m, changeFrom, changeTo);
+        }
+        return changed;
+    }
+
+    private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo) {
+        boolean changed = false;
+        Body b = m.retrieveActiveBody();
+        for (Local l: b.getLocals()) {
+            if (l.getType() == Scene.v().getType(changeFrom.getName())) {
+                l.setType(Scene.v().getType(changeTo.getName()));
+                changed = true;
+            }
+        }
+        for (Unit u : m.retrieveActiveBody().getUnits()) {
+            if (u instanceof InvokeStmt) {
+                InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
+                SootMethodRef originalMethodRef = expr.getMethodRef();
+                if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
+                    expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
+                            originalMethodRef.parameterTypes(),
+                            originalMethodRef.returnType(),
+                            originalMethodRef.isStatic()));
+                    ((InvokeStmt) u).setInvokeExpr(expr);
+                    changed = true;
+                }
+            } else if (u instanceof DefinitionStmt) {
+                Value rightOp = ((DefinitionStmt) u).getRightOp();
+                if (rightOp instanceof NewExpr && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
+                    ((NewExpr) rightOp).setBaseType((RefType)Scene.v().getType(changeTo.getName()));
+                    changed = true;
+                }
+            }
+        }
+        return changed;
     }
 }
