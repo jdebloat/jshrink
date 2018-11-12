@@ -54,13 +54,18 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
+	public void setup() {
+		/* Setup is used to get the app/test/lib classpath information. In ClassGraphAnalysis, this is given via the
+		constructor and, therefore, does not need generated as in MavenProjectAnalysis
+		 */
+	}
+
+	@Override
 	public void run() {
-		// 1. use ASM to find all classes and methods
-		this.findAllClassesAndMethods();
-
-		// 2. get Entry methods
-		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
-
+        // 1. use ASM to find all classes and methods
+        this.findAllClassesAndMethods();
+        // 2. get entry points
+        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
 		// 3. use Spark to construct the call graph and compute the reachable classes and methods
 		this.runCallGraphAnalysis();
 	}

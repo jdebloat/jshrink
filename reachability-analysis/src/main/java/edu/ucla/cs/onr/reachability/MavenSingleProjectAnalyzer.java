@@ -5,6 +5,7 @@ import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import soot.G;
+import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.MavenUtils;
 
 /**
@@ -39,6 +40,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Map<String,List<File>> app_class_paths;
 	private final Map<String,List<File>> app_test_paths;
 	private final Map<String,List<File>> lib_class_paths;
+	private final Map<String,CallGraphAnalysis> callGraphAnalysises;
 	private final HashMap<String, String> classpaths;
 	private final EntryPointProcessor entryPointProcessor;
 	private final Set<MethodData> entryPoints;
@@ -60,6 +62,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		classpaths = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
 		entryPoints = new HashSet<MethodData>();
+		callGraphAnalysises = new HashMap<String, CallGraphAnalysis>();
 	}
 
 	public void cleanup(){
@@ -87,8 +90,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 	}
 
-	//TODO: I'm not a fan of splitting things up between setup and run. Perhaps I should just merge them back
-	private  void setup(){
+	@Override
+	public void setup(){
 		File root_dir = new File(project_path);
 
 		// find all submodules if any
@@ -203,6 +206,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				CallGraphAnalysis runner = 
 						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
 								localTestClassPaths, entryPointProcessor);
+				runner.setup();
 				runner.run();
 				
 				// aggregate the analysis result of the submodule
@@ -239,6 +243,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			used_lib_methods_copy.retainAll(this.appMethods);
 			this.usedLibMethods.removeAll(used_lib_methods_copy);
 			this.usedAppMethods.addAll(used_lib_methods_copy);
+
 		}
 	}
 
