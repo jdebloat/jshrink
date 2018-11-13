@@ -1,21 +1,21 @@
 package edu.ucla.cs.onr.classcollapser;
 
+import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
+import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MethodData;
 import soot.*;
 import soot.jimple.*;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ClassCollapser implements IClassCollapser {
 
 	@Override
 	public void collapseClasses(List<File> libClassPath,
-			List<File> appClassPath, Set<MethodData> touchedMethods,
-			Set<MethodData> unTouchedMethods, Set<String> touchedClasses,
-			Set<String> unTouchedClasses) {
+                                List<File> appClassPath,
+                                Queue<ArrayList<String>> collapseList,
+                                Map<String, String> nameChangeList) {
 		
 	}
 
