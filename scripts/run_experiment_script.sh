@@ -31,9 +31,9 @@ if [ -f ${TEST_DATA_FILE} ]; then
 	exit 1
 fi
 
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,app_run,path,is_lib,size_in_bytes" >${SIZE_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,app_run,lib_methods,app_methods" >${METHOD_DATA_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,app_run,num_tests_run,num_tests_failed,num_test_errors" >${TEST_DATA_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,path,is_lib,size_in_bytes" >${SIZE_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,lib_methods,app_methods" >${METHOD_DATA_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_run,num_tests_failed,num_test_errors" >${TEST_DATA_FILE}
 
 echo "Setting up 'reachability-analysis' tool"
 if [ ! -f "${DEBLOAT_APP}" ]; then
@@ -52,11 +52,11 @@ cat ${WORK_LIST} |  while read item; do
 
 	echo "Processing : "${item}
 
-	mvn -f "${item_dir}/pom.xml" install -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn
+	mvn -f "${item_dir}/pom.xml" install -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn 2>&1 >/dev/null
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		echo "Compiled successfully"
-		temp_file=$(mkdir /tmp/XXXX)
+		temp_file=$(mktemp /tmp/XXXX)
 		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods 2>&1 >$temp_file 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
@@ -70,7 +70,40 @@ cat ${WORK_LIST} |  while read item; do
 			app_methods=$(cat ${temp_file} | awk -F, '($1=="number_app_methods"){print $2}')
 			lib_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods_removed"){print $2}')
 			app_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_app_methods_removed"){print $2}')
-			echo ${item},0,1,0,,1,${lib_methods},${app_methods},${lib_methods_removed},${app_methods_removed},,, >>${METHOD_DATA_FILE}
+			echo ${item},1,0,0,,1,0,${lib_methods},${app_methods} >>${METHOD_DATA_FILE}
+			echo ${item},1,0,0,,1,1,${lib_methods_removed},${app_methods_removed} >>${METHOD_DATA_FILE}
+
+			#Get all the app sizes
+			cat ${temp_file} | awk -F, '($1 ~ "app_size_decompressed_before_*")' | while read entry; do
+				key=$(echo ${entry} | cut -d, -f1)
+				value=$(echo ${entry} | cut -d, -f2)
+				app_path=$(echo ${key} | cut -d_ -f5-)
+				echo ${item},1,0,0,,1,0,${app_path},0,${value} >>${SIZE_FILE}
+			done
+
+			cat ${temp_file} | awk -F, '($1 ~ "app_size_decompressed_after_*")' | while read entry; do
+				key=$(echo ${entry} | cut -d, -f1)
+				value=$(echo ${entry} | cut-d, -f2)
+				app_path=$(echo ${key} | cut -d_ -f5-)
+				echo ${item},1,0,0,,1,1,${app_path},0,${value} >>${SIZE_FILE}
+			done
+
+			#Get all the lib sizes
+			cat ${temp_file} | awk -F, '($1 ~ "lib_size_decompressed_before_*")' | while read entry; do
+				key=$(echo ${entry} | cut -d, -f1)
+				value=$(echo ${entry} | cut -d, -f2)
+				lib_path=$(echo ${key} | cut -d_ -f5-)
+				echo ${item},1,0,0,,1,0,${lib_path},1,${value} >>${SIZE_FILE}
+			done
+
+			cat ${temp_file} | awk -F, '($1 ~ "lib_size_decompressed_after_*")' | while read entry; do
+				key=$(echo ${entry} | cut -d, -f1)
+				value=$(echo ${entry} | cut -d, -f2)
+				lib_path=$(echo ${key} | cut -d_ -f5-)
+				echo ${item},1,0,0,,1,1,${lib_path},1,${value} >>${SIZE_FILE}
+			done
+
+			rm ${temp_file}	
 		else
 			echo "Could not properly process "${item}
 			echo "Output the following: "
