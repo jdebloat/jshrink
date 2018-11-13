@@ -80,10 +80,22 @@ public class ApplicationCommandLineParser {
 			File potentialMavenDirectory = new File(commandLine.getOptionValue('n'));
 			if(!potentialMavenDirectory.exists() || !potentialMavenDirectory.isDirectory()){
 				throw new FileNotFoundException("Specified Maven directory '" + potentialMavenDirectory.getAbsolutePath()
-					+ "' is not a directory");
+					+ "' is not a directory.");
+			}
+
+			File pomFile = new File(potentialMavenDirectory.getAbsolutePath() + File.separator + "pom.xml");
+
+			if(!pomFile.exists() || pomFile.isDirectory()){
+				throw new FileNotFoundException("File '" + pomFile.getAbsolutePath() + "' does not exist in " +
+						"specified Maven directory.");
 			}
 
 			mavenDirectory = Optional.of(potentialMavenDirectory);
+
+			if(!mvnCommandExists()){
+				throw new ParseException("Maven Directory specified, yet the 'mvn' command was not found on your " +
+					"system. Please install it.");
+			}
 
 		} else {
 			mavenDirectory = Optional.empty();
@@ -273,6 +285,20 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(helpOption);
 
 		return toReturn;
+	}
+
+	private boolean mvnCommandExists(){
+		try {
+			Process p = null;
+			ProcessBuilder pb = new ProcessBuilder("mvn","--version");
+			p = pb.start();
+
+			p.waitFor();
+
+			return p.exitValue() == 0;
+		}catch(IOException|InterruptedException e){
+			return false;
+		}
 	}
 
 	public List<File> getAppClassPath() {
