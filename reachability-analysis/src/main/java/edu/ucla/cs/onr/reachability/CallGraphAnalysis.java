@@ -3,7 +3,6 @@ package edu.ucla.cs.onr.reachability;
 import java.io.File;
 import java.util.*;
 
-import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -31,13 +30,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
-	private final boolean verbose;
 
 	public CallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
 	                              List<File> appTestPath, 
-	                              EntryPointProcessor entryPointProc,
-							 		boolean isVerbose) {
+	                              EntryPointProcessor entryPointProc) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
@@ -54,20 +51,22 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		entryPointProcessor = entryPointProc;
-		verbose = isVerbose;
 	}
 
 	@Override
 	public void setup() {
-		// 1. use ASM to find all classes and methods
-		//TODO: We assume "setup()" has not already been run; there is potential for errors.
-		this.findAllClassesAndMethods();
-		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+		/* Setup is used to get the app/test/lib classpath information. In ClassGraphAnalysis, this is given via the
+		constructor and, therefore, does not need generated as in MavenProjectAnalysis
+		 */
 	}
 
 	@Override
 	public void run() {
-		// 2. use Spark to construct the call graph and compute the reachable classes and methods
+        // 1. use ASM to find all classes and methods
+        this.findAllClassesAndMethods();
+        // 2. get entry points
+        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+		// 3. use Spark to construct the call graph and compute the reachable classes and methods
 		this.runCallGraphAnalysis();
 	}
 
@@ -88,12 +87,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
 		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
-
-		if(this.verbose) {
-			for (MethodData methodData : entryMethods) {
-				System.out.println("entry_point," + methodData.getSignature());
-			}
-		}
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 		Scene.v().setEntryPoints(entryPoints);
@@ -126,17 +119,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.usedAppClasses.retainAll(usedClasses);
 		this.usedAppMethods.addAll(this.appMethods);
 		this.usedAppMethods.retainAll(usedMethods);
-		
-		if(this.verbose) {
-			System.out.println("number_lib_classes," + libClasses.size());
-			System.out.println("number_lib_methods," + libMethods.size());
-			System.out.println("number_app_classes," + appClasses.size());
-			System.out.println("number_app_methods," + appMethods.size());
-			System.out.println("number_used_lib_classes," + usedLibClasses.size());
-			System.out.println("number_used_lib_methods," + usedLibMethods.size());
-			System.out.println("number_used_app_classes," + usedAppClasses.size());
-			System.out.println("number_used_app_method," + usedAppMethods.size());
-		}
 	}
 
 	@Override

@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Set;
 
 public interface IProjectAnalyser {
+
+    /*
+    Setup is needed to populate the classpaths (getAppClasspaths, getLibClasspaths, getTestClasspaths), which we need
+    before running the callgraph analysis.
+     */
     public void setup();
     public void run();
     public Set<String> getLibClasses();
