@@ -135,10 +135,12 @@ public class MethodWiper {
 
 	private static boolean wipeMethod(SootMethod sootMethod, Optional<Optional<String>> exception){
 
-		SootClass sootClass = sootMethod.getDeclaringClass();
-		if(sootMethod.isAbstract()){
+
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
 		}
+
+		SootClass sootClass = sootMethod.getDeclaringClass();
 
 		long originalSize = getSize(sootClass);
 
