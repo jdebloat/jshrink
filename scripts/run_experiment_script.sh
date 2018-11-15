@@ -4,7 +4,7 @@ PWD=`pwd`
 WORK_LIST="${PWD}/work_list.dat"
 PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/reachability-analysis-1.0-jar-with-dependencies.jar"
-SIZE_FILE="${PWD}/original_size.csv"
+SIZE_FILE="${PWD}/size_data.csv"
 METHOD_DATA_FILE="${PWD}/method_data.csv"
 TEST_DATA_FILE="${PWD}/test_data.csv"
 JAVA="/usr/lib/jvm/java-8-oracle/bin/java"
@@ -57,7 +57,7 @@ cat ${WORK_LIST} |  while read item; do
 	if [[ ${exit_status} == 0 ]]; then
 		echo "Compiled successfully"
 		temp_file=$(mktemp /tmp/XXXX)
-		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods 2>&1 >$temp_file 
+		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >$temp_file 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
 
@@ -71,7 +71,7 @@ cat ${WORK_LIST} |  while read item; do
 			lib_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods_removed"){print $2}')
 			app_methods_removed=$(cat ${temp_file} | awk -F, '($1=="number_app_methods_removed"){print $2}')
 			echo ${item},1,0,0,,1,0,${lib_methods},${app_methods} >>${METHOD_DATA_FILE}
-			echo ${item},1,0,0,,1,1,${lib_methods_removed},${app_methods_removed} >>${METHOD_DATA_FILE}
+			echo ${item},1,0,0,,1,1,$(echo "${lib_methods} - ${lib_methods_removed}" | bc),$(echo "${app_methods} - ${app_methods_removed}" | bc) >>${METHOD_DATA_FILE}
 
 			#Get all the app sizes
 			cat ${temp_file} | awk -F, '($1 ~ "app_size_decompressed_before_*")' | while read entry; do
@@ -83,7 +83,7 @@ cat ${WORK_LIST} |  while read item; do
 
 			cat ${temp_file} | awk -F, '($1 ~ "app_size_decompressed_after_*")' | while read entry; do
 				key=$(echo ${entry} | cut -d, -f1)
-				value=$(echo ${entry} | cut-d, -f2)
+				value=$(echo ${entry} | cut -d, -f2)
 				app_path=$(echo ${key} | cut -d_ -f5-)
 				echo ${item},1,0,0,,1,1,${app_path},0,${value} >>${SIZE_FILE}
 			done
@@ -102,7 +102,7 @@ cat ${WORK_LIST} |  while read item; do
 				lib_path=$(echo ${key} | cut -d_ -f5-)
 				echo ${item},1,0,0,,1,1,${lib_path},1,${value} >>${SIZE_FILE}
 			done
-
+			
 			rm ${temp_file}	
 		else
 			echo "Could not properly process "${item}
