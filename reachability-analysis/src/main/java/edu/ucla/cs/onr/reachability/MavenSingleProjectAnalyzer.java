@@ -168,7 +168,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				String[] cps = cp.split(File.pathSeparator);
 				lib_class_paths.put(artifact_id, new ArrayList<File>());
 				for(String path: cps){
-					if(!path.isEmpty()) {
+					File pathFile = new File(path);
+					if(!path.isEmpty() && pathFile.exists()) {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}
