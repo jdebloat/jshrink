@@ -49,14 +49,9 @@ public class MavenProjectAnalysis {
 				// build success
 				String proj_path = proj.getAbsolutePath();
 				
-				if (proj_name.equals("google_flatbuffers")) {
-					// have to exclude this project since it only has a handful of java classes
-					// and there are also no main methods or test methods
-					continue;
-				} else if (proj_name.equals("thymeleaf_thymeleaf")) {
+				if (proj_name.equals("thymeleaf_thymeleaf")) {
 					// the folder of compiled test classes is thymeleaf-tests/target/test-classes
 					// need to handle this somehow
-					
 				}
 				
 				// count the total number of dependencies
@@ -67,7 +62,7 @@ public class MavenProjectAnalysis {
 					dependency_count = dependencies.size();
 				}
 				
-				if(dependency_count > 10) {
+				if(dependency_count > 40) {
 					// start from small projects first
 					continue;
 				}

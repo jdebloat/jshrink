@@ -13,6 +13,7 @@ import edu.ucla.cs.onr.reachability.MethodData;
 
 import org.apache.commons.io.FileUtils;
 
+import soot.JavaClassProvider.JarException;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootMethod;
@@ -171,6 +172,7 @@ public class EntryPointUtil {
 			try {
 				Scene.v().loadNecessaryClasses();
 			} catch (IllegalArgumentException e) {
+				// 1. IllegalArgumentException: 
 				// If a project uses jars built by Java 9, there will be a module-info.class
 				// in the jar, which causes IllegalArgumentException in Soot
 				// as an example, check the asm-6.2 library in cglib/cglib project

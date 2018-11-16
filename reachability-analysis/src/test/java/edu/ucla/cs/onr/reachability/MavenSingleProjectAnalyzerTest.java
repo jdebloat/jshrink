@@ -70,6 +70,26 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(323, runner.getUsedAppMethods().size());
 	}
 	
+	/**
+	 * Must manually remove JCTools_JCTools/jctools-experimental/target/classes/
+	 * org/jctools/queues/blocking/TemplateBlocking.java to resolve this NPE
+	 * Tried to catch it outside of Soot but couldn't
+	 */
+	@Test
+	public void testNPEInJCTools() {
+		String jctools_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project);
+		runner.run();
+	}
+	
+	@Test
+	public void testClassResolution() {
+		CallGraphAnalysis.useSpark = false;
+		String project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project);
+		runner.run();
+	}
+	
 	@After
 	public void cleanUp() {
 		G.reset();

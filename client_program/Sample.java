@@ -1,4 +1,4 @@
-import Jama.*;
+import Jama.Matrix;
 
 public class Sample {
 
