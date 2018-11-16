@@ -2,6 +2,7 @@ package edu.ucla.cs.onr.methodwiper;
 
 import soot.*;
 import soot.jimple.*;
+import soot.tagkit.JasminAttribute;
 import soot.util.JasminOutputStream;
 
 import java.io.*;
@@ -115,43 +116,33 @@ public class MethodWiper {
 		body.getUnits().add(Jimple.v().newThrowStmt(localRuntimeException));
 	}
 
-	private static long getSize(SootMethod sootMethod){
+	private static long getSize(SootClass sootClass){
 
-		for(SootMethod m: sootMethod.getDeclaringClass().getMethods()){
+		for(SootMethod m: sootClass.getMethods()){
 			if(m.isConcrete()) {
 				m.retrieveActiveBody();
 			}
 		}
 
-		File tempFile = null;
-		try {
-			tempFile = File.createTempFile(sootMethod.getDeclaringClass().getName(), ".class_temp");
-			OutputStream streamOut = new JasminOutputStream(new FileOutputStream(tempFile));
-			PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
-			JasminClass jasminClass = new JasminClass(sootMethod.getDeclaringClass());
-			jasminClass.print(writerOut);
-			writerOut.flush();
-			streamOut.close();
-		} catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter writerOut = new PrintWriter(stringWriter);
+		JasminClass jasminClass = new JasminClass(sootClass);
+		jasminClass.print(writerOut);
+		writerOut.flush();
 
-		assert(tempFile != null);
-
-		long toReturn = tempFile.length();
-		tempFile.delete();
-
-		return toReturn;
+		return stringWriter.getBuffer().length();
 	}
 
 	private static boolean wipeMethod(SootMethod sootMethod, Optional<Optional<String>> exception){
 
-		if(sootMethod.isAbstract()){
+
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
 		}
 
-		long originalSize = getSize(sootMethod);
+		SootClass sootClass = sootMethod.getDeclaringClass();
+
+		long originalSize = getSize(sootClass);
 
 		Body body = getBody(sootMethod);
 		if(exception.isPresent()){
@@ -164,7 +155,7 @@ public class MethodWiper {
 		body.setMethod(sootMethod);
 		sootMethod.setActiveBody(body);
 
-		long newSize = getSize(sootMethod);
+		long newSize = getSize(sootClass);
 
 		if(newSize >= originalSize){
 			sootMethod.setActiveBody(oldBody);

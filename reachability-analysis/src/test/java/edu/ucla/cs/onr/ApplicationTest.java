@@ -1,7 +1,9 @@
 package edu.ucla.cs.onr;
 
+import edu.ucla.cs.onr.reachability.EntryPointProcessor;
+import edu.ucla.cs.onr.reachability.MavenSingleProjectAnalyzer;
 import edu.ucla.cs.onr.reachability.MethodData;
-import edu.ucla.cs.onr.util.WritingClassUtils;
+import edu.ucla.cs.onr.util.ClassFileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -39,6 +41,13 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
+	private boolean jarIntact(){
+        ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+        File f =
+                new File(classLoader.getResource("simple-test-project/libs/standard-stuff-library.jar").getFile());
+        return f.exists() && !f.isDirectory();
+    }
+
 	private static List<File> getTestClassPath(){
 		List<File> toReturn = new ArrayList<File>();
 
@@ -63,13 +72,43 @@ public class ApplicationTest {
 		return sb.toString();
 	}
 
+	private File getModuleProjectDir(){
+		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+		File f = new File(classLoader.getResource("module-test-project").getFile());
+		assert(f.exists());
+		assert(f.isDirectory());
+		return f;
+	}
+
+	private List<File> getModueFilesToRectify(){
+		List<File> toReturn = new ArrayList<File>();
+
+		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+		File f = new File(classLoader.getResource(
+				"module-test-project/simple-test-project/libs/standard-stuff-library.jar").getFile());
+		assert(f.exists());
+		toReturn.add(f);
+
+		return toReturn;
+	}
+
+	private void revertModule(){
+
+		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
+				getModuleProjectDir().getAbsolutePath(),
+				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()));
+		mavenSingleProjectAnalyzer.cleanup();
+	}
+
 	@After
 	public void rectifyChanges() throws IOException{
 		Collection<File> files = new HashSet<File>();
 		files.addAll(getAppClassPath());
 		files.addAll(getLibClassPath());
 		files.addAll(getTestClassPath());
-		WritingClassUtils.rectifyChanges(files);
+		files.addAll(getModueFilesToRectify());
+		ClassFileUtils.rectifyChanges(files);
+		revertModule();
 		G.reset();
 	}
 
@@ -126,6 +165,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+		assertTrue(jarIntact());
 	}
 
 	@Test
@@ -156,12 +196,14 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		//(Method is untouched by too small to remove)
+//		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -197,6 +239,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -224,7 +267,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
@@ -235,6 +278,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Ignore @Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
@@ -271,6 +315,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
 	}
 
 	@Test
@@ -306,6 +351,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+		assertTrue(jarIntact());
 	}
 
 	@Test
@@ -342,5 +388,44 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+        assertTrue(jarIntact());
+	}
+
+	@Test
+	public void mavenTest_mainMethodEntry(){
+		//Warning: This test takes a while! 6 minutes on my system
+		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+		assertTrue(jarIntact());
 	}
 }

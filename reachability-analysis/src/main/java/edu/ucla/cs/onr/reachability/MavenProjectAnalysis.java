@@ -68,7 +68,8 @@ public class MavenProjectAnalysis {
 				}
 				
 				CallGraphAnalysis.useSpark = false;
-				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path);
+				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path,
+						new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
 				runner.run();
 				
 				String record = proj_name + "\t"

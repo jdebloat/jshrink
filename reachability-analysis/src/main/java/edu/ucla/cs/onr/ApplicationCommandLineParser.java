@@ -24,6 +24,7 @@ public class ApplicationCommandLineParser {
 	private final Set<MethodData> customEntryPoints;
 	private final boolean doRemoveMethods;
 	private final Set<MethodData> methodsToRemove;
+	private final Optional<File> mavenDirectory;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -72,6 +73,32 @@ public class ApplicationCommandLineParser {
 			testClassPath = pathToFiles(commandLine.getOptionValue("t"));
 		} else {
 			testClassPath = new ArrayList<File>();
+		}
+
+		if(commandLine.hasOption('n')){
+
+			File potentialMavenDirectory = new File(commandLine.getOptionValue('n'));
+			if(!potentialMavenDirectory.exists() || !potentialMavenDirectory.isDirectory()){
+				throw new FileNotFoundException("Specified Maven directory '" + potentialMavenDirectory.getAbsolutePath()
+					+ "' is not a directory.");
+			}
+
+			File pomFile = new File(potentialMavenDirectory.getAbsolutePath() + File.separator + "pom.xml");
+
+			if(!pomFile.exists() || pomFile.isDirectory()){
+				throw new FileNotFoundException("File '" + pomFile.getAbsolutePath() + "' does not exist in " +
+						"specified Maven directory.");
+			}
+
+			mavenDirectory = Optional.of(potentialMavenDirectory);
+
+			if(!mvnCommandExists()){
+				throw new ParseException("Maven Directory specified, yet the 'mvn' command was not found on your " +
+					"system. Please install it.");
+			}
+
+		} else {
+			mavenDirectory = Optional.empty();
 		}
 
 		debug = commandLine.hasOption('d');
@@ -175,6 +202,13 @@ public class ApplicationCommandLineParser {
 			.optionalArg(false)
 			.build();
 
+		Option mavenTargetOption = Option.builder("n")
+				.desc("Instead of targeting using lib/app/test classpaths, a Maven project directory may be specified")
+				.longOpt("maven-project")
+				.hasArgs()
+				.required(false)
+				.build();
+
 		Option mainEntryPointOption = Option.builder("m")
 			.desc("Include the main method as the entry point")
 			.longOpt("main-entry")
@@ -227,6 +261,7 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+
 		Option helpOption = Option.builder("h")
 			.desc("Help")
 			.longOpt("help")
@@ -238,6 +273,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
 		toReturn.addOption(testClassPathOption);
+		toReturn.addOption(mavenTargetOption);
 		toReturn.addOption(mainEntryPointOption);
 		toReturn.addOption(publicEntryPointOption);
 		toReturn.addOption(testEntryPointOption);
@@ -249,6 +285,20 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(helpOption);
 
 		return toReturn;
+	}
+
+	private boolean mvnCommandExists(){
+		try {
+			Process p = null;
+			ProcessBuilder pb = new ProcessBuilder("mvn","--version");
+			p = pb.start();
+
+			p.waitFor();
+
+			return p.exitValue() == 0;
+		}catch(IOException|InterruptedException e){
+			return false;
+		}
 	}
 
 	public List<File> getAppClassPath() {
@@ -297,5 +347,9 @@ public class ApplicationCommandLineParser {
 
 	public Set<MethodData> methodsToRemove(){
 		return methodsToRemove;
+	}
+
+	public Optional<File> getMavenDirectory(){
+		return mavenDirectory;
 	}
 }

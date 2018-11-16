@@ -1,8 +1,10 @@
 package edu.ucla.cs.onr.classcollapser;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import edu.ucla.cs.onr.util.ClassFileUtils;
 import edu.ucla.cs.onr.util.SootUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -12,7 +14,9 @@ import soot.options.Options;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ClassCollapserTest {
     private static SootClass getSootClassFromResources(String pathName, String className){
@@ -60,6 +64,14 @@ public class ClassCollapserTest {
                 assertEquals("\"class B\"", ((InvokeStmt)u).getInvokeExpr().getArg(0).toString());
             }
         }
+//
+//        Set<File> classPathsOfConcern = new HashSet<File>();
+//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
+//        try {
+//            ClassFileUtils.writeClass(A, classPathsOfConcern);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
     }
 
     @Test
@@ -76,4 +88,28 @@ public class ClassCollapserTest {
         assertNotNull(A.getFieldByName("a"));
         assertNotNull(A.getFieldByName("b"));
     }
+
+    @Test
+    public void changeClassNameTest_override() {
+        SootClass A = getSootClassFromResources("src/test/resources/classcollapser/override/original/","A");
+        SootClass B = getSootClassFromResources("src/test/resources/classcollapser/override/original/","B");
+        SootClass main = getSootClassFromResources("src/test/resources/classcollapser/override/original/", "Main");
+
+        ClassCollapser.changeClassNamesInClass(main, B, A);
+        for (SootMethod m: main.getMethods()) {
+            Body body = m.retrieveActiveBody();
+            for (Local l: body.getLocals()) {
+                assertNotEquals("B", l.getType().toString());
+            }
+        }
+//
+//        Set<File> classPathsOfConcern = new HashSet<File>();
+//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
+//        try {
+//            ClassFileUtils.writeClass(main, classPathsOfConcern);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
+    }
+
 }

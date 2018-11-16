@@ -473,4 +473,10 @@ public class MethodWiperTest {
 		assertFalse(MethodWiper.wipeMethodAndInsertRuntimeException(sootClass.getMethodByName("getNum")
 			,"THIS IS A PURPOSELY LONG EXCEPTION SO THAT THE EXCEPTION CODE IS BIGGER THAN WHAT IT REPLACES"));
 	}
+
+	@Test
+	public void wipeNativeMethod(){
+		SootClass sootClass = getSootClassFromResources("CornerCases");
+		assertFalse(MethodWiper.wipeMethod(sootClass.getMethodByName("readByte")));
+	}
 }

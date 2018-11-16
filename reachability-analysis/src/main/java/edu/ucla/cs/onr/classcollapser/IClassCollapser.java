@@ -1,10 +1,7 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import edu.ucla.cs.onr.reachability.MethodData;
-
 import java.io.File;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public interface IClassCollapser {
 
@@ -14,10 +11,10 @@ public interface IClassCollapser {
 	 *
 	 * @param libClassPath The classpath of any libraries needed for the compilation of the app
 	 * @param appClassPath The classpath of the app
-	 * @param touchedMethods The touched methods
+	 * @param collapseList The classes that need to be collapsed, in order
+	 * @param nameChangeList The class names that need to be changed in all bodies, unordered
 	 *
 	 */
-	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Set<MethodData> touchedMethods,
-								Set<MethodData> unTouchedMethods, Set<String> touchedClasses,
-								Set<String> unTouchedClasses);
+	public void collapseClasses(List<File> libClassPath, List<File> appClassPath, Queue<ArrayList<String>> collapseList,
+								Map<String, String> nameChangeList);
 }
