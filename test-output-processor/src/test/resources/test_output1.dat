@@ -1,0 +1,335 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] RestExpress-Parent
+[INFO] RestExpress-Common
+[INFO] RestExpress
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Building RestExpress-Parent 0.12.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ restexpress-parent ---
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Building RestExpress-Common 0.12.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ RestExpress-Common ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ RestExpress-Common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/common/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.0:compile (default-compile) @ RestExpress-Common ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 11 source files to /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/common/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ RestExpress-Common ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/common/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.0:testCompile (default-testCompile) @ RestExpress-Common ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 5 source files to /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/common/target/test-classes
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ RestExpress-Common ---
+[INFO] Surefire report directory: /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/common/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.restexpress.common.util.StringUtilsTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 sec
+Running org.restexpress.common.util.ObjectUtilsTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.restexpress.common.query.QueryOrderTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.restexpress.common.query.QueryRangeTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.restexpress.common.query.QueryFilterTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+
+Results :
+
+Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
+
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Building RestExpress 0.12.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-enforcer-plugin:1.0:enforce (enforce-maven) @ RestExpress ---
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ RestExpress ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/main/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.0:compile (default-compile) @ RestExpress ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 111 source files to /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/target/classes
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/main/java/org/restexpress/pipeline/MessageContext.java: Some input files use or override a deprecated API.
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/main/java/org/restexpress/pipeline/MessageContext.java: Recompile with -Xlint:deprecation for details.
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ RestExpress ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.0:testCompile (default-testCompile) @ RestExpress ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 40 source files to /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/target/test-classes
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/test/java/org/restexpress/ServerNoCompressionTest.java: Some input files use or override a deprecated API.
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/test/java/org/restexpress/ServerNoCompressionTest.java: Recompile with -Xlint:deprecation for details.
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/test/java/org/restexpress/AltRestExpressServerTest.java: /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/test/java/org/restexpress/AltRestExpressServerTest.java uses unchecked or unsafe operations.
+[WARNING] /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/src/test/java/org/restexpress/AltRestExpressServerTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.12.4:test (default-test) @ RestExpress ---
+[INFO] Surefire report directory: /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/target/surefire-reports
+
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Running org.restexpress.ResponseTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 sec
+Running org.restexpress.serialization.xml.XstreamXmlProcessorTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.206 sec
+Running org.restexpress.serialization.json.JacksonJsonProcessorTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.126 sec
+Running org.restexpress.serialization.json.GsonJsonProcessorTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 sec
+Running org.restexpress.util.RequestContextTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.util.EnvironmentTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.util.HttpSpecificationTest
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 sec
+Running org.restexpress.AltRestExpressServerTest
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8801
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 2ms
+DELETE http://localhost:8801/3/restexpress/polly/test/56 threw exception: MethodNotAllowedException
+DELETE http://localhost:8801/3/restexpress/polly/test/56 responded with 405 Method Not Allowed in 3ms
+GET http://localhost:8801/littleos responded with 200 OK in 4ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xml responded with 200 OK in 1ms
+POST http://localhost:8801/1/restexpress/sam/test/42 responded with 201 Created in 1ms
+GET http://localhost:8801/littleos threw exception: NotAcceptableException
+GET http://localhost:8801/littleos responded with 406 Not Acceptable in 1ms
+DELETE http://localhost:8801/3/restexpress/polly/test/56?_ignore_http_status=true threw exception: MethodNotAllowedException
+DELETE http://localhost:8801/3/restexpress/polly/test/56?_ignore_http_status=true responded with 405 Method Not Allowed in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42.json responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42 threw exception: NotAcceptableException
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 406 Not Acceptable in 1ms
+GET http://localhost:8801/littleos threw exception: RuntimeException
+GET http://localhost:8801/littleos responded with 500 Internal Server Error in 1ms
+PUT http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/littleos threw exception: RuntimeException
+GET http://localhost:8801/littleos responded with 500 Internal Server Error in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.JSON threw exception: BadRequestException
+GET http://localhost:8801/1/restexpress/sam/test/42.JSON responded with 400 Bad Request in 1ms
+GET http://localhost:8801/littleos responded with 200 OK in 2ms
+GET http://localhost:8801/littleos.json responded with 200 OK in 0ms
+PUT http://localhost:8801/echo responded with 200 OK in 0ms
+GET http://localhost:8801/littleos/1.xml responded with 200 OK in 1ms
+HEAD http://localhost:8801/3/restexpress/polly/test/56 responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xml responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/4/restexpress/allen/test/33 responded with 200 OK in 0ms
+GET http://localhost:8801/objects/exception threw exception: NullPointerException
+GET http://localhost:8801/objects/exception responded with 500 Internal Server Error in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xyz threw exception: BadRequestException
+GET http://localhost:8801/1/restexpress/sam/test/42.xyz responded with 400 Bad Request in 0ms
+GET http://localhost:8801/littleos.xml responded with 200 OK in 2ms
+DELETE http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/unserialized responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+PUT http://localhost:8801/echo responded with 200 OK in 1ms
+GET http://localhost:8801/objects/exception threw exception: NullPointerException
+GET http://localhost:8801/objects/exception responded with 500 Internal Server Error in 1ms
+DELETE http://localhost:8801/x/y/z.json threw exception: NotFoundException
+DELETE http://localhost:8801/x/y/z.json responded with 404 Not Found in 1ms
+GET http://localhost:8801/littleos/1.json responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+Tests run: 32, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.212 sec
+Running org.restexpress.pipeline.RawWrappedResponseTest
+Tests run: 31, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.091 sec
+Running org.restexpress.pipeline.JsendWrappedResponseTest
+Tests run: 28, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec
+Running org.restexpress.pipeline.DefaultRequestHandlerTest
+Tests run: 23, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.057 sec
+Running org.restexpress.ServerCompressionTest
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8802
+PUT http://localhost:8802/echo responded with 200 OK in 1ms
+GET http://localhost:8802/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+PUT http://localhost:8802/echo responded with 200 OK in 1ms
+GET http://localhost:8802/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.798 sec
+Running org.restexpress.exception.DefaultExceptionMapperTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.exception.ExceptionUtilsTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.preprocessor.HttpBasicAuthenticationPreprocessorTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 sec
+Running org.restexpress.contenttype.MediaTypeParserTest
+Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+Running org.restexpress.RestExpressTest
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8901
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8903
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8904
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8904
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8905
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8906
+Tests run: 7, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 9.467 sec <<< FAILURE!
+shouldThrowOnPortInUse(org.restexpress.RestExpressTest)  Time elapsed: 0.514 sec  <<< ERROR!
+java.lang.Exception: Unexpected exception, expected<java.net.BindException> but was<io.netty.channel.unix.Errors$NativeIoException>
+	at org.junit.internal.runners.statements.ExpectException.evaluate(ExpectException.java:28)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.internal.runners.statements.RunAfters.evaluate(RunAfters.java:27)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.execute(JUnit4Provider.java:252)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.executeTestSet(JUnit4Provider.java:141)
+	at org.apache.maven.surefire.junit4.JUnit4Provider.invoke(JUnit4Provider.java:112)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.apache.maven.surefire.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:189)
+	at org.apache.maven.surefire.booter.ProviderFactory$ProviderProxy.invoke(ProviderFactory.java:165)
+	at org.apache.maven.surefire.booter.ProviderFactory.invokeProvider(ProviderFactory.java:85)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:115)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:75)
+Caused by: io.netty.channel.unix.Errors$NativeIoException: bind(..) failed: Address already in use
+	at io.netty.channel.unix.Errors.newIOException(Errors.java:117)
+	at io.netty.channel.unix.Socket.bind(Socket.java:234)
+	at io.netty.channel.epoll.EpollServerSocketChannel.doBind(EpollServerSocketChannel.java:91)
+	at io.netty.channel.AbstractChannel$AbstractUnsafe.bind(AbstractChannel.java:554)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.bind(DefaultChannelPipeline.java:1258)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeBind(AbstractChannelHandlerContext.java:501)
+	at io.netty.channel.AbstractChannelHandlerContext.bind(AbstractChannelHandlerContext.java:486)
+	at io.netty.channel.DefaultChannelPipeline.bind(DefaultChannelPipeline.java:980)
+	at io.netty.channel.AbstractChannel.bind(AbstractChannel.java:250)
+	at io.netty.bootstrap.AbstractBootstrap$2.run(AbstractBootstrap.java:365)
+	at io.netty.util.concurrent.AbstractEventExecutor.safeExecute(AbstractEventExecutor.java:163)
+	at io.netty.util.concurrent.SingleThreadEventExecutor.runAllTasks(SingleThreadEventExecutor.java:403)
+	at io.netty.channel.epoll.EpollEventLoop.run(EpollEventLoop.java:304)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$5.run(SingleThreadEventExecutor.java:858)
+	at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run(DefaultThreadFactory.java:144)
+	at java.lang.Thread.run(Thread.java:748)
+
+Running org.restexpress.ServerNoCompressionTest
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8802
+PUT http://localhost:8802/echo responded with 200 OK in 0ms
+GET http://localhost:8802/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8802/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+PUT http://localhost:8802/echo responded with 200 OK in 0ms
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.791 sec
+Running org.restexpress.query.QueryFiltersTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.restexpress.query.QueryOrdersTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 sec
+Running org.restexpress.query.QueryRangesTest
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Running org.restexpress.RestExpressServerTest
+RestExpress server listening on port 0.0.0.0/0.0.0.0:8801
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 1ms
+DELETE http://localhost:8801/3/restexpress/polly/test/56 threw exception: MethodNotAllowedException
+DELETE http://localhost:8801/3/restexpress/polly/test/56 responded with 405 Method Not Allowed in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xml responded with 200 OK in 1ms
+POST http://localhost:8801/1/restexpress/sam/test/42 responded with 201 Created in 1ms
+GET http://localhost:8801/littleos threw exception: NotAcceptableException
+GET http://localhost:8801/littleos responded with 406 Not Acceptable in 1ms
+DELETE http://localhost:8801/3/restexpress/polly/test/56?_ignore_http_status=true threw exception: MethodNotAllowedException
+DELETE http://localhost:8801/3/restexpress/polly/test/56?_ignore_http_status=true responded with 405 Method Not Allowed in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.json responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42 threw exception: NotAcceptableException
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 406 Not Acceptable in 2ms
+GET http://localhost:8801/littleos/1.wjson responded with 200 OK in 2ms
+PUT http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 1ms
+GET http://localhost:8801/littleos/1.wxml responded with 200 OK in 2ms
+GET http://localhost:8801/1/restexpress/sam/test/42.JSON threw exception: BadRequestException
+GET http://localhost:8801/1/restexpress/sam/test/42.JSON responded with 400 Bad Request in 1ms
+GET http://localhost:8801/littleos responded with 200 OK in 3ms
+GET http://localhost:8801/littleos.json responded with 200 OK in 2ms
+GET http://localhost:8801/littleos.wxml responded with 200 OK in 2ms
+PUT http://localhost:8801/echo responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 1ms
+GET http://localhost:8801/littleos/1.xml responded with 200 OK in 1ms
+HEAD http://localhost:8801/3/restexpress/polly/test/56 responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xml responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/4/restexpress/allen/test/33 responded with 200 OK in 0ms
+GET http://localhost:8801/littleos.wjson responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.xyz threw exception: BadRequestException
+GET http://localhost:8801/1/restexpress/sam/test/42.xyz responded with 400 Bad Request in 1ms
+GET http://localhost:8801/littleos.xml responded with 200 OK in 1ms
+DELETE http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/unserialized responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42.wjson responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/1/restexpress/sam/test/42.wxml responded with 200 OK in 2ms
+PUT http://localhost:8801/echo responded with 200 OK in 0ms
+DELETE http://localhost:8801/x/y/z.json threw exception: NotFoundException
+DELETE http://localhost:8801/x/y/z.json responded with 404 Not Found in 4ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+GET http://localhost:8801/littleos/1.json responded with 200 OK in 1ms
+GET http://localhost:8801/1/restexpress/sam/test/42 responded with 200 OK in 0ms
+Tests run: 35, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.952 sec
+Running org.restexpress.route.ParameterizedRouteBuilderTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.route.RouteResolverTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 sec
+Running org.restexpress.route.RouteBuilderTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running org.restexpress.route.RouteDeclarationTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 sec
+Running org.restexpress.route.RegexRouteBuilderTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 sec
+Running org.restexpress.domain.ResultWrapperTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running org.restexpress.RequestTest
+Tests run: 27, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 sec
+Running org.restexpress.url.QueryStringParserTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
+Running org.restexpress.url.UrlPatternTest
+Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
+
+Results :
+
+Tests in error: 
+  shouldThrowOnPortInUse(org.restexpress.RestExpressTest): Unexpected exception, expected<java.net.BindException> but was<io.netty.channel.unix.Errors$NativeIoException>
+
+Tests run: 378, Failures: 0, Errors: 1, Skipped: 0
+
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary:
+[INFO] 
+[INFO] RestExpress-Parent ................................. SUCCESS [  0.207 s]
+[INFO] RestExpress-Common ................................. SUCCESS [  0.856 s]
+[INFO] RestExpress ........................................ FAILURE [ 23.185 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 24.338 s
+[INFO] Finished at: 2018-11-16T12:55:46-08:00
+[INFO] Final Memory: 26M/477M
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:2.12.4:test (default-test) on project RestExpress: There are test failures.
+[ERROR] 
+[ERROR] Please refer to /media/storage/call-graph-analysis/scripts/bobby_notes/restexpress/core/target/surefire-reports for the individual test results.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
+[ERROR] 
+[ERROR] After correcting the problems, you can resume the build with the command
+[ERROR]   mvn <goals> -rf :RestExpress
+[INFO] Build failures were ignored.
