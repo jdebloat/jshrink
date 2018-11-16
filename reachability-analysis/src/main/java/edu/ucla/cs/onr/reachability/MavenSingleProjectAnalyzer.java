@@ -108,7 +108,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			//Ensure the project is compiled.
 			 Process process1 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --batch-mode -fn");
+				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --quiet --batch-mode -fn");
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 			String line;
