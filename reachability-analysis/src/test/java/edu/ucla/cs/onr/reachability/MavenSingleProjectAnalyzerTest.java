@@ -80,7 +80,7 @@ public class MavenSingleProjectAnalyzerTest {
 	@Test
 	public void testNPEInJCTools() {
 		String jctools_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools";
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
 		runner.run();
 	}
 	
@@ -88,7 +88,7 @@ public class MavenSingleProjectAnalyzerTest {
 	public void testClassResolution() {
 		CallGraphAnalysis.useSpark = false;
 		String project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras";
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
 		runner.run();
 	}
 	
