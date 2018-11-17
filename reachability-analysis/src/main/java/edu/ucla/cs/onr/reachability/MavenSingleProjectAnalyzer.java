@@ -169,12 +169,29 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				lib_class_paths.put(artifact_id, new ArrayList<File>());
 				for(String path: cps){
 					File pathFile = new File(path);
-					if(!path.isEmpty() && pathFile.exists()) {
+					if(!path.isEmpty() && pathFile.exists() && directoryContains(root_dir,pathFile)) {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}
 			}
 		}
+	}
+
+	private static boolean directoryContains(File dir, File file){
+		/* To find if a file is within a directory, we simply keep calling file.getParentFile(), until we find
+		a parent directory equal to the directory. We will eventually get to a point where file.getParentFile() == null
+		in the case where a file is not within a directory.
+		*/
+
+		if(file.getParentFile() == null){
+			return false;
+		}
+
+		if(file.getParentFile().equals(dir)){
+			return true;
+		}
+
+		return directoryContains(dir, file.getParentFile());
 	}
 
 	@Override
