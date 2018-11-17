@@ -8,7 +8,7 @@ SIZE_FILE="${PWD}/size_data.csv"
 METHOD_DATA_FILE="${PWD}/method_data.csv"
 TEST_DATA_FILE="${PWD}/test_data.csv"
 JAVA="/usr/lib/jvm/java-8-oracle/bin/java"
-TEST_SCRIPT="${PWD}/test_script.sh"
+TEST_PROCESSOR="${PWD}/test-output-processor-1.0-jar-with-dependencies.jar"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -33,10 +33,10 @@ fi
 
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,path,is_lib,size_in_bytes" >${SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,lib_methods,app_methods" >${METHOD_DATA_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_run,num_tests_failed,num_test_errors" >${TEST_DATA_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_passed,num_tests_failed" >${TEST_DATA_FILE}
 
-echo "Setting up 'reachability-analysis' tool"
 if [ ! -f "${DEBLOAT_APP}" ]; then
+	echo "Setting up 'reachability-analysis' tool"
 	mvn -f ../reachability-analysis/pom.xml clean compile assembly:single 2>&1 >/dev/null
 	exit_status=$?
 	if [[ ${exit_status} != 0 ]]; then
@@ -44,6 +44,17 @@ if [ ! -f "${DEBLOAT_APP}" ]; then
 		exit 1
 	fi
 	cp "../reachability-analysis/target/reachability-analysis-1.0-jar-with-dependencies.jar" .
+fi
+
+if [ ! -f "${TEST_PROCESSOR}" ]; then
+	echo "Setting up 'test-output-processor' tool"
+	mvn -f ../test-output-processor/pom.xml clean compile assembly:single 2>&1 >/dev/null
+	exit_status=$?
+	if [[ ${exit_status} != 0 ]]; then
+		echo "Cannot build 'test-output-processor' tool"
+		exit 1
+	fi
+	cp "../test-output-processor/target/test-output-processor-1.0-jar-with-dependencies.jar" .
 fi
 
 cat ${WORK_LIST} |  while read item; do
@@ -57,14 +68,24 @@ cat ${WORK_LIST} |  while read item; do
 	if [[ ${exit_status} == 0 ]]; then
 		echo "Compiled successfully"
 		temp_file=$(mktemp /tmp/XXXX)
-		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >$temp_file 
+		test_output=$(mktemp /tmp/XXXX)
+
+		mvn -f "${item_dir}/pom.xml" test --batch-mode -fn 2>&1 >${test_output}
+
+		before_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
+
+		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
 
-			#TODO: Need to process more data from ${temp_file} to get more data
-			#app/lib size before and after debloat should be obtainable from ${temp_file}
-			#Testing is going to prove more difficult
+			mvn -f "${item_dir}/pom.xml" test --batch-mode -fn 2>&1 >${test_output}
 
+			after_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
+
+			#Record the test information
+			echo ${item},1,0,0,,1,0,${before_tests} >>${TEST_DATA_FILE}
+			echo ${item},1,0,0,,1,1,${after_tests} >>${TEST_DATA_FILE}
+				
 			#Get the number of methods/methods wiped for main class as an entry point
 			lib_methods=$(cat ${temp_file} | awk -F, '($1=="number_lib_methods"){print $2}')
 			app_methods=$(cat ${temp_file} | awk -F, '($1=="number_app_methods"){print $2}')
@@ -101,14 +122,14 @@ cat ${WORK_LIST} |  while read item; do
 				value=$(echo ${entry} | cut -d, -f2)
 				lib_path=$(echo ${key} | cut -d_ -f5-)
 				echo ${item},1,0,0,,1,1,${lib_path},1,${value} >>${SIZE_FILE}
-			done
-			
-			rm ${temp_file}	
+			done	
 		else
 			echo "Could not properly process "${item}
 			echo "Output the following: "
 			cat ${temp_file}
 		fi
+		rm ${temp_file}
+		rm ${test_output}
 	else
 		echo "Failed to compile"
 	fi
