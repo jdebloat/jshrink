@@ -1,14 +1,20 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import fj.P;
+import edu.ucla.cs.onr.util.MethodBodyUtils;
 import soot.Scene;
 import soot.SootClass;
 
+import edu.ucla.cs.onr.reachability.MethodData;
+import soot.SootMethod;
+
+
+import java.lang.reflect.Method;
 import java.util.*;
 
 public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     private Set<String> appClasses;
     private Set<String> usedAppClasses;
+    private Set<String> usedAppMethods;
     private Set<String> processableLeaves;
     private LinkedList<ArrayList<String>> collapseList;
     private Map<String, String> nameChangeList;
@@ -18,7 +24,8 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     private Map<String, SootClass> appClassMap;
 
     public ClassCollapserAnalysis(Set<String> appCls,
-                                  Set<String> usedAppCls) {
+                                  Set<String> usedAppCls,
+                                  Set<MethodData> usedAppMethodData) {
 
         appClasses = appCls;
         usedAppClasses = usedAppCls;
@@ -28,6 +35,11 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         collapseList = new LinkedList<ArrayList<String>>();
         nameChangeList = new HashMap<String, String>();
         appClassMap = new HashMap<String, SootClass> ();
+
+        usedAppMethods = new HashSet<String>();
+        for (MethodData m: usedAppMethodData) {
+            usedAppMethods.add(m.getSignature());
+        }
     }
 
     public void run() {
@@ -73,7 +85,26 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     }
 
     private boolean collapsable(String from, String to) {
-        return childrenMap.get(to).size() == 1;
+        SootClass fromClass = Scene.v().loadClassAndSupport(from);
+        if (parentsMap.get(from).size() == 1 && childrenMap.get(to).size() == 1) {
+            if (!usedAppClasses.contains(to)) {
+                return true;
+            }
+            SootClass toClass = Scene.v().loadClassAndSupport(to);
+            for (SootMethod m: fromClass.getMethods()) {
+                if (m.getName().equals("<init>") && !MethodBodyUtils.isEmptyConstructor(m)) {
+                    return false;
+                }
+                if (toClass.declaresMethod(m.getName()) &&
+                        usedAppMethods.contains(toClass.getMethodByName(m.getName()).getSignature())) {
+                    return false;
+                }
+            }
+        } else {
+            return false;
+        }
+
+        return true;
     }
 
     private void initLeaves() {
