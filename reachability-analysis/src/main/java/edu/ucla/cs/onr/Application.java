@@ -25,6 +25,9 @@ public class Application {
 	//I use this for testing, to see if the correct methods have been removed
 	/*package*/ static Set<MethodData> removedMethods = new HashSet<MethodData>();
 
+	//I use this for testing, to see if the correct classes have been removed
+	/*package*/ static Set<String> removedClasses = new HashSet<String>();
+
 	public static boolean isDebugMode() {
 		return DEBUG_MODE;
 	}
@@ -38,6 +41,7 @@ public class Application {
 		//Re-initialise this each time Application is run (for testing)
 		removedMethods.clear();
 		decompressedJars.clear();
+		removedClasses.clear();
 
 		//I just put this in to stop an error
 		PropertyConfigurator.configure(
@@ -188,51 +192,73 @@ public class Application {
 				Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
 
 				if(commandLineParser.removeMethods()) {
+					Set<MethodData> methodsToRemove = new HashSet<MethodData>();
+
 					Set<SootClass> classesToRewrite = new HashSet<SootClass>(); //Take note of all classes that have changed
 					Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
 
 					//Remove the unused library methods and classes
+					classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
 					Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
 					libMethodsToRemove.addAll(projectAnalyser.getLibMethods());
 					libMethodsToRemove.removeAll(projectAnalyser.getUsedLibMethods());
 
-					classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
-
-					for (MethodData methodToRemoveString :libMethodsToRemove) {
-						SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-						if (!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
-                            SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
-                            if (MethodWiper.wipeMethodAndInsertRuntimeException
-                                    (sootMethod, getExceptionMessage())) {
-                                Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-                                classesToRewrite.add(sootClass);
-                                libMethodsRemoved.add(methodToRemoveString);
-                            }
-                        }
-					}
+					methodsToRemove.addAll(libMethodsToRemove);
 
 					//Remove the unused app methods (if applicable)
 					if (commandLineParser.isPruneAppInstance()) {
 						classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
-
 						Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
 						appMethodToRemove.addAll(projectAnalyser.getAppMethods());
 						appMethodToRemove.removeAll(projectAnalyser.getUsedAppMethods());
 
-						for (MethodData methodToRemoveString : appMethodToRemove) {
-							SootClass sootClass = Scene.v().loadClassAndSupport(methodToRemoveString.getClassName());
-							if (!sootClass.isEnum() && sootClass.declaresMethod(methodToRemoveString.getSubSignature())) {
-								SootMethod sootMethod = sootClass.getMethod(methodToRemoveString.getSubSignature());
-								if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod,
+						methodsToRemove.addAll(appMethodToRemove);
+					}
+
+					//Remove any classes in which all the methods are removed
+					Map<SootClass, Set<MethodData>> classIntCount = new HashMap<SootClass, Set<MethodData>>();
+					for(MethodData method : methodsToRemove){
+						SootClass sootClass = Scene.v().loadClassAndSupport(method.getClassName());
+						if(!classIntCount.containsKey(sootClass)){
+							Set<MethodData> methods = new HashSet<MethodData>();
+							for(SootMethod sootMethod : sootClass.getMethods()){
+								methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+							}
+							classIntCount.put(sootClass, methods);
+						}
+						classIntCount.get(sootClass).remove(method);
+					}
+
+					Set<SootClass> classesToRemove = new HashSet<SootClass>();
+					for(Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()){
+						if(entry.getValue().isEmpty()){
+							classesToRemove.add(entry.getKey());
+							Set<MethodData> methods = new HashSet<MethodData>();
+							for(SootMethod sootMethod : entry.getKey().getMethods()){
+								methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+							}
+							//If we remove the class we obviously remove the method
+							Application.removedMethods.addAll(methods);
+							Application.removedClasses.add(entry.getKey().getName());
+							methodsToRemove.removeAll(methods);
+						}
+					}
+
+
+					for (MethodData method : methodsToRemove) {
+						SootClass sootClass = Scene.v().loadClassAndSupport(method.getClassName());
+						if (!sootClass.isEnum() && sootClass.declaresMethod(method.getSubSignature())) {
+							SootMethod sootMethod = sootClass.getMethod(method.getSubSignature());
+							if (MethodWiper.wipeMethodAndInsertRuntimeException(sootMethod,
 									getExceptionMessage())) {
-									Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
-									classesToRewrite.add(sootClass);
-									appMethodsRemoved.add(methodToRemoveString);
-								}
+								Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
+								classesToRewrite.add(sootClass);
+								appMethodsRemoved.add(method);
 							}
 						}
 					}
 
+					removeClasses(classesToRemove,classPathsOfConcern);
 					modifyClasses(classesToRewrite,classPathsOfConcern);
 				}
 
@@ -287,6 +313,18 @@ public class Application {
 				ClassFileUtils.writeClass(sootClass, classPaths);
 			} catch (IOException e) {
 				System.err.println("An exception was thrown when attempting to rewrite a class:");
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+	}
+
+	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		for(SootClass sootClass : classesToRemove){
+			try{
+				ClassFileUtils.removeClass(sootClass, classPaths);
+			} catch (IOException e){
+				System.err.println("An exception was thrown when attempting to delete a class:");
 				e.printStackTrace();
 				System.exit(1);
 			}

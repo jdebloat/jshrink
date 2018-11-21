@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class ApplicationTest {
@@ -145,6 +146,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -165,6 +167,11 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertEquals(2, classesRemoved.size());
+
 		assertTrue(jarIntact());
 	}
 
@@ -182,6 +189,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -203,6 +211,13 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("Main"));
+		assertEquals(4, classesRemoved.size());
+
         assertTrue(jarIntact());
 	}
 
@@ -220,6 +235,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -239,6 +255,11 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertEquals(2, classRemoved.size());
+
         assertTrue(jarIntact());
 	}
 
@@ -258,6 +279,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -278,6 +300,11 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(2, classRemoved.size());
+
         assertTrue(jarIntact());
 	}
 
@@ -295,6 +322,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -315,6 +343,12 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertEquals(3, classesRemoved.size());
+
         assertTrue(jarIntact());
 	}
 
@@ -331,6 +365,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -351,6 +386,9 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertEquals(0, classesRemoved.size());
+
 		assertTrue(jarIntact());
 	}
 
@@ -368,6 +406,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -388,6 +427,9 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertFalse(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertEquals(0, classesRemoved.size());
+
         assertTrue(jarIntact());
 	}
 
@@ -405,6 +447,7 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -415,7 +458,6 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
-
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
@@ -426,6 +468,12 @@ public class ApplicationTest {
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
+
 		assertTrue(jarIntact());
 	}
 }

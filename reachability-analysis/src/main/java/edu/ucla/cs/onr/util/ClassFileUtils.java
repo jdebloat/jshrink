@@ -127,6 +127,23 @@ public class ClassFileUtils {
 		}
 	}
 
+	public static void removeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
+		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
+
+		if(!fileToReturn.isPresent()){
+			throw new IOException("Cannot find file for class '" +  sootClass.getName() + "'");
+		}
+
+		assert(fileToReturn.isPresent());
+
+		if(Application.isDebugMode()){
+			File moveLocation = new File(fileToReturn.get().getAbsolutePath() + ORIGINAL_FILE_POST_FIX);
+			FileUtils.moveFile(fileToReturn.get(), moveLocation);
+		} else {
+			FileUtils.forceDelete(fileToReturn.get());
+		}
+	}
+
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
 
 		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
@@ -197,18 +214,12 @@ public class ClassFileUtils {
 
 	private static void rectifyClassChanges(File file) throws IOException{
 		assert(file.isFile() && !file.isDirectory());
-		if(file.getName().endsWith(".class")){
-			File original = new File(file.getAbsolutePath() + ORIGINAL_FILE_POST_FIX);
+		if(file.getAbsolutePath().endsWith(ORIGINAL_FILE_POST_FIX)){
+			File original = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ORIGINAL_FILE_POST_FIX.length()));
 			if(original.exists()){
-				try {
-					file.delete();
-					Files.move(Paths.get(original.getAbsolutePath()), Paths.get(file.getAbsolutePath()));
-				}catch(IOException e){
-					throw new IOException("Unable to move original file '" + original.getAbsolutePath() + " to '"+
-						file.getAbsolutePath() + "'. Exception thrown:" + System.lineSeparator() +
-						e.getLocalizedMessage());
-				}
+				original.delete();
 			}
+			FileUtils.moveFile(file, original);
 		}
 	}
 }
