@@ -29,7 +29,8 @@ public class ClassCollapserApplication {
         Set<String> usedClasses = new HashSet<String>();
         usedClasses.add("B");
         usedClasses.add("main");
-        IClassCollapserAnalyser ccAnalysis = new ClassCollapserAnalysis(cgAnalysis.getAppClasses(), usedClasses);
+        Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
+        IClassCollapserAnalyser ccAnalysis = new ClassCollapserAnalysis(cgAnalysis.getAppClasses(), usedClasses, usedAppMethodData);
         ccAnalysis.run();
 //        for (ArrayList<String> collpase: ccAnalysis.getCollapseList()) {
 //            System.out.printf("merge %s into %s\n", collpase.get(0), collpase.get(1));
