@@ -63,22 +63,24 @@ cat ${WORK_LIST} |  while read item; do
 
 	echo "Processing : "${item}
 
-	mvn -f "${item_dir}/pom.xml" install -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn 2>&1 >/dev/null
+	rm -r "${item_dir}/libs" 2>&1 >/dev/null
+	mvn -f "${item_dir}/pom.xml" clean install -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn 2>&1 >/dev/null
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		echo "Compiled successfully"
 		temp_file=$(mktemp /tmp/XXXX)
 		test_output=$(mktemp /tmp/XXXX)
 
-		mvn -f "${item_dir}/pom.xml" test --batch-mode -fn 2>&1 >${test_output}
+		mvn -f "${item_dir}/pom.xml" test -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn 2>&1 >${test_output}
 
 		before_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
 
-		${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+		#2.5 hour timeout
+		timeout 9000 ${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
 
-			mvn -f "${item_dir}/pom.xml" test --batch-mode -fn 2>&1 >${test_output}
+			mvn -f "${item_dir}/pom.xml" test -Dmaven.repo.local="${item_dir}/libs" --batch-mode -fn 2>&1 >${test_output}
 
 			after_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
 
