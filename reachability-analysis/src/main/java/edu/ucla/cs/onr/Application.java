@@ -168,24 +168,6 @@ public class Application {
 					for(MethodData entrypoint : projectAnalyser.getEntryPoints()){
 						System.out.println("entry_point," + entrypoint.getSignature());
 					}
-
-					/* Removed these as I don't need them and they are a bit spammy
-					for (MethodData method : projectAnalyser.getLibMethods()) {
-						System.out.println("lib_method," + method.toString());
-					}
-
-					for (MethodData method : projectAnalyser.getAppMethods()) {
-						System.out.println("app_method," + method.toString());
-					}
-
-					for (MethodData method : projectAnalyser.getUsedLibMethods()) {
-						System.out.println("lib_method_touched," + method.toString());
-					}
-
-					for (MethodData method : projectAnalyser.getUsedAppMethods()) {
-						System.out.println("app_method_touched," + method.toString());
-					}
-					*/
 				}
 
 				Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
