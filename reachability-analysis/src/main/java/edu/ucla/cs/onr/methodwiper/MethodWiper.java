@@ -136,7 +136,9 @@ public class MethodWiper {
 	private static boolean wipeMethod(SootMethod sootMethod, Optional<Optional<String>> exception){
 
 
-		if(sootMethod.isAbstract() || sootMethod.isNative()){
+
+		//The "lambda$" is to avoid removal of Lambda "methods". We cannot handle these right now.
+		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.getName().startsWith("lambda$")){
 			return false;
 		}
 
