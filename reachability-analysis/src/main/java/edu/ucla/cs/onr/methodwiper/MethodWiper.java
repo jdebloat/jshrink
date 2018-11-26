@@ -135,16 +135,35 @@ public class MethodWiper {
 
 	private static boolean wipeMethod(SootMethod sootMethod, Optional<Optional<String>> exception){
 
-
-
-		//The "lambda$" is to avoid removal of Lambda "methods". We cannot handle these right now.
-		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.getName().startsWith("lambda$")){
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
 		}
 
 		SootClass sootClass = sootMethod.getDeclaringClass();
 
+		/*
+		This is a cheap trick. Soot doesn't support every single bytecode structure in Java bytecode, and will throw an
+		error if trying to convert SootClass it does not understand to a JasminClass. Lambda expressions are a common
+		example of this, though I have observed some more obscure cases. I therefore convert the SootClass to the
+		JasminClass here. If there is an error thrown, I return false (i.e., we cannot remove this method).
+		 */
+		try {
+			for(SootMethod m: sootClass.getMethods()){
+				if(m.isConcrete()) {
+					m.retrieveActiveBody();
+				}
+			}
+
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter writerOut = new PrintWriter(stringWriter);
+			JasminClass jasminClass = new JasminClass(sootClass);
+
+		}catch (Exception e){
+			return false;
+		}
+
 		long originalSize = getSize(sootClass);
+
 
 		Body body = getBody(sootMethod);
 		if(exception.isPresent()){
