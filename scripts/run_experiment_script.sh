@@ -76,7 +76,7 @@ cat ${WORK_LIST} |  while read item; do
 		before_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
 
 		#2.5 hour timeout
-		timeout 9000 ${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+		timeout 9000 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
 
