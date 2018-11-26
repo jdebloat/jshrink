@@ -162,7 +162,7 @@ public class Application {
 					System.out.println("number_app_methods," + projectAnalyser.getAppMethods().size());
 					System.out.println("number_used_lib_classes," + projectAnalyser.getUsedLibClasses().size());
 					System.out.println("number_used_lib_methods," + projectAnalyser.getUsedLibMethods().size());
-					System.out.println("number_used_app_classes," + projectAnalyser.getUsedLibClasses().size());
+					System.out.println("number_used_app_classes," + projectAnalyser.getUsedAppClasses().size());
 					System.out.println("number_used_app_methods," + projectAnalyser.getUsedAppMethods().size());
 
 					for(MethodData entrypoint : projectAnalyser.getEntryPoints()){
