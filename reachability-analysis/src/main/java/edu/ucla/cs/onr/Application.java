@@ -206,15 +206,27 @@ public class Application {
 
 					for(Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()){
 						if(entry.getValue().isEmpty()){
-							classesToRemove.add(entry.getKey());
-							Set<MethodData> methods = new HashSet<MethodData>();
-							for(SootMethod sootMethod : entry.getKey().getMethods()){
-								methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+
+							SootClass sootClass = entry.getKey();
+							boolean containsAccessibleStaticFields = false;
+							for(SootField sootField : sootClass.getFields()){
+								if(!sootField.isPrivate() && sootField.isStatic()){
+									containsAccessibleStaticFields = true;
+									break;
+								}
 							}
-							//If we remove the class we obviously remove the method
-							Application.removedMethods.addAll(methods);
-							Application.removedClasses.add(entry.getKey().getName());
-							methodsToRemove.removeAll(methods);
+
+							if(!containsAccessibleStaticFields) {
+								classesToRemove.add(entry.getKey());
+								Set<MethodData> methods = new HashSet<MethodData>();
+								for (SootMethod sootMethod : entry.getKey().getMethods()) {
+									methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+								}
+								//If we remove the class we obviously remove the method
+								Application.removedMethods.addAll(methods);
+								Application.removedClasses.add(entry.getKey().getName());
+								methodsToRemove.removeAll(methods);
+							}
 						}
 					}
 

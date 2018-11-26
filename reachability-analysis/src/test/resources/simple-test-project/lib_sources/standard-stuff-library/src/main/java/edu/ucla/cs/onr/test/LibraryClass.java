@@ -2,6 +2,8 @@ package edu.ucla.cs.onr.test;
 
 public class LibraryClass {
 
+	private static final String x="NOT ACCESSIBLE";
+
 	public LibraryClass(){}
 
 	public int getNumber(){

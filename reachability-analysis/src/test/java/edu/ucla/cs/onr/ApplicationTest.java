@@ -169,8 +169,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		assertEquals(2, classesRemoved.size());
+		assertEquals(1, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -213,10 +212,9 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
 		assertTrue(classesRemoved.contains("Main"));
-		assertEquals(4, classesRemoved.size());
+		assertEquals(3, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -257,8 +255,7 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		assertEquals(2, classRemoved.size());
+		assertEquals(1, classRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -301,9 +298,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
 		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertEquals(2, classRemoved.size());
+		assertEquals(1, classRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -345,9 +341,8 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		assertEquals(3, classesRemoved.size());
+		assertEquals(2, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
