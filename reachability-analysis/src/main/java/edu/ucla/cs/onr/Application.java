@@ -180,14 +180,22 @@ public class Application {
 
 					//Note the unused Library methods
 					classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
-					methodsToRemove.addAll(projectAnalyser.getLibMethods());
-					methodsToRemove.removeAll(projectAnalyser.getUsedLibMethods());
+					for(MethodData methodData : projectAnalyser.getLibMethods()){
+						if(!commandLineParser.getClassesToIgnore().contains(methodData.getClassName())
+						&& !projectAnalyser.getUsedLibMethods().contains(methodData)){
+							methodsToRemove.add(methodData);
+						}
+					}
 
 					//Note the unused app methods (if applicable)
 					if (commandLineParser.isPruneAppInstance()) {
 						classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
-						methodsToRemove.addAll(projectAnalyser.getAppMethods());
-						methodsToRemove.removeAll(projectAnalyser.getUsedAppMethods());
+						for(MethodData methodData : projectAnalyser.getAppMethods()){
+							if(!commandLineParser.getClassesToIgnore().contains(methodData.getClassName())
+							&& !projectAnalyser.getUsedAppMethods().contains(methodData)){
+								methodsToRemove.add(methodData);
+							}
+						}
 					}
 
 					//Not the classes in which all the methods are removed

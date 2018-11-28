@@ -25,6 +25,7 @@ public class ApplicationCommandLineParser {
 	private final boolean doRemoveMethods;
 	private final Set<MethodData> methodsToRemove;
 	private final Optional<File> mavenDirectory;
+	private final Set<String> classesToIgnore;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -124,6 +125,13 @@ public class ApplicationCommandLineParser {
 			&& (!this.doRemoveMethods || this.methodsToRemove.isEmpty())){
 			printHelp(commandLine);
 			throw new ParseException("No entry point, or methods to remove, were specified");
+		}
+
+		this.classesToIgnore = new HashSet<String>();
+		if(commandLine.hasOption("i")){
+			for(String className :  commandLine.getOptionValues("i")){
+				this.classesToIgnore.add(className);
+			}
 		}
 	}
 
@@ -239,6 +247,14 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option ignoreClassesOption = Option.builder("i")
+				.desc("Specify class/classes that should not be delete or modified")
+				.longOpt("ignore-classes")
+				.hasArgs()
+				.valueSeparator()
+				.required(false)
+				.build();
+
 		Option debugOption = Option.builder("d")
 			.desc("Run the program in 'debug' mode. Used for testing")
 			.longOpt("debug")
@@ -279,6 +295,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(testEntryPointOption);
 		toReturn.addOption(pruneAppOption);
 		toReturn.addOption(customEntryPointOption);
+		toReturn.addOption(ignoreClassesOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
@@ -351,5 +368,9 @@ public class ApplicationCommandLineParser {
 
 	public Optional<File> getMavenDirectory(){
 		return mavenDirectory;
+	}
+
+	public Set<String> getClassesToIgnore(){
+		return Collections.unmodifiableSet(classesToIgnore);
 	}
 }
