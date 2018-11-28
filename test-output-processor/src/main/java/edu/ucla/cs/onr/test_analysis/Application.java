@@ -7,7 +7,7 @@ public class Application {
     private static String BLURB = "" +
             "This small application will give the total tests passed " + System.lineSeparator() +
             "and the total tests failed in a schema" + System.lineSeparator() +
-            " \"<tests_passed>,<tests_failed>\". The tool takes one " +System.lineSeparator() +
+            " \"<tests_passed>,<tests_failed>,<tests_skipped>\". The tool takes one " +System.lineSeparator() +
             "argument --- the output of running `mvn test --batch-mode -fn`.";
 
     public static void main(String[] args){
@@ -30,7 +30,8 @@ public class Application {
 
         TestResult testResult = TestLogUtils.analyzeTestLog(f);
 
-        System.out.println(testResult.getTestSuccessCount() + "," + testResult.getTestFailureCount());
+        System.out.println(testResult.getTestSuccessCount() + "," + testResult.getTestFailureCount() +
+                "," + testResult.getTestSkippedCount());
     }
 
     private static void printBlurb(){

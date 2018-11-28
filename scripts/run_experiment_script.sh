@@ -33,7 +33,7 @@ fi
 
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,path,is_lib,size_in_bytes" >${SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,lib_methods,app_methods" >${METHOD_DATA_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_passed,num_tests_failed" >${TEST_DATA_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_passed,num_tests_failed,num_tests_skipped" >${TEST_DATA_FILE}
 
 if [ ! -f "${DEBLOAT_APP}" ]; then
 	echo "Setting up 'reachability-analysis' tool"
