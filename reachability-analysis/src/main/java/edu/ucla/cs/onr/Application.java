@@ -29,6 +29,12 @@ public class Application {
 	//I use this for testing, to see if the correct classes have been removed
 	/*package*/ static Set<String> removedClasses = new HashSet<String>();
 
+	/*
+	Quick hack: this is a way to share this set between Application (where a user may specify classes to ignore at the
+	command-line level) and CallGraphAnalysis where this set may be updated by the TamiFlex reflection analysis.
+	 */
+	public static final Set<String> classesToIgnore = new HashSet<>();
+
 	public static boolean isDebugMode() {
 		return DEBUG_MODE;
 	}
@@ -43,6 +49,7 @@ public class Application {
 		removedMethods.clear();
 		decompressedJars.clear();
 		removedClasses.clear();
+		classesToIgnore.clear();
 
 		//I just put this in to stop an error
 		PropertyConfigurator.configure(
@@ -62,6 +69,7 @@ public class Application {
 
 		DEBUG_MODE = commandLineParser.isDebug();
 		VERBOSE_MODE = commandLineParser.isVerbose();
+		classesToIgnore.addAll(commandLineParser.getClassesToIgnore());
 
 		IProjectAnalyser projectAnalyser = null;
 
@@ -181,7 +189,7 @@ public class Application {
 					//Note the unused Library methods
 					classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
 					for(MethodData methodData : projectAnalyser.getLibMethods()){
-						if(!commandLineParser.getClassesToIgnore().contains(methodData.getClassName())
+						if(!classesToIgnore.contains(methodData.getClassName())
 						&& !projectAnalyser.getUsedLibMethods().contains(methodData)){
 							methodsToRemove.add(methodData);
 						}
@@ -191,7 +199,7 @@ public class Application {
 					if (commandLineParser.isPruneAppInstance()) {
 						classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
 						for(MethodData methodData : projectAnalyser.getAppMethods()){
-							if(!commandLineParser.getClassesToIgnore().contains(methodData.getClassName())
+							if(!classesToIgnore.contains(methodData.getClassName())
 							&& !projectAnalyser.getUsedAppMethods().contains(methodData)){
 								methodsToRemove.add(methodData);
 							}
