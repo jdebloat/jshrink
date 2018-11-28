@@ -1,7 +1,12 @@
 package edu.ucla.cs.onr.reachability;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.util.HashSet;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,17 +22,168 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.io.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import edu.ucla.cs.onr.Application;
+
 public class TamiFlexRunner {
 	private String tamiflex_path;
+	private String project_path;
+	private boolean rerun;
 	
-	public TamiFlexRunner(String tamiflexJarPath) {
+	// classes that are referenced or instantiated via Java reflection
+	public HashSet<String> accessed_classes;
+	// fields that are referenced or accessed via Java reflection
+	public HashSet<String> accessed_fields;
+	// methods that are referenced or invoked via Java reflection
+	public HashSet<String> used_methods;
+	
+	public TamiFlexRunner(String tamiflexJarPath, String mavenProjectPath, boolean rerunTamiFlex) {
 		this.tamiflex_path = tamiflexJarPath;
+		this.project_path = mavenProjectPath;
+		this.rerun = rerunTamiFlex;
+		accessed_classes = new HashSet<String>();
+		accessed_fields = new HashSet<String>();
+		used_methods = new HashSet<String>();
+	}
+	
+	public void run() throws IOException {
+		File pom_file = new File(project_path + File.separator + "pom.xml");
+		if(pom_file.exists()) {
+			File tamiflex_output = new File(project_path + File.separator + "out");
+			if(!tamiflex_output.exists()) {
+				runTamiFlex(pom_file);
+			} else if (rerun) {
+				// delete the previous output and rerun TamiFlex
+				tamiflex_output.delete();
+				runTamiFlex(pom_file);
+			}
+			
+			// analyze the result
+			if(tamiflex_output.exists()) {
+				String log = tamiflex_output.getAbsolutePath() + File.separator + "refl.log";
+				analyze(log);
+			} else {
+				System.err.println("Error: TamiFlex does not run successfully. No output folder exists.");
+			}
+		}
+	}
+	
+	public void runTamiFlex(File pom_file) throws IOException {
+		// save a copy of the pom file
+		File copy = new File(pom_file.getAbsolutePath() + ".tmp");
+		FileUtils.copyFile(pom_file, copy);
+		
+		// double check if the tamiflex jar exists
+		File tamiflex_jar = new File(tamiflex_path);
+		if(tamiflex_jar.exists()) {
+			// update the tamiflex jar path with the absolute path
+			// because 'mvn test' is run in the root directory of the given project
+			// a relative path will not work
+			this.tamiflex_path = tamiflex_jar.getAbsolutePath();
+		} else {
+			System.err.println("Error: the TamiFlex jar does not exist in " + tamiflex_path);
+		}
+		
+		// inject TamiFlex as the java agent in the POM file
+		injectTamiFlex(pom_file.getAbsolutePath());
+		
+		try {
+			// run 'mvn test'
+			boolean testResult = runMavenTest();
+			if(Application.isDebugMode() || Application.isVerboseMode()) {
+				if(testResult) {
+					System.out.println("mvn test succeeds.");
+				} else {
+					System.out.println("mvn test fails.");
+				}
+			}
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			// restore the pom file
+			FileUtils.copyFile(copy, pom_file);
+			copy.delete();
+		}
+	}
+	
+	public void analyze(String log) {
+		File tamiflex_log = new File(log);
+		if(tamiflex_log.exists()) {
+			try {
+				List<String> lines = FileUtils.readLines(tamiflex_log, Charset.defaultCharset());
+
+				for(String line : lines) {
+					String[] ss = line.split(";");
+					String reference = ss[1];
+					if(reference.startsWith("[L")) {
+						// sometimes it starts with [L, seems like a formating issue in TamiFlex
+						reference = reference.substring(2);
+					}
+					
+					if(reference.endsWith("[]")) {
+						// this is an array type
+						String base_type = reference.substring(0, reference.length() - 2);
+						if(!isPrimitiveType(base_type)) {
+							accessed_classes.add(base_type);
+						}
+					} else if (reference.startsWith("<") && reference.endsWith(">")) {
+						// this is either a field or a method 
+						String class_name = reference.split(": ")[0];
+						String class_member = reference.split(": ")[1];
+						if(class_member.contains("(") && class_member.contains(")")) {
+							// this is a method in the format of "return_type method_subsignature"
+							String method_subsignature = class_member.split(" ")[1];
+							used_methods.add(class_name + "." + method_subsignature);
+						} else {
+							// this is a field in the format of "field_type field_name"
+							String field_name = class_member.split(" ")[1];
+							accessed_fields.add(class_name + "." + field_name);
+						}
+					} else {
+						// this is a class type
+						accessed_classes.add(reference);
+					}
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			System.err.println("Error: There is no TamiFlex log file - " + log);
+		}
+	}
+	
+	private boolean isPrimitiveType(String t) {
+		if(t.equals("boolean") || t.equals("byte") || t.equals("char") || t.equals("short")
+				|| t.equals("int") || t.equals("long") || t.equals("float") || t.equals("double")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean runMavenTest() throws IOException, InterruptedException {
+		Process p = Runtime.getRuntime().exec("mvn test", null, new File(project_path));
+		BufferedReader stdInput = new BufferedReader(new InputStreamReader(
+				p.getInputStream()));
+
+		boolean testResult = false;
+		String output = null;
+		while ((output = stdInput.readLine()) != null) {
+			if(output.contains("BUILD SUCCESS")) {
+				testResult = true;
+			} else if (output.contains("BUILD FAILURE")) {
+				testResult = false;
+			}
+		}
+		p.waitFor();
+		
+		return testResult;
 	}
 	
 	/**

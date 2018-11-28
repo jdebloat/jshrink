@@ -28,7 +28,7 @@ public class TamiFlexTest {
 		
 		// inject tamiflex as a java agent in the surefire test plugin
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
-		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path);
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
 		assertTrue(content.contains("<argLine>-javaagent:" + tamiflex_jar_path + "</argLine>"));
@@ -61,7 +61,7 @@ public class TamiFlexTest {
 		
 		// inject tamiflex as a java agent in the surefire test plugin
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
-		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path);
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
 		assertTrue(content.contains("<configuration>"
@@ -91,7 +91,7 @@ public class TamiFlexTest {
 		
 		// inject tamiflex as a java agent in the surefire test plugin
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
-		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path);
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
 		assertTrue(content.contains("<argLine>-Dfile.encoding=UTF-8 -javaagent:" + tamiflex_jar_path + "</argLine>"));
@@ -119,7 +119,7 @@ public class TamiFlexTest {
 		
 		// inject tamiflex as a java agent in the surefire test plugin
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
-		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path);
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
 		assertTrue(content.contains("<plugin>"
@@ -132,5 +132,73 @@ public class TamiFlexTest {
 		// restore the pom file
 		FileUtils.copyFile(copy, file);
 		copy.delete();
+	}
+	
+	@Test
+	public void testRunMavenTest() throws IOException, InterruptedException {
+		String project_path = "src/test/resources/simple-test-project";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
+		boolean result = tamiflex.runMavenTest();
+		assertTrue(result);
+	}
+	
+	@Test
+	public void testRunMavenTest2() throws IOException, InterruptedException {
+		String project_path = "src/test/resources/square_okhttp";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
+		boolean result = tamiflex.runMavenTest();
+		assertTrue(result);
+	}
+	
+	@Test
+	public void testLogAnalysis() {
+		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
+		String log = "src/test/resources/tamiflex/junit_refl.log";
+		tamiflex.analyze(log);
+		assertEquals(1040, tamiflex.accessed_classes.size());
+		assertEquals(698, tamiflex.accessed_fields.size());
+		assertEquals(3846, tamiflex.used_methods.size());
+	}
+	
+	@Test
+	public void testLogAnalysis2() {
+		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
+		String log = "src/test/resources/tamiflex/apache_commons_lang_refl.log";
+		tamiflex.analyze(log);
+		assertEquals(896, tamiflex.accessed_classes.size());
+		assertEquals(985, tamiflex.accessed_fields.size());
+		assertEquals(5824, tamiflex.used_methods.size());
+	}
+	
+	@Test
+	public void testTamiFlexRunner() {
+		String project_path = "src/test/resources/apache_commons-lang";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
+		try {
+			tamiflex.run();
+			assertEquals(894, tamiflex.accessed_classes.size());
+			assertEquals(979, tamiflex.accessed_fields.size());
+			assertEquals(5805, tamiflex.used_methods.size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testTamiFlexRerun() {
+		String project_path = "src/test/resources/apache_commons-lang";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+			assertEquals(894, tamiflex.accessed_classes.size());
+			assertEquals(979, tamiflex.accessed_fields.size());
+			assertEquals(5805, tamiflex.used_methods.size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
