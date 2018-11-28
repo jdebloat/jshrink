@@ -1,6 +1,7 @@
 package edu.ucla.cs.onr.test;
 
 public class LibraryClass2 {
+	public static final String y="ACCESSIBLE";
 	public void methodInAnotherClass(){
 		String temp = "Lorem ipsum dolor sit amet, prima adipisci et est, mel et purto duis ludus." +
 			" Vix mollis ancillae te. Eu pro purto soleat consetetur. Vix eripuit reprehendunt id." +

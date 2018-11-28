@@ -16,6 +16,7 @@ public class TestLogUtils {
 		int test_count = 0;
 		int failure_count = 0;
 		int success_count = 0;
+		int skipped_count = 0;
 		// analyze the test log
 		String log = "";
 		try {
@@ -35,13 +36,15 @@ public class TestLogUtils {
 				Matcher matcher = pattern.matcher(line);
 				while (matcher.find()) {
 					test_count += Integer.parseInt(matcher.group(1));
-					failure_count += Integer.parseInt(matcher.group(2))
+					failure_count += Integer.parseInt(matcher.group(2)) //Includes failure and test errors
 							+ Integer.parseInt(matcher.group(3));
+					skipped_count += Integer.parseInt(matcher.group(4));
+
 				}
 			}
 		}
 		
-		success_count = test_count - failure_count;
-		return new TestResult(test_count, success_count, failure_count);
+		success_count = test_count - failure_count - skipped_count;
+		return new TestResult(test_count, success_count, failure_count, skipped_count);
 	}
 }

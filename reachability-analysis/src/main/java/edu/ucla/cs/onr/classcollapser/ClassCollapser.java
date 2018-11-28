@@ -3,8 +3,10 @@ package edu.ucla.cs.onr.classcollapser;
 import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
 import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MethodData;
+import edu.ucla.cs.onr.util.MethodBodyUtils;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.toolkits.invoke.SiteInliner;
 
 import java.io.File;
 import java.util.*;
@@ -42,12 +44,31 @@ public class ClassCollapser implements IClassCollapser {
             originalMethods.put(method.getName(), method);
         }
         for (SootMethod method : from.getMethods()) {
-            if (!method.getName().equals("<init>")) {
-                if (originalMethods.containsKey(method.getName())) {
-                    to.getMethods().remove(originalMethods.get(method.getName()));
+            if (method.getName().equals("<init>")) {
+                Stmt toInLine = null;
+                SootMethod inlinee = null;
+                Body b = method.retrieveActiveBody();
+                for (Unit u : b.getUnits()) {
+                    if (u instanceof InvokeStmt) {
+                        InvokeExpr expr = ((InvokeStmt)u).getInvokeExpr();
+                        SootMethod m = expr.getMethod();
+                        if (m.getName().equals(method.getName()) && m.getDeclaringClass().getName().equals(to.getName())) {
+                            toInLine = (InvokeStmt) u;
+                            inlinee = m;
+                        }
+                    }
                 }
-                to.getMethods().add(method);
+                if (inlinee == null || toInLine == null) {
+                    continue;
+                }
+                inlinee.retrieveActiveBody();
+                SiteInliner.inlineSite(inlinee, toInLine, method);
             }
+            if (originalMethods.containsKey(method.getName())) {
+                to.getMethods().remove(originalMethods.get(method.getName()));
+            }
+            to.getMethods().add(method);
+
         }
     }
 

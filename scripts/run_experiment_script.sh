@@ -33,7 +33,7 @@ fi
 
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,path,is_lib,size_in_bytes" >${SIZE_FILE}
 echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,lib_methods,app_methods" >${METHOD_DATA_FILE}
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_passed,num_tests_failed" >${TEST_DATA_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,debloated,num_tests_passed,num_tests_failed,num_tests_skipped" >${TEST_DATA_FILE}
 
 if [ ! -f "${DEBLOAT_APP}" ]; then
 	echo "Setting up 'reachability-analysis' tool"
@@ -76,7 +76,7 @@ cat ${WORK_LIST} |  while read item; do
 		before_tests=$(${JAVA} -jar ${TEST_PROCESSOR} ${test_output})
 
 		#2.5 hour timeout
-		timeout 9000 ${JAVA} -Xms10240m -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+		timeout 9000 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 		exit_status=$?
 		if [[ ${exit_status} == 0 ]]; then
 

@@ -11,6 +11,7 @@ import soot.Type;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
+import soot.toolkits.scalar.Pair;
 
 public class SootUtils {
 
@@ -205,6 +206,37 @@ public class SootUtils {
 			while (targets.hasNext()){
 				SootMethod method = (SootMethod)targets.next();
 				visitMethod(method, cg, usedClass, visited);
+			}
+		}
+	}
+
+	public static void visitMethodClassCollapser(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> usedMethods) {
+		//a queue of Pair objects of SootMethods, the second object is the callsite of the first method
+		Set<String> visited = new HashSet<String>();
+		Stack<Pair<SootMethod, SootMethod>> methods_to_visit = new Stack<Pair<SootMethod, SootMethod>>();
+		methods_to_visit.add(new Pair<SootMethod, SootMethod>(m, null));
+
+		while(!methods_to_visit.isEmpty()) {
+			Pair<SootMethod, SootMethod> first = methods_to_visit.pop();
+			SootMethod firstMethod = first.getO1();
+			MethodData firstMethodData = sootMethodToMethodData(firstMethod);
+			MethodData callSiteData = (first.getO2() == null) ? null : sootMethodToMethodData(first.getO2());
+
+			String className = firstMethodData.getClassName();
+			if(!visited.contains(firstMethod.getSignature())) {
+				// avoid recursion
+				if (callSiteData == null || !callSiteData.getName().equals("<init>")) {
+					usedClass.add(className);
+					usedMethods.add(firstMethodData);
+				}
+				visited.add(firstMethod.getSignature());
+
+				// add callees to the stack
+				Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(firstMethod));
+				while (targets.hasNext()){
+					SootMethod method = (SootMethod)targets.next();
+					methods_to_visit.push(new Pair<SootMethod, SootMethod>(method, firstMethod));
+				}
 			}
 		}
 	}

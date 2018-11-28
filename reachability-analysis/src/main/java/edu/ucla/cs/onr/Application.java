@@ -5,6 +5,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.jar.JarFile;
 
+import com.google.common.collect.Sets;
 import edu.ucla.cs.onr.reachability.*;
 import edu.ucla.cs.onr.util.SootUtils;
 import edu.ucla.cs.onr.methodwiper.MethodWiper;
@@ -162,7 +163,7 @@ public class Application {
 					System.out.println("number_app_methods," + projectAnalyser.getAppMethods().size());
 					System.out.println("number_used_lib_classes," + projectAnalyser.getUsedLibClasses().size());
 					System.out.println("number_used_lib_methods," + projectAnalyser.getUsedLibMethods().size());
-					System.out.println("number_used_app_classes," + projectAnalyser.getUsedLibClasses().size());
+					System.out.println("number_used_app_classes," + projectAnalyser.getUsedAppClasses().size());
 					System.out.println("number_used_app_methods," + projectAnalyser.getUsedAppMethods().size());
 
 					for(MethodData entrypoint : projectAnalyser.getEntryPoints()){
@@ -170,34 +171,26 @@ public class Application {
 					}
 				}
 
-				Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
-				Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
-
 				if(commandLineParser.removeMethods()) {
 					Set<MethodData> methodsToRemove = new HashSet<MethodData>();
 
 					Set<SootClass> classesToRewrite = new HashSet<SootClass>(); //Take note of all classes that have changed
+					Set<SootClass> classesToRemove = new HashSet<SootClass>(); //Take note of all classes that need to be removed
 					Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
 
-					//Remove the unused library methods and classes
+					//Note the unused Library methods
 					classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
-					Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
-					libMethodsToRemove.addAll(projectAnalyser.getLibMethods());
-					libMethodsToRemove.removeAll(projectAnalyser.getUsedLibMethods());
+					methodsToRemove.addAll(projectAnalyser.getLibMethods());
+					methodsToRemove.removeAll(projectAnalyser.getUsedLibMethods());
 
-					methodsToRemove.addAll(libMethodsToRemove);
-
-					//Remove the unused app methods (if applicable)
+					//Note the unused app methods (if applicable)
 					if (commandLineParser.isPruneAppInstance()) {
 						classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
-						Set<MethodData> appMethodToRemove = new HashSet<MethodData>();
-						appMethodToRemove.addAll(projectAnalyser.getAppMethods());
-						appMethodToRemove.removeAll(projectAnalyser.getUsedAppMethods());
-
-						methodsToRemove.addAll(appMethodToRemove);
+						methodsToRemove.addAll(projectAnalyser.getAppMethods());
+						methodsToRemove.removeAll(projectAnalyser.getUsedAppMethods());
 					}
 
-					//Remove any classes in which all the methods are removed
+					//Not the classes in which all the methods are removed
 					Map<SootClass, Set<MethodData>> classIntCount = new HashMap<SootClass, Set<MethodData>>();
 					for(MethodData method : methodsToRemove){
 						SootClass sootClass = Scene.v().loadClassAndSupport(method.getClassName());
@@ -211,18 +204,29 @@ public class Application {
 						classIntCount.get(sootClass).remove(method);
 					}
 
-					Set<SootClass> classesToRemove = new HashSet<SootClass>();
 					for(Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()){
 						if(entry.getValue().isEmpty()){
-							classesToRemove.add(entry.getKey());
-							Set<MethodData> methods = new HashSet<MethodData>();
-							for(SootMethod sootMethod : entry.getKey().getMethods()){
-								methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+
+							SootClass sootClass = entry.getKey();
+							boolean containsAccessibleStaticFields = false;
+							for(SootField sootField : sootClass.getFields()){
+								if(!sootField.isPrivate() && sootField.isStatic()){
+									containsAccessibleStaticFields = true;
+									break;
+								}
 							}
-							//If we remove the class we obviously remove the method
-							Application.removedMethods.addAll(methods);
-							Application.removedClasses.add(entry.getKey().getName());
-							methodsToRemove.removeAll(methods);
+
+							if(!containsAccessibleStaticFields) {
+								classesToRemove.add(entry.getKey());
+								Set<MethodData> methods = new HashSet<MethodData>();
+								for (SootMethod sootMethod : entry.getKey().getMethods()) {
+									methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+								}
+								//If we remove the class we obviously remove the method
+								Application.removedMethods.addAll(methods);
+								Application.removedClasses.add(entry.getKey().getName());
+								methodsToRemove.removeAll(methods);
+							}
 						}
 					}
 
@@ -235,7 +239,6 @@ public class Application {
 									getExceptionMessage())) {
 								Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
 								classesToRewrite.add(sootClass);
-								appMethodsRemoved.add(method);
 							}
 						}
 					}
@@ -245,8 +248,12 @@ public class Application {
 				}
 
 				if(Application.isVerboseMode()) {
-					System.out.println("number_lib_methods_removed," + libMethodsRemoved.size());
-					System.out.println("number_app_methods_removed," + appMethodsRemoved.size());
+					int numberLibMethodsRemoved = Sets.intersection(projectAnalyser.getLibMethods(),
+							Application.removedMethods).size();
+					int numberAppMethodsRemoved = Sets.intersection(projectAnalyser.getAppMethods(),
+							Application.removedMethods).size();
+					System.out.println("number_lib_methods_removed," + numberLibMethodsRemoved);
+					System.out.println("number_app_methods_removed," + numberAppMethodsRemoved);
 				}
 			}
 
