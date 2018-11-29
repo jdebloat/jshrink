@@ -2,8 +2,6 @@ package edu.ucla.cs.onr.methodwiper;
 
 import soot.*;
 import soot.jimple.*;
-import soot.tagkit.JasminAttribute;
-import soot.util.JasminOutputStream;
 
 import java.io.*;
 import java.util.List;
@@ -12,9 +10,9 @@ import java.util.Optional;
 /**
  * This class was made to support the complete wiping of methods (while remaining compilable). I have tried to keep this
  * as simple as possible. The API either allows the wiping of methods an exception throw inserted,
- * `wipeMethod(SootMethod sootMethod)`, the wiping of a method, and including a RuntimeException
- * throw, `wipeMethodAndInsertRuntimeException(SootMethod sootMethod)`, with a RuntimeException throw inc. message,
- * `wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message)`, or with a custom thrown exception
+ * `wipeMethodBody(SootMethod sootMethod)`, the wiping of a method, and including a RuntimeException
+ * throw, `wipeMethodBodyAndInsertRuntimeException(SootMethod sootMethod)`, with a RuntimeException throw inc. message,
+ * `wipeMethodBodyAndInsertRuntimeException(SootMethod sootMethod, String message)`, or with a custom thrown exception
  * (warning --- this is a bit of an advanced feature),
  * `wipeMethodAndInsertThrow(SootMethod scootMethod, Value toThrow)`.
  */
@@ -133,7 +131,7 @@ public class MethodWiper {
 		return stringWriter.getBuffer().length();
 	}
 
-	private static boolean wipeMethod(SootMethod sootMethod, Optional<Optional<String>> exception){
+	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
 
 		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
@@ -192,8 +190,23 @@ public class MethodWiper {
 	 * @param sootMethod The method to be wiped
 	 * @return a boolean specifying whether the method was wiped or not
 	 */
-	public static boolean wipeMethod(SootMethod sootMethod) {
-		return wipeMethod(sootMethod, Optional.empty());
+	public static boolean wipeMethodBody(SootMethod sootMethod) {
+		return wipeMethodBody(sootMethod, Optional.empty());
+	}
+
+
+	/**
+	 * Deletes the method from the class
+	 *
+	 * Warning: May result in unpredictable behaviour
+	 *
+	 * @param sootMethod The method to be removed
+	 * @return a boolean specifying whether the method was deleted or not
+	 */
+	public static boolean wipeMethod(SootMethod sootMethod){
+		SootClass sootClass = sootMethod.getDeclaringClass();
+		sootClass.getMethods().remove(sootMethod);
+		return true;
 	}
 
 	/**
@@ -203,8 +216,8 @@ public class MethodWiper {
 	 * @param message    The message to be thrown
 	 * @return a boolean specifying whether the method was wiped or not
 	 */
-	public static boolean wipeMethodAndInsertRuntimeException(SootMethod sootMethod, String message) {
-		return wipeMethod(sootMethod,Optional.of(Optional.of(message)));
+	public static boolean wipeMethodBodyAndInsertRuntimeException(SootMethod sootMethod, String message) {
+		return wipeMethodBody(sootMethod,Optional.of(Optional.of(message)));
 	}
 
 	/**
@@ -213,8 +226,8 @@ public class MethodWiper {
 	 * @param sootMethod The method to be wiped
 	 * @return a boolean specifying whether the method was wiped or not
 	 */
-	public static boolean wipeMethodAndInsertRuntimeException(SootMethod sootMethod) {
-		return wipeMethod(sootMethod, Optional.of(Optional.empty()));
+	public static boolean wipeMethodBodyAndInsertRuntimeException(SootMethod sootMethod) {
+		return wipeMethodBody(sootMethod, Optional.of(Optional.empty()));
 	}
 
 }

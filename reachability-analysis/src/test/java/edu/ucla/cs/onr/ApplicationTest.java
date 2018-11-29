@@ -140,7 +140,6 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--main-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -182,7 +181,6 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--test-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -227,7 +225,6 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--public-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -270,7 +267,6 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -312,7 +308,6 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -347,7 +342,7 @@ public class ApplicationTest {
         assertTrue(jarIntact());
 	}
 
-	@Test
+	/*@Test
 	public void mainTest_dontDeleteMethods(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -385,9 +380,9 @@ public class ApplicationTest {
 		assertEquals(0, classesRemoved.size());
 
 		assertTrue(jarIntact());
-	}
+	}*/
 
-	@Test
+	/*@Test
 	public void mainTest_deleteSpecificMethods(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -426,7 +421,7 @@ public class ApplicationTest {
 		assertEquals(0, classesRemoved.size());
 
         assertTrue(jarIntact());
-	}
+	}*/
 
 	@Test
 	public void mavenTest_mainMethodEntry(){
@@ -436,7 +431,6 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -480,7 +474,6 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--main-entry ");
-		arguments.append("--remove-methods ");
 		arguments.append("--ignore-classes edu.ucla.cs.onr.test.LibraryClass edu.ucla.cs.onr.test.UnusedClass ");
 		arguments.append("--debug");
 
@@ -510,6 +503,48 @@ public class ApplicationTest {
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertEquals(0, classesRemoved.size());
+
+		assertTrue(jarIntact());
+	}
+
+	@Test
+	public void mainTest_targetMainEntryPoint_removeMethods(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--debug");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(1, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}

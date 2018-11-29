@@ -23,7 +23,6 @@ public class ApplicationCommandLineParser {
 	private final boolean verbose;
 	private final Set<MethodData> customEntryPoints;
 	private final boolean doRemoveMethods;
-	private final Set<MethodData> methodsToRemove;
 	private final Optional<File> mavenDirectory;
 	private final Set<String> classesToIgnore;
 
@@ -116,15 +115,10 @@ public class ApplicationCommandLineParser {
 		}
 
 		this.doRemoveMethods = commandLine.hasOption('r');
-		methodsToRemove = new HashSet<MethodData>();
-		if(this.doRemoveMethods && (commandLine.getOptionValues('r') != null)){
-			methodsToRemove.addAll(getMethodData(commandLine.getOptionValues('r'), commandLine));
-		}
 
-		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()
-			&& (!this.doRemoveMethods || this.methodsToRemove.isEmpty())){
+		if(!mainEntryPoint && !publicEntryPoints && ! testEntryPoints && customEntryPoints.isEmpty()){
 			printHelp(commandLine);
-			throw new ParseException("No entry point, or methods to remove, were specified");
+			throw new ParseException("No entry points were specified");
 		}
 
 		this.classesToIgnore = new HashSet<String>();
@@ -270,10 +264,9 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option removeMethodsOption = Option.builder("r")
-			.desc("Run remove methods. If no arguments specified will determine through call-graph analysis")
+			.desc("Run remove methods (by default, the bodies are wiped and replaced by RuntimeExceptions)")
 			.longOpt("remove-methods")
-			.hasArgs()
-			.optionalArg(true)
+			.hasArg(false)
 			.required(false)
 			.build();
 
@@ -360,10 +353,6 @@ public class ApplicationCommandLineParser {
 
 	public boolean removeMethods(){
 		return doRemoveMethods;
-	}
-
-	public Set<MethodData> methodsToRemove(){
-		return methodsToRemove;
 	}
 
 	public Optional<File> getMavenDirectory(){
