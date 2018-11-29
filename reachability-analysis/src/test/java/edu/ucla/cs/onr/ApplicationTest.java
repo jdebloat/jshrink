@@ -147,6 +147,11 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(Application.removedMethod);
+		assertTrue(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
+
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
@@ -181,12 +186,18 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
+
+		assertTrue(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -225,12 +236,18 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--public-entry ");
+		arguments.append("--include-exception ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classRemoved = Application.removedClasses;
+
+		assertFalse(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
+		assertTrue(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -267,12 +284,18 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
+		arguments.append("--include-exception \"message_removed\" ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classRemoved = Application.removedClasses;
+
+		assertFalse(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertTrue(Application.wipedMethodBodyWithExceptionAndMessage);
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -341,87 +364,6 @@ public class ApplicationTest {
 
         assertTrue(jarIntact());
 	}
-
-	/*@Test
-	public void mainTest_dontDeleteMethods(){
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
-		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
-		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
-		arguments.append("--debug ");
-
-		Application.main(arguments.toString().split("\\s+"));
-
-		Set<MethodData> methodsRemoved = Application.removedMethods;
-		Set<String> classesRemoved = Application.removedClasses;
-
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
-
-		assertEquals(0, classesRemoved.size());
-
-		assertTrue(jarIntact());
-	}*/
-
-	/*@Test
-	public void mainTest_deleteSpecificMethods(){
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
-		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
-		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--remove-methods <StandardStuff: public void publicAndTestedButUntouched()> " +
-			"<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()> ");
-		arguments.append("--debug ");
-
-		Application.main(arguments.toString().split("\\s+"));
-
-		Set<MethodData> methodsRemoved = Application.removedMethods;
-		Set<String> classesRemoved = Application.removedClasses;
-
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
-		assertFalse(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
-
-		assertEquals(0, classesRemoved.size());
-
-        assertTrue(jarIntact());
-	}*/
 
 	@Test
 	public void mavenTest_mainMethodEntry(){
@@ -503,48 +445,6 @@ public class ApplicationTest {
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertEquals(0, classesRemoved.size());
-
-		assertTrue(jarIntact());
-	}
-
-	@Test
-	public void mainTest_targetMainEntryPoint_removeMethods(){
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
-		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
-		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
-		arguments.append("--main-entry ");
-		arguments.append("--remove-methods ");
-		arguments.append("--debug");
-
-		Application.main(arguments.toString().split("\\s+"));
-
-		Set<MethodData> methodsRemoved = Application.removedMethods;
-		Set<String> classesRemoved = Application.removedClasses;
-
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
-		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
-		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
-
-		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertEquals(1, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}

@@ -28,6 +28,12 @@ public class Application {
 	//I use this for testing, to see if the correct classes have been removed
 	/*package*/ static Set<String> removedClasses = new HashSet<String>();
 
+	//I use the following for testing to ensure the right kind of method wipe has been used
+	/*package*/ static boolean removedMethod = false;
+	/*package*/ static boolean wipedMethodBody = false;
+	/*package*/ static boolean wipedMethodBodyWithExceptionNoMessage = false;
+	/*package*/ static boolean wipedMethodBodyWithExceptionAndMessage = false;
+
 	/*
 	Quick hack: this is a way to share this set between Application (where a user may specify classes to ignore at the
 	command-line level) and CallGraphAnalysis where this set may be updated by the TamiFlex reflection analysis.
@@ -49,6 +55,10 @@ public class Application {
 		decompressedJars.clear();
 		removedClasses.clear();
 		classesToIgnore.clear();
+		removedMethod = false;
+		wipedMethodBody = false;
+		wipedMethodBodyWithExceptionNoMessage = false;
+		wipedMethodBodyWithExceptionAndMessage = false;
 
 		//I just put this in to stop an error
 		PropertyConfigurator.configure(
@@ -217,11 +227,22 @@ public class Application {
 					SootMethod sootMethod = sootClass.getMethod(method.getSubSignature());
 					boolean success = false;
 					if(commandLineParser.removeMethods()){
-						success = MethodWiper.wipeMethodBody(sootMethod);
+						removedMethod = true;
+						success = MethodWiper.wipeMethod(sootMethod);
+					} else if(commandLineParser.includeException()){
+						if(commandLineParser.getExceptionMessage().isPresent()) {
+							wipedMethodBodyWithExceptionAndMessage = true;
+							success = MethodWiper.wipeMethodBodyAndInsertRuntimeException(sootMethod,
+									commandLineParser.getExceptionMessage().get());
+						} else {
+							wipedMethodBodyWithExceptionNoMessage = true;
+							success = MethodWiper.wipeMethodBodyAndInsertRuntimeException(sootMethod);
+						}
 					} else {
-						success =
-								MethodWiper.wipeMethodBodyAndInsertRuntimeException(sootMethod, getExceptionMessage());
+						wipedMethodBody = true;
+						success = MethodWiper.wipeMethodBody(sootMethod);
 					}
+
 					if (success) {
 						Application.removedMethods.add(SootUtils.sootMethodToMethodData(sootMethod));
 						classesToRewrite.add(sootClass);

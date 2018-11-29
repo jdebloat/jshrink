@@ -25,6 +25,8 @@ public class ApplicationCommandLineParser {
 	private final boolean doRemoveMethods;
 	private final Optional<File> mavenDirectory;
 	private final Set<String> classesToIgnore;
+	private final Optional<String> exceptionMessage;
+	private final boolean exception;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -126,6 +128,14 @@ public class ApplicationCommandLineParser {
 			for(String className :  commandLine.getOptionValues("i")){
 				this.classesToIgnore.add(className);
 			}
+		}
+
+		this.exception = commandLine.hasOption("e");
+
+		if(commandLine.hasOption("e") && commandLine.getOptionValue("e") != null){
+			this.exceptionMessage = Optional.of(commandLine.getOptionValue("e"));
+		} else {
+			this.exceptionMessage = Optional.empty();
 		}
 	}
 
@@ -249,6 +259,15 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option specifyExceptionOption = Option.builder("e")
+				.desc("Specify if an exception message should be included in a wiped method (Optional argument: the message)")
+				.longOpt("include-exception")
+				.hasArg(true)
+				.optionalArg(true)
+				.argName("Exception Message")
+				.required(false)
+				.build();
+
 		Option debugOption = Option.builder("d")
 			.desc("Run the program in 'debug' mode. Used for testing")
 			.longOpt("debug")
@@ -289,6 +308,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(pruneAppOption);
 		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(ignoreClassesOption);
+		toReturn.addOption(specifyExceptionOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
@@ -361,5 +381,13 @@ public class ApplicationCommandLineParser {
 
 	public Set<String> getClassesToIgnore(){
 		return Collections.unmodifiableSet(classesToIgnore);
+	}
+
+	public boolean includeException(){
+		return exception;
+	}
+
+	public Optional<String> getExceptionMessage(){
+		return exceptionMessage;
 	}
 }
