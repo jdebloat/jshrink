@@ -131,14 +131,7 @@ public class MethodWiper {
 		return stringWriter.getBuffer().length();
 	}
 
-	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
-
-		if(sootMethod.isAbstract() || sootMethod.isNative()){
-			return false;
-		}
-
-		SootClass sootClass = sootMethod.getDeclaringClass();
-
+	private static boolean validClass(SootClass sootClass){
 		/*
 		This is a cheap trick. Soot doesn't support every single bytecode structure in Java bytecode, and will throw an
 		error if trying to convert SootClass it does not understand to a JasminClass. Lambda expressions are a common
@@ -157,6 +150,21 @@ public class MethodWiper {
 			JasminClass jasminClass = new JasminClass(sootClass);
 
 		}catch (Exception e){
+			return false;
+		}
+
+		return true;
+	}
+
+	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
+
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
+			return false;
+		}
+
+		SootClass sootClass = sootMethod.getDeclaringClass();
+
+		if(!validClass(sootClass)){
 			return false;
 		}
 
@@ -205,7 +213,15 @@ public class MethodWiper {
 	 */
 	public static boolean wipeMethod(SootMethod sootMethod){
 		SootClass sootClass = sootMethod.getDeclaringClass();
+		int index =sootClass.getMethods().indexOf(sootMethod);
 		sootClass.getMethods().remove(sootMethod);
+
+		if(!validClass(sootClass)){
+			//If not valid, re-add the method
+			sootClass.getMethods().add(index, sootMethod);
+			return false;
+		}
+
 		return true;
 	}
 
