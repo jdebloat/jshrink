@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
+
 import soot.G;
 import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.util.MavenUtils;
@@ -27,6 +28,8 @@ import edu.ucla.cs.onr.util.MavenUtils;
  *
  */
 public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
+	public static boolean useTamiFlex = false; // do not run TamiFlex by default
+	
 	private String project_path;
 	
 	private final Set<String> libClasses;
@@ -74,9 +77,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			Process process = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() + " " +
 					"clean");
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String maven_log = "";
 			String line;
-			while((line=reader.readLine()) != null);
+			while((line=reader.readLine()) != null) {
+				maven_log += line + System.lineSeparator();
+			}
 			reader.close();
+			
+			if(maven_log.contains("BUILD FAILURE")) {
+				System.err.println("'mvn clean' fails.");
+			}
 
 			try {
 				FileUtils.forceDelete(libsDir);
@@ -98,7 +108,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		HashMap<String, File> modules = new HashMap<String, File>();
 		MavenUtils.getModules(root_dir, modules);
 
-
 		// get all classpaths for submodules if any
 		String classpathInfo = "";
 
@@ -111,21 +120,37 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --quiet --batch-mode -fn");
 
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+			
 			String line;
-			while((line=reader.readLine()) != null);
+			String maven_log = "";
+			while((line=reader.readLine()) != null) {
+				maven_log += line + System.lineSeparator();
+			}
 			reader.close();
+			
+			if(maven_log.contains("BUILD FAILURE")) {
+				System.err.println("'mvn install' fails.");
+			}
 
-			//Get the classpath information
+			// Get the classpath information
+			// We cannot only get the classpath of libraries in the compile scope, since it will make our
+			// call graph incomplete when using test cases as entry points
 			Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
 					" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
-					" -DincludeScope=compile --batch-mode");
+					" --batch-mode");
+			// Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
+			//		" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
+			//		" -DincludeScope=compile --batch-mode");
 
 			reader = new BufferedReader(new InputStreamReader(process2.getInputStream()));
 			while((line=reader.readLine()) != null){
 				classpathInfo += line + System.lineSeparator();
 			}
 			reader.close();
-
+			
+			if(classpathInfo.contains("BUILD FAILURE")) {
+				System.err.println("'mvn dependency:build-classpath' fails.");
+			}
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -203,7 +228,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		HashMap<String, File> modules = new HashMap<String, File>();
 		MavenUtils.getModules(root_dir, modules);
 
-		
 		int count = 0;
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
@@ -244,25 +268,144 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 		
 		if(count > 1) {
-			// When analyzing different submodules, the application classes in one module may
-			// be treated as library classes in another module
-			// We need to rectify this at the end
-			Set<String> lib_classes_copy = new HashSet<String>(this.libClasses);
-			lib_classes_copy.retainAll(this.appClasses);
-			this.libClasses.removeAll(lib_classes_copy);
-			Set<MethodData> lib_methods_copy = new HashSet<MethodData>(this.libMethods);
-			lib_methods_copy.retainAll(this.appMethods);
-			this.libMethods.removeAll(lib_methods_copy);
-			Set<String> used_lib_classes_copy = new HashSet<String>(this.usedLibClasses);
-			used_lib_classes_copy.retainAll(this.appClasses);
-			this.usedLibClasses.removeAll(used_lib_classes_copy);
-			this.usedAppClasses.addAll(used_lib_classes_copy);
-			Set<MethodData> used_lib_methods_copy = new HashSet<MethodData>(this.usedLibMethods);
-			used_lib_methods_copy.retainAll(this.appMethods);
-			this.usedLibMethods.removeAll(used_lib_methods_copy);
-			this.usedAppMethods.addAll(used_lib_methods_copy);
-
+			adjustClassesAndMethodsFromSubmodules();
 		}
+		
+		// (optional) use tamiflex to dynamically identify reflection calls
+		if(useTamiFlex) {
+			// TODO: hardcode the path to the tamiflex jar for now, but need to refactor this and let 
+			// the user to pass it in later
+			TamiFlexRunner tamiflex = new TamiFlexRunner("src/test/resources/tamiflex/poa-2.0.3.jar", 
+					project_path, false);
+			try {
+				tamiflex.run();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			// aggregate all accessed classes from each submodule (if any) into one set 
+			HashSet<String> accessed_classes = new HashSet<String>();
+			for(String module : tamiflex.accessed_classes.keySet()) {
+				accessed_classes.addAll(tamiflex.accessed_classes.get(module));
+			}
+			HashSet<String> all_classes_in_scope = new HashSet<String>();
+			all_classes_in_scope.addAll(libClasses);
+			all_classes_in_scope.addAll(appClasses);
+			accessed_classes.retainAll(all_classes_in_scope);
+			Application.classesToIgnore.addAll(accessed_classes);
+			
+			// aggregate all used methods from each submodule (if any) into one set
+			HashMap<String, HashSet<MethodData>> new_entry_points = new HashMap<String, HashSet<MethodData>>();
+			for(String module : tamiflex.used_methods.keySet()) {
+				HashSet<MethodData> set = new HashSet<MethodData>();
+				for(String record : tamiflex.used_methods.get(module)) {
+					String[] ss = record.split(": ");
+					String class_name1 = ss[0];
+					String method_signature1 = ss[1];
+					
+					boolean foundInApp = false;
+					for(MethodData md : appMethods) {
+						String class_name2 = md.getClassName();
+						// The signature generated below only contains return type, method name, 
+						// and arguments. There are no access modifiers.
+						String method_signature2 = md.getSubSignature(); 
+						if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
+							// this is a library method 
+							if(!usedAppMethods.contains(md)) {
+								// this method is already identified as a used method by static analysis
+								set.add(md);
+								usedAppMethods.add(md);
+								usedAppClasses.add(md.getClassName());
+								foundInApp = true;
+								break;
+							}
+						}
+					}
+					
+					if(!foundInApp) {
+						for(MethodData md : libMethods) {
+							String class_name2 = md.getClassName();
+							// The signature generated below only contains return type, method name, 
+							// and arguments. There are no access modifiers.
+							String method_signature2 = md.getSubSignature(); 
+							if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
+								// this is a library method 
+								if(!usedLibMethods.contains(md)) {
+									// this method is already identified as a used method by static analysis
+									set.add(md);
+									usedLibMethods.add(md);
+									usedLibClasses.add(md.getClassName());
+									foundInApp = true;
+									break;
+								}
+							}
+						}
+					}
+					
+					new_entry_points.put(module, set);
+				}
+			}
+			
+			
+			// set those methods that are invoked via reflection as entry points and redo the
+			// static analysis
+			int count2 = 0;
+			for(String module : new_entry_points.keySet()) {
+				count2 ++;
+				
+				HashSet<MethodData> entry_methods = new_entry_points.get(module);
+				
+				List<File> localLibClassPaths =
+						(lib_class_paths.containsKey(module) ? lib_class_paths.get(module) : new ArrayList<File>());
+
+				List<File> localAppClassPaths =
+						(app_class_paths.containsKey(module) ? app_class_paths.get(module) : new ArrayList<File>());
+
+				List<File> localTestClassPaths =
+						(app_test_paths.containsKey(module) ? app_test_paths.get(module) : new ArrayList<File>());
+				CallGraphAnalysis runner = 
+						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
+								localTestClassPaths, null);
+				runner.setup();
+				runner.run(entry_methods);
+				
+				// aggregate the analysis result of the submodule
+				this.usedLibClasses.addAll(runner.getUsedLibClasses());
+				this.usedLibMethods.addAll(runner.getUsedLibMethods());
+				this.usedAppClasses.addAll(runner.getUsedAppClasses());
+				this.usedAppMethods.addAll(runner.getUsedAppMethods());
+				this.entryPoints.addAll(runner.getEntryPoints());
+				
+				// make sure to reset Soot after running reachability analysis
+				G.reset();
+			}
+			
+			if (count2 > 1) {
+				adjustClassesAndMethodsFromSubmodules();
+			}
+		}
+	}
+	
+	private void adjustClassesAndMethodsFromSubmodules() {
+		// When analyzing different submodules, the application classes in one module may
+		// be treated as library classes in another module
+		// We need to adjust this so that application classes/methods are always stored in
+		// the application related fields, though they are used as library classes/methods 
+		// in other modules
+		Set<String> lib_classes_copy = new HashSet<String>(this.libClasses);
+		lib_classes_copy.retainAll(this.appClasses);
+		this.libClasses.removeAll(lib_classes_copy);
+		Set<MethodData> lib_methods_copy = new HashSet<MethodData>(this.libMethods);
+		lib_methods_copy.retainAll(this.appMethods);
+		this.libMethods.removeAll(lib_methods_copy);
+		Set<String> used_lib_classes_copy = new HashSet<String>(this.usedLibClasses);
+		used_lib_classes_copy.retainAll(this.appClasses);
+		this.usedLibClasses.removeAll(used_lib_classes_copy);
+		this.usedAppClasses.addAll(used_lib_classes_copy);
+		Set<MethodData> used_lib_methods_copy = new HashSet<MethodData>(this.usedLibMethods);
+		used_lib_methods_copy.retainAll(this.appMethods);
+		this.usedLibMethods.removeAll(used_lib_methods_copy);
+		this.usedAppMethods.addAll(used_lib_methods_copy);
 	}
 
 	@Override

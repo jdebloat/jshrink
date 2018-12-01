@@ -11,7 +11,7 @@ import java.util.HashSet;
 
 public class MavenSingleProjectAnalyzerTest {
 	@Test
-	public void testMavenProjectWithNoSubmodules() {
+	public void testMavenProjectWithNoSubmodulesSparkOnly() {
 		String junit_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit";
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
 		runner.run();
@@ -22,7 +22,20 @@ public class MavenSingleProjectAnalyzerTest {
 	}
 	
 	@Test
-	public void testMavenProjectWithOneSubmodule() {
+	public void testMavenProjectWithNoSubmodulesBothSparkAndTamiFlex() {
+		MavenSingleProjectAnalyzer.useTamiFlex = true;
+		
+		String junit_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		runner.run();
+		assertEquals(73, runner.getUsedLibClasses().size());
+		assertEquals(359, runner.getUsedLibMethods().size());
+		assertEquals(282, runner.getUsedAppClasses().size());
+		assertEquals(1567, runner.getUsedAppMethods().size());
+	}
+	
+	@Test
+	public void testMavenProjectWithOneSubmoduleSparkOnly() {
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson";
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
@@ -34,7 +47,21 @@ public class MavenSingleProjectAnalyzerTest {
 	}
 	
 	@Test
-	public void testMavenProjectWithMultiSubmodules() {
+	public void testMavenProjectWithOneSubmoduleBothSparkAndTamiFlex() {
+		MavenSingleProjectAnalyzer.useTamiFlex = true;
+		
+		// the gson project has many submodules but only one submodule is actually built
+		String gson_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		runner.run();
+		assertEquals(89, runner.getUsedLibClasses().size());
+		assertEquals(306, runner.getUsedLibMethods().size());
+		assertEquals(168, runner.getUsedAppClasses().size());
+		assertEquals(940, runner.getUsedAppMethods().size());
+	}
+	
+	@Test
+	public void testMavenProjectWithMultiSubmodulesSparkOnly() {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
 		String essentials_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials";
@@ -47,7 +74,22 @@ public class MavenSingleProjectAnalyzerTest {
 	}
 	
 	@Test
-	public void testMavenProjectWithMultiSubmodules2() {
+	public void testMavenProjectWithMultiSubmodulesBothSparkAndTamiFlex() {
+		MavenSingleProjectAnalyzer.useTamiFlex = true;
+		
+		// the essentials project has multiple modules compiled but only one module has 
+		// real Java class files, the other two only have resources
+		String essentials_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		runner.run();
+		assertEquals(1184, runner.getUsedLibClasses().size());
+		assertEquals(5735, runner.getUsedLibMethods().size());
+		assertEquals(26, runner.getUsedAppClasses().size());
+		assertEquals(195, runner.getUsedAppMethods().size());
+	}
+	
+	@Test
+	public void testMavenProjectWithMultiSubmodules2SparkOnly() {
 		// the cglib project has five modules
 		// four of them have java class files and only two of them 
 		// have test classes
@@ -58,6 +100,25 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(4429, runner.getUsedLibMethods().size());
 		assertEquals(157, runner.getUsedAppClasses().size());
 		assertEquals(902, runner.getUsedAppMethods().size());
+	}
+	
+	/**
+	 * Note that injecting TamiFlex causes many test failures in this project.
+	 */
+	@Test
+	public void testMavenProjectWithMultiSubmodules2SparkAndTamiFlex() {
+		MavenSingleProjectAnalyzer.useTamiFlex = true;
+
+		// the cglib project has five modules
+		// four of them have java class files and only two of them 
+		// have test classes
+		String cglib_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		runner.run();
+		assertEquals(970, runner.getUsedLibClasses().size());
+		assertEquals(4523, runner.getUsedLibMethods().size());
+		assertEquals(158, runner.getUsedAppClasses().size());
+		assertEquals(903, runner.getUsedAppMethods().size());
 	}
 	
 	@Test

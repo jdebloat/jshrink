@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import edu.ucla.cs.onr.Application;
+import edu.ucla.cs.onr.util.MavenUtils;
 
 public class TamiFlexRunner {
 	private String tamiflex_path;
@@ -37,48 +39,22 @@ public class TamiFlexRunner {
 	private boolean rerun;
 	
 	// classes that are referenced or instantiated via Java reflection
-	public HashSet<String> accessed_classes;
+	public HashMap<String, HashSet<String>> accessed_classes;
 	// fields that are referenced or accessed via Java reflection
-	public HashSet<String> accessed_fields;
+	public HashMap<String, HashSet<String>> accessed_fields;
 	// methods that are referenced or invoked via Java reflection
-	public HashSet<String> used_methods;
+	public HashMap<String, HashSet<String>> used_methods;
 	
 	public TamiFlexRunner(String tamiflexJarPath, String mavenProjectPath, boolean rerunTamiFlex) {
 		this.tamiflex_path = tamiflexJarPath;
 		this.project_path = mavenProjectPath;
 		this.rerun = rerunTamiFlex;
-		accessed_classes = new HashSet<String>();
-		accessed_fields = new HashSet<String>();
-		used_methods = new HashSet<String>();
+		accessed_classes = new HashMap<String, HashSet<String>>();
+		accessed_fields = new HashMap<String, HashSet<String>>();
+		used_methods = new HashMap<String, HashSet<String>>();
 	}
 	
 	public void run() throws IOException {
-		File pom_file = new File(project_path + File.separator + "pom.xml");
-		if(pom_file.exists()) {
-			File tamiflex_output = new File(project_path + File.separator + "out");
-			if(!tamiflex_output.exists()) {
-				runTamiFlex(pom_file);
-			} else if (rerun) {
-				// delete the previous output and rerun TamiFlex
-				tamiflex_output.delete();
-				runTamiFlex(pom_file);
-			}
-			
-			// analyze the result
-			if(tamiflex_output.exists()) {
-				String log = tamiflex_output.getAbsolutePath() + File.separator + "refl.log";
-				analyze(log);
-			} else {
-				System.err.println("Error: TamiFlex does not run successfully. No output folder exists.");
-			}
-		}
-	}
-	
-	public void runTamiFlex(File pom_file) throws IOException {
-		// save a copy of the pom file
-		File copy = new File(pom_file.getAbsolutePath() + ".tmp");
-		FileUtils.copyFile(pom_file, copy);
-		
 		// double check if the tamiflex jar exists
 		File tamiflex_jar = new File(tamiflex_path);
 		if(tamiflex_jar.exists()) {
@@ -87,32 +63,86 @@ public class TamiFlexRunner {
 			// a relative path will not work
 			this.tamiflex_path = tamiflex_jar.getAbsolutePath();
 		} else {
-			System.err.println("Error: the TamiFlex jar does not exist in " + tamiflex_path);
+			System.err.println("[TamiFlexRunner] Error: the TamiFlex jar does not exist in " + tamiflex_path);
+			return;
 		}
 		
-		// inject TamiFlex as the java agent in the POM file
-		injectTamiFlex(pom_file.getAbsolutePath());
+		// find all submodules if any
+		HashMap<String, File> modules = new HashMap<String, File>();
+		MavenUtils.getModules(new File(project_path), modules);
 		
-		try {
-			// run 'mvn test'
-			boolean testResult = runMavenTest();
-			if(Application.isDebugMode() || Application.isVerboseMode()) {
-				if(testResult) {
-					System.out.println("mvn test succeeds.");
+		boolean hasTamiFlexOutput = false;
+		for(String artifact_id : modules.keySet()) {
+			File dir = modules.get(artifact_id);
+			File pom_file = new File(dir.getAbsolutePath() + File.separator + "pom.xml");
+			
+			// check if a tamiflex output folder exists
+			File tamiflex_output = new File(dir.getAbsolutePath() + File.separator + "out");
+			if(tamiflex_output.exists()) {
+				// TamiFlex output exists
+				if(rerun) {
+					// delete existing tamiflex output if we want to rerun TamiFlex
+					tamiflex_output.delete();
 				} else {
-					System.out.println("mvn test fails.");
+					hasTamiFlexOutput = true;
+				}
+			}
+			
+			// save a copy of the pom file
+			File copy = new File(pom_file.getAbsolutePath() + ".tmp");
+			FileUtils.copyFile(pom_file, copy);
+			
+			// inject TamiFlex as the java agent in the POM file
+			injectTamiFlex(pom_file.getAbsolutePath());
+		}
+		
+		// run TamiFlex in the root
+		try {
+			if(!hasTamiFlexOutput) {
+				// run 'mvn test'
+				boolean testResult = runMavenTest();
+				if(Application.isDebugMode() || Application.isVerboseMode()) {
+					if(testResult) {
+						System.out.println("[TamiFlexRunner] mvn test succeeds.");
+					} else {
+						System.out.println("[TamiFlexRunner] mvn test fails.");
+					}
 				}
 			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		} finally {
-			// restore the pom file
-			FileUtils.copyFile(copy, pom_file);
-			copy.delete();
+			// restore the modified pom files
+			for(String artifact_id : modules.keySet()) {
+				File dir = modules.get(artifact_id);
+				File pom_file = new File(dir.getAbsolutePath() + File.separator + "pom.xml");
+				File copy = new File(pom_file.getAbsolutePath() + ".tmp");
+				FileUtils.copyFile(copy, pom_file);
+			    copy.delete();
+			}
+		}
+		
+		// analyze the result
+		for(String artifact_id : modules.keySet()) {
+			File dir = modules.get(artifact_id);
+			File tamiflex_output = new File(dir.getAbsolutePath() + File.separator + "out");
+			if(tamiflex_output.exists()) {
+				String log = tamiflex_output.getAbsolutePath() + File.separator + "refl.log";
+				analyze(artifact_id, log);
+			} else {
+				// avoid false alarms since some modules are not built or do not have java classes
+				// (e.g., resource module)
+				File target_folder = new File(dir.getAbsolutePath() + File.separator + "target");
+				File test_folder = new File(target_folder.getAbsolutePath() + File.separator + "test-classes");
+				if(target_folder.exists() && test_folder.exists()) {
+					System.err.println("[TamiFlexRunner] Error: TamiFlex does not run successfully. "
+							+ "No output folder exists in " + dir.getAbsolutePath());
+				}
+			}
 		}
 	}
 	
-	public void analyze(String log) {
+	public void analyze(String module, String log) {
 		File tamiflex_log = new File(log);
 		if(tamiflex_log.exists()) {
 			try {
@@ -130,31 +160,58 @@ public class TamiFlexRunner {
 						// this is an array type
 						String base_type = reference.substring(0, reference.length() - 2);
 						if(!isPrimitiveType(base_type)) {
-							accessed_classes.add(base_type);
+							HashSet<String> set;
+							if(accessed_classes.containsKey(module)) {
+								set = accessed_classes.get(module);
+							} else {
+								set = new HashSet<String>();
+							}
+							set.add(base_type);
+							accessed_classes.put(module, set);
 						}
 					} else if (reference.startsWith("<") && reference.endsWith(">")) {
+						reference = reference.substring(1, reference.length() - 1);
 						// this is either a field or a method 
-						String class_name = reference.split(": ")[0];
+//						String class_name = reference.split(": ")[0];
 						String class_member = reference.split(": ")[1];
 						if(class_member.contains("(") && class_member.contains(")")) {
 							// this is a method in the format of "return_type method_subsignature"
-							String method_subsignature = class_member.split(" ")[1];
-							used_methods.add(class_name + "." + method_subsignature);
+							HashSet<String> set;
+							if(used_methods.containsKey(module)) {
+								set = used_methods.get(module);
+							} else {
+								set = new HashSet<String>();
+							}
+							set.add(reference);
+							used_methods.put(module, set);
 						} else {
 							// this is a field in the format of "field_type field_name"
-							String field_name = class_member.split(" ")[1];
-							accessed_fields.add(class_name + "." + field_name);
+							HashSet<String> set;
+							if(accessed_fields.containsKey(module)) {
+								set = accessed_fields.get(module);
+							} else {
+								set = new HashSet<String>();
+							}
+							set.add(reference);
+							accessed_fields.put(module, set);
 						}
 					} else {
 						// this is a class type
-						accessed_classes.add(reference);
+						HashSet<String> set;
+						if(accessed_classes.containsKey(module)) {
+							set = accessed_classes.get(module);
+						} else {
+							set = new HashSet<String>();
+						}
+						set.add(reference);
+						accessed_classes.put(module, set);
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		} else {
-			System.err.println("Error: There is no TamiFlex log file - " + log);
+			System.err.println("[TamiFlexRunner] Error: There is no TamiFlex log file - " + log);
 		}
 	}
 	
@@ -253,7 +310,7 @@ public class TamiFlexRunner {
         					Node project_node = nodes4.item(0);
         					project_node.appendChild(build_node);
         				} else {
-        					System.err.println("There are zero or multiple project nodes in the POM file. "
+        					System.err.println("[TamiFlexRunner] There are zero or multiple project nodes in the POM file. "
         							+ "Please double check if it is correct.");
         				}
         			} else if (nodes3.getLength() == 1){
@@ -261,7 +318,7 @@ public class TamiFlexRunner {
         				Node build_node = nodes3.item(0);
         				build_node.appendChild(plugins_node);
         			} else {
-        				System.err.println("There are multiple build nodes within the project node in the POM file. "
+        				System.err.println("[TamiFlexRunner] There are multiple build nodes within the project node in the POM file. "
     							+ "Please double check if it is correct.");
         			}
         		} else if (nodes2.getLength() == 1) {
@@ -269,7 +326,7 @@ public class TamiFlexRunner {
         			Node plugins_node = nodes2.item(0);
         			plugins_node.appendChild(plugin_node);
         		} else {
-        			System.err.println("There are multiple plugins nodes within the build node in the POM file. "
+        			System.err.println("[TamiFlexRunner] There are multiple plugins nodes within the build node in the POM file. "
 							+ "Please double check if the POM file is correct.");
         		}
             } else if (nodes.getLength() == 1) {
@@ -328,7 +385,7 @@ public class TamiFlexRunner {
             	}
             } else {
             	// is it possible to have two sunfire plugins？
-            	System.err.println("There are more than one sunfire plugin in the POM file. "
+            	System.err.println("[TamiFlexRunner] There are more than one sunfire plugin in the POM file. "
             			+ "Please double check if it is correct.");
             }
             

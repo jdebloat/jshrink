@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -156,20 +157,20 @@ public class TamiFlexTest {
 	public void testLogAnalysis() {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
 		String log = "src/test/resources/tamiflex/junit_refl.log";
-		tamiflex.analyze(log);
-		assertEquals(1040, tamiflex.accessed_classes.size());
-		assertEquals(698, tamiflex.accessed_fields.size());
-		assertEquals(3846, tamiflex.used_methods.size());
+		tamiflex.analyze("junit", log);
+		assertEquals(1040, tamiflex.accessed_classes.get("junit").size());
+		assertEquals(698, tamiflex.accessed_fields.get("junit").size());
+		assertEquals(3846, tamiflex.used_methods.get("junit").size());
 	}
 	
 	@Test
 	public void testLogAnalysis2() {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
 		String log = "src/test/resources/tamiflex/apache_commons_lang_refl.log";
-		tamiflex.analyze(log);
-		assertEquals(896, tamiflex.accessed_classes.size());
-		assertEquals(985, tamiflex.accessed_fields.size());
-		assertEquals(5824, tamiflex.used_methods.size());
+		tamiflex.analyze("commons-lang3", log);
+		assertEquals(896, tamiflex.accessed_classes.get("commons-lang3").size());
+		assertEquals(985, tamiflex.accessed_fields.get("commons-lang3").size());
+		assertEquals(5824, tamiflex.used_methods.get("commons-lang3").size());
 	}
 	
 	@Test
@@ -179,9 +180,9 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
 		try {
 			tamiflex.run();
-			assertEquals(894, tamiflex.accessed_classes.size());
-			assertEquals(979, tamiflex.accessed_fields.size());
-			assertEquals(5805, tamiflex.used_methods.size());
+			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
+			assertEquals(979, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(5805, tamiflex.used_methods.get("commons-lang3").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -194,9 +195,83 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
 		try {
 			tamiflex.run();
-			assertEquals(894, tamiflex.accessed_classes.size());
-			assertEquals(979, tamiflex.accessed_fields.size());
-			assertEquals(5805, tamiflex.used_methods.size());
+			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
+			assertEquals(979, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(5805, tamiflex.used_methods.get("commons-lang3").size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testTamiFlexOnMavenProjectWithOneSubmodule() {
+		// the gson project has many submodules but only one submodule is actually built
+		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+			assertEquals(434, tamiflex.accessed_classes.values().size());
+			assertEquals(626, tamiflex.accessed_fields.values().size());
+			assertEquals(2479, tamiflex.used_methods.values().size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testTamiFlexOnMavenProjectWithMultiSubmodules() {
+		// the essentials project has multiple modules compiled but only one module has 
+		// real Java class files, the other two only have resources
+		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+			assertEquals(1, tamiflex.accessed_classes.size());
+			assertEquals(1, tamiflex.accessed_fields.size());
+			assertEquals(1, tamiflex.used_methods.size());
+			assertEquals(72, tamiflex.accessed_classes.get("essentials").size());
+			assertEquals(133, tamiflex.accessed_fields.get("essentials").size());
+			// some tests are not deterministic, so the assertion below may fail
+			assertEquals(701, tamiflex.used_methods.get("essentials").size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * Note that injecting TamiFlex causes test failures in this project. 
+	 */
+	@Test
+	public void testTamiFlexOnMavenProjectWithMultiSubmodules2() {
+		// the cglib project has five modules
+		// four of them have java class files and only two of them 
+		// have test classes
+		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib";
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+			// only one module is tested successfully
+			assertEquals(1, tamiflex.accessed_classes.size());
+			assertEquals(1, tamiflex.accessed_fields.size());
+			assertEquals(1, tamiflex.used_methods.size());
+			HashSet<String> all_accessed_classes = new HashSet<String>();
+			for(String module : tamiflex.accessed_classes.keySet()) {
+				all_accessed_classes.addAll(tamiflex.accessed_classes.get(module));
+			}
+			assertEquals(56, all_accessed_classes.size());
+			HashSet<String> all_accessed_fields = new HashSet<String>();
+			for(String module : tamiflex.accessed_fields.keySet()) {
+				all_accessed_fields.addAll(tamiflex.accessed_fields.get(module));
+			}
+			assertEquals(94, all_accessed_fields.size());
+			HashSet<String> all_used_methods = new HashSet<String>();
+			for(String module : tamiflex.used_methods.keySet()) {
+				all_used_methods.addAll(tamiflex.used_methods.get(module));
+			}
+			assertEquals(724, all_used_methods.size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

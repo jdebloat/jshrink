@@ -66,7 +66,32 @@ public class CallGraphAnalysis implements IProjectAnalyser {
         this.findAllClassesAndMethods();
         // 2. get entry points
         this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
-		// 3. use Spark to construct the call graph and compute the reachable classes and methods
+		// 3. construct the call graph and compute the reachable classes and methods
+		this.runCallGraphAnalysis();
+	}
+	
+	
+	/**
+	 * 
+	 * This method is used to run Spark/CHA given a set of entry methods found by TamiFlex
+	 *  
+	 * @param entryPoints
+	 */
+	public void run(Set<MethodData> entryPoints) {
+		// 1. use ASM to find all classes and methods
+        this.findAllClassesAndMethods();
+        
+		// clear just in case this method is misused---should not call this method twice or call this
+		// after calling the overriden run method
+		if(!this.entryMethods.isEmpty()) {
+			this.entryMethods.clear();
+		}
+		
+		// 2. add the given entry points
+		entryMethods.addAll(entryPoints);
+		
+		
+		// 3. run call graph analysis
 		this.runCallGraphAnalysis();
 	}
 
@@ -98,8 +123,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			CHATransformer.v().transform();
 		}
 		
-
+//		System.out.println("call graph analysis starts.");
+//		System.out.println(entryPoints.size() + " entry points.");
 		CallGraph cg = Scene.v().getCallGraph();
+//		System.out.println("call graph analysis done.");
 
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();
