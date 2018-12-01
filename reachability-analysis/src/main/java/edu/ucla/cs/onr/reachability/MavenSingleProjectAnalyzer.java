@@ -43,7 +43,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Map<String,List<File>> app_class_paths;
 	private final Map<String,List<File>> app_test_paths;
 	private final Map<String,List<File>> lib_class_paths;
-	private final Map<String,CallGraphAnalysis> callGraphAnalysises;
 	private final HashMap<String, String> classpaths;
 	private final EntryPointProcessor entryPointProcessor;
 	private final Set<MethodData> entryPoints;
@@ -65,7 +64,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		classpaths = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
 		entryPoints = new HashSet<MethodData>();
-		callGraphAnalysises = new HashMap<String, CallGraphAnalysis>();
 	}
 
 	public void cleanup(){
@@ -115,10 +113,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			 File pomFile = new File(root_dir + File.separator + "pom.xml");
 			 File libsDir = new File(root_dir + File.separator + "libs");
 
-			//Ensure the project is compiled.
-			 Process process1 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --quiet --batch-mode -fn");
-
+			// Ensure the project is compiled.
+			// Prepare the command and its arguments in a String array in case there is a space or special 
+			// character in the pom file path or lib dir path.
+			String[] cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "install", 
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
+			Process process1 = Runtime.getRuntime().exec(cmd);
+			process1.waitFor();
+			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 			
 			String line;
@@ -135,9 +137,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			// Get the classpath information
 			// We cannot only get the classpath of libraries in the compile scope, since it will make our
 			// call graph incomplete when using test cases as entry points
-			Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-					" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
-					" --batch-mode");
+			String[] cmd2 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode"};
+			Process process2 = Runtime.getRuntime().exec(cmd2);
+			process2.waitFor();
+			
 			// Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
 			//		" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
 			//		" -DincludeScope=compile --batch-mode");
@@ -151,7 +155,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(classpathInfo.contains("BUILD FAILURE")) {
 				System.err.println("'mvn dependency:build-classpath' fails.");
 			}
-		}catch(IOException e){
+		}catch(IOException | InterruptedException e){
 			e.printStackTrace();
 			System.exit(1);
 		}

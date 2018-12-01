@@ -104,47 +104,6 @@ public class SootUtils {
 
 		Options.v().set_process_dir(dirs);
 	}
-	
-	public static void setup_analysis(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
-		String cp = SootUtils.getJREJars();
-		cp += listToPathString(libJarPath);
-		cp += listToPathString(appClassPath);
-		cp += listToPathString(appTestPath);
-		Options.v().set_soot_classpath(cp);
-		Options.v().set_whole_program(true);
-		Options.v().set_allow_phantom_refs(true);
-		// try the following two options to ignore the static field error in the Jython lib 
-		// the first one does not work but the second one works (why?)
-		// check the following links for reference:
-		// https://github.com/petablox-project/petablox/issues/6
-		// https://github.com/Sable/soot/issues/410
-		// https://github.com/Sable/soot/issues/717 
-//		Options.v().setPhaseOption("jb.tr", "ignore-wrong-staticness:true");
-		Options.v().set_wrong_staticness(Options.wrong_staticness_ignore);
-
-		// set the application directories
-		List<String> dirs = new ArrayList<String>();
-
-		for(File path : appClassPath) {
-			// double check whether the file path exists
-			if(path.exists()) {
-				dirs.add(path.getAbsolutePath());
-			} else {
-				System.err.println(path.getAbsolutePath() + " does not exist.");
-			}
-			
-		}
-
-		for(File path : appTestPath) {
-			if(path.exists()) {
-				dirs.add(path.getAbsolutePath());
-			} else {
-				System.err.println(path.getAbsolutePath() + " does not exist.");
-			}
-		}
-
-		Options.v().set_process_dir(dirs);
-	}
 
 	public static HashMap<String, String> getSparkOpt() {
 		HashMap<String, String> opt = new HashMap<String, String>();
