@@ -301,7 +301,7 @@ public class TamiFlexRunner {
         			NodeList nodes3 = (NodeList) expr3.evaluate(doc, XPathConstants.NODESET);
         			if(nodes3.getLength() == 0) {
         				// no build node, must inject one
-        				Node build_node = doc.createElement("plugins");
+        				Node build_node = doc.createElement("build");
         				build_node.appendChild(plugins_node);
         				
         				XPathExpression expr4 = xpath.compile("/project");

@@ -135,6 +135,38 @@ public class TamiFlexTest {
 		copy.delete();
 	}
 	
+	/**
+	 * 
+	 * Test the java agent injection on a pom file that does not even have a build node
+	 * 
+	 * @throws IOException
+	 */
+	@Test
+	public void testJavaAgentInjection5() throws IOException {
+		String pom_file = "src/test/resources/tamiflex/pf4j_plugin1_pom.xml";
+		
+		// save a copy of the pom file
+		File file = new File(pom_file);
+		File copy = new File(file.getAbsolutePath() + ".tmp");
+		FileUtils.copyFile(file, copy);
+		
+		// inject tamiflex as a java agent in the surefire test plugin
+		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
+		tamiflex.injectTamiFlex(pom_file);
+		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
+		assertTrue(content.contains("<build><plugins><plugin>"
+				+ "<groupId>org.apache.maven.plugins</groupId>"
+				+ "<artifactId>maven-surefire-plugin</artifactId>"
+				+ "<version>2.20.1</version>"
+				+ "<configuration><argLine>-javaagent:" + tamiflex_jar_path + "</argLine></configuration>"
+				+ "</plugin></plugins></build>"));
+		
+		// restore the pom file
+		FileUtils.copyFile(copy, file);
+		copy.delete();
+	}
+	
 	@Test
 	public void testRunMavenTest() throws IOException, InterruptedException {
 		String project_path = "src/test/resources/simple-test-project";

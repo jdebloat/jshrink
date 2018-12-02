@@ -188,4 +188,28 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 	public Set<MethodData> getEntryPoints() {
 		return Collections.unmodifiableSet(this.entryMethods);
 	}
+
+	@Override
+	public Set<String> getUsedLibClassesCompileOnly() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<MethodData> getUsedLibMethodsCompileOnly() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<String> getLibClassesCompileOnly() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Set<MethodData> getLibMethodsCompileOnly() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
