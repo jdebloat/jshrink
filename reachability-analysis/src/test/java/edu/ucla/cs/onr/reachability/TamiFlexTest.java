@@ -308,4 +308,22 @@ public class TamiFlexTest {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void testTamiFlexConfig() {
+		// create a dummy TamiFlexRunner object
+		TamiFlexRunner tamiflex = new TamiFlexRunner("", "", false);
+		try {
+			tamiflex.checkTamiFlexConfig();
+			
+			File propFile = new File(
+					System.getProperty("user.home") + File.separator + ".tamiflex" + File.separator + "poa.properties");
+			assertTrue(propFile.exists());
+			String content = FileUtils.readFileToString(propFile, Charset.defaultCharset());
+			assertTrue(content.contains("dontDumpClasses = true"));
+			assertTrue(content.contains("dontNormalize = true"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
