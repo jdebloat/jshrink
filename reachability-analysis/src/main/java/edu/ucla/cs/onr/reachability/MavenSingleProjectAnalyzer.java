@@ -221,7 +221,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	@Override
 	public void run() {
-		setup();
 		File root_dir = new File(project_path);
 		
 		// find all submodules if any
