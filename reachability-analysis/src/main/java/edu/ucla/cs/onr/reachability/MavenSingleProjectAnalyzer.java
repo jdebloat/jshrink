@@ -162,9 +162,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
-			Process process3 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() + 
-					" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + 
-					" -DincludeScope=compile --batch-mode");
+			String[] cmd3 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
+			Process process3 = Runtime.getRuntime().exec(cmd3);
 			process3.waitFor();
 			
 			reader = new BufferedReader(new InputStreamReader(process3.getInputStream()));
