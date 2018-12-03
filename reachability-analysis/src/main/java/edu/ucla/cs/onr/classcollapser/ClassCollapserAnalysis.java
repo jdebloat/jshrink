@@ -8,7 +8,6 @@ import edu.ucla.cs.onr.reachability.MethodData;
 import soot.SootMethod;
 
 
-import java.lang.reflect.Method;
 import java.util.*;
 
 public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
@@ -50,7 +49,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
             }
             usedAppMethods.get(className).add(m.getSubSignature());
         }
-        System.out.println(usedAppMethods);
+//        System.out.println(usedAppMethods);
     }
 
     public void run() {
@@ -67,7 +66,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         }
         while (!queue.isEmpty()) {
             String child = queue.removeFirst();
-            System.out.printf("prcessing child class %s\n", child);
+//            System.out.printf("prcessing child class %s, contains: %d, parentsMap contains: %d\n", child, appClasses.contains(child) ? 1 : 0, parentsMap.containsKey(child) ? 1: 0);
             Set<String> parents = new HashSet<String>();
             if (!parentsMap.get(child).isEmpty()) {
                 parents.add(parentsMap.get(child));
@@ -78,17 +77,25 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
 
             if (usedAppClasses.contains(child) && parents.size() == 1) {
                 String singleParent = parents.iterator().next();
+                boolean cont = false;
                 for (String c: childrenMap.get(singleParent)) {
                     if (!visited.contains(c)) {
                         queue.addLast(child);
-                        continue;
+                        cont = true;
+                        break;
                     }
                 }
-                for (String c: childrenVirtualMap.get(singleParent)) {
-                    if (!visited.contains(c)) {
-                        queue.addLast(child);
-                        continue;
+                if (!cont) {
+                    for (String c : childrenVirtualMap.get(singleParent)) {
+                        if (!visited.contains(c)) {
+                            queue.addLast(child);
+                            cont = true;
+                            break;
+                        }
                     }
+                }
+                if (cont) {
+                    continue;
                 }
                 if (collapsable(child, singleParent)) {
 //                    String parent = parentsMap.get(child);
@@ -110,7 +117,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 if (childrenVirtualMap.get(parent).contains(child)) {
                     childrenVirtualMap.get(parent).remove(child);
                 }
-                parentsMap.remove(child);
+                parentsMap.put(child, "");
                 parentsVirtualMap.remove(child);
 //                System.out.printf("parent: %s, children of the parent: %s\n", parent, childrenMap.get(parent));
                 if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0 && !visited.contains(parent)) {
@@ -143,8 +150,12 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     }
 
     private boolean collapsable(String from, String to) {
-        System.out.printf("collapsable: from %s, to %s\n", from, to);
+//        System.out.printf("collapsable: from %s, to %s\n", from, to);
         SootClass fromClass = Scene.v().loadClassAndSupport(from);
+        SootClass toClass = Scene.v().loadClassAndSupport(to);
+        if (toClass.isAbstract()) {
+            return false;
+        }
         int numUsedChildren = 0;
         for (String child: childrenMap.get(to)) {
             if (usedAppClasses.contains(child)) {
@@ -160,14 +171,13 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
             if (!usedAppClasses.contains(to)) {
                 return true;
             }
-            SootClass toClass = Scene.v().loadClassAndSupport(to);
             for (SootMethod m: fromClass.getMethods()) {
 //                if (m.getName().equals("<init>") && !MethodBodyUtils.isEmptyConstructor(m)) {
 //                    return false;
 //                }
-                System.out.printf("method name: %s, declare: %s, used: %s\n", m.getName(), toClass.declaresMethod(m.getSubSignature()), toClass.declaresMethod(m.getSubSignature())&& usedAppMethods.containsKey(toClass.getName())
-                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature()));
-                System.out.println(toClass.getMethod(m.getSubSignature()).getSignature());
+//                System.out.printf("method name: %s, declare: %s, used: %s\n", m.getName(), toClass.declaresMethod(m.getSubSignature()), toClass.declaresMethod(m.getSubSignature())&& usedAppMethods.containsKey(toClass.getName())
+//                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature()));
+//                System.out.println(toClass.getMethod(m.getSubSignature()).getSignature());
                 if (toClass.declaresMethod(m.getSubSignature())
                         && usedAppMethods.containsKey(toClass.getName())
                         && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature())) {
@@ -212,6 +222,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         Set<String> visited = new HashSet<String>();
 
         for (String c: appClasses) {
+            System.out.println(c);
             parentsMap.put(c, "");
             childrenMap.put(c, new HashSet<String>());
             parentsVirtualMap.put(c, new HashSet<String>());
@@ -236,8 +247,10 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
             childrenMap.get(sootClass.getSuperclass().getName()).add(thisClass);
         }
         for (SootClass c : sootClass.getInterfaces()) {
-            parentsVirtualMap.get(thisClass).add(c.getName());
-            childrenVirtualMap.get(c.getName()).add(thisClass);
+            if (childrenVirtualMap.containsKey(c.getName())) {
+                parentsVirtualMap.get(thisClass).add(c.getName());
+                childrenVirtualMap.get(c.getName()).add(thisClass);
+            }
         }
     }
 
@@ -251,5 +264,9 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
 
     public Set<String> getRemoveList() {
         return removeList;
+    }
+
+    public Map<String, Set<String>> getProcessedUsedMethods() {
+        return usedAppMethods;
     }
 }
