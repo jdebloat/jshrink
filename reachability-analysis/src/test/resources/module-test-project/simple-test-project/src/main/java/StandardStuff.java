@@ -6,7 +6,16 @@ public class StandardStuff {
 	public StandardStuff(){
 		String temp = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 		this.integer = 6;
-	}
+		try{
+                        Method method = StandardStuff.class.getMethod("touchedViaReflection");
+                        Object o = method.invoke(null);
+                } catch(Exception e){
+                }
+        }
+
+        private static void touchedViaReflection(){
+                System.out.println("Hello");
+        }
 
 	public String getString(){
 		String temp = "DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD";

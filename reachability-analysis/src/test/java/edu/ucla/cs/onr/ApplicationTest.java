@@ -12,6 +12,7 @@ import soot.G;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 import static junit.framework.TestCase.assertTrue;
@@ -373,6 +374,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
+		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -380,14 +382,19 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		System.out.println(methodsRemoved.size());
+
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "touchedViaReflection"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -418,6 +425,13 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--ignore-classes edu.ucla.cs.onr.test.LibraryClass edu.ucla.cs.onr.test.UnusedClass ");
 		arguments.append("--debug");
+
+		try {
+			Method method = ApplicationTest.class.getMethod("ignoreClassTest");
+			Object o = method.invoke(null);
+		}catch(Exception e){
+
+		}
 
 		Application.main(arguments.toString().split("\\s+"));
 
