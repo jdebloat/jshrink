@@ -2,14 +2,17 @@ package edu.ucla.cs.onr.reachability;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 
+import edu.ucla.cs.onr.GitGetter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.Test;
+import org.junit.*;
 
 public class TamiFlexTest {
 	/**
@@ -18,6 +21,19 @@ public class TamiFlexTest {
 	 * 
 	 * @throws IOException
 	 */
+
+	private static GitGetter gitGetter;
+
+	@BeforeClass
+	public static void setup(){
+		gitGetter = new GitGetter();
+	}
+
+	@AfterClass
+	public static void cleanup(){
+		gitGetter.removeGitDir();
+	}
+
 	@Test
 	public void testJavaAgentInjection1() throws IOException {
 		String pom_file = "src/test/resources/tamiflex/junit_pom.xml";
@@ -206,7 +222,8 @@ public class TamiFlexTest {
 	@Test
 	public void testTamiFlexOnMavenProjectWithOneSubmodule() {
 		// the gson project has many submodules but only one submodule is actually built
-		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson";
+		String project_path = this.gitGetter.addGitHubProject("google","gson",
+				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
 		try {
@@ -223,7 +240,8 @@ public class TamiFlexTest {
 	public void testTamiFlexOnMavenProjectWithMultiSubmodules() {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
-		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials";
+		String project_path = this.gitGetter.addGitHubProject("greenrobot","essentials",
+				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
 		try {
@@ -248,7 +266,8 @@ public class TamiFlexTest {
 		// the cglib project has five modules
 		// four of them have java class files and only two of them 
 		// have test classes
-		String project_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib";
+		String project_path = this.gitGetter.addGitHubProject("cglib","cglib",
+				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
 		String tamiflex_jar_path = "src/test/resources/tamiflex/poa-2.0.3.jar";
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
 		try {
