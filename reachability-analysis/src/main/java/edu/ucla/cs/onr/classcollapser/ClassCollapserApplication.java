@@ -15,18 +15,23 @@ public class ClassCollapserApplication {
 
     public static void main(String[] args) {
         ArrayList<File> appClassPath = new ArrayList<File>();
-        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/test/override");
-        System.out.println(f.listFiles().length);
-        System.out.println(f.exists());
-        System.out.println(f.isDirectory());
+//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/test/override");
+        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes");
+//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/commons-lang/target/classes");
+//        System.out.println(f.listFiles().length);
+//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-client/target/classes");
+//        System.out.println(f.exists());
+//        System.out.println(f.isDirectory());
         appClassPath.add(f);
-        IProjectAnalyser cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, new ArrayList<File>(), new EntryPointProcessor(true, false, false, new HashSet<MethodData>()));
+//        File f2 = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-test/target/classes");
+//        appClassPath.add(f2);
+        IProjectAnalyser cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, new ArrayList<File>(), new EntryPointProcessor(true, true, true, new HashSet<MethodData>()));
         cgAnalysis.setup();
         cgAnalysis.run();
-        Set<String> usedAppClasses = cgAnalysis.getUsedAppClasses();
-        for (String c : usedAppClasses) {
-            System.out.println(c);
-        }
+//        Set<String> usedAppClasses = cgAnalysis.getUsedAppClasses();
+//        for (String c : usedAppClasses) {
+//            System.out.println(c);
+//        }
 //        Set<String> usedClasses = new HashSet<String>();
 //        usedClasses.add("B");
 //        usedClasses.add("main");
@@ -53,7 +58,7 @@ public class ClassCollapserApplication {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
 
-            ClassCollapser.mergeTwoClasses(from, to);
+            ClassCollapser.mergeTwoClasses(from, to, ((ClassCollapserAnalysis) ccAnalysis).getProcessedUsedMethods());
 
             classesToRewrite.add(toName);
             classesToRemove.add(fromName);
@@ -82,21 +87,30 @@ public class ClassCollapserApplication {
         }
 
         Set<File> classPathsOfConcern = new HashSet<File>(appClassPath);
-        for (String className: classesToRewrite) {
-            if (!classesToRemove.contains(className)) {
-                try {
-                    ClassFileUtils.writeClass(nameToSootClass.get(className), classPathsOfConcern);
-                } catch (Exception e) {
-                    System.out.println(e);
-                }
-            }
+//        for (String className: classesToRewrite) {
+//            if (!classesToRemove.contains(className)) {
+//                try {
+//                    ClassFileUtils.writeClass(nameToSootClass.get(className), classPathsOfConcern);
+//                } catch (Exception e) {
+//                    System.out.println(e);
+//                }
+//            }
+//        }
+//        for (String className: classesToRemove) {
+//            try {
+//                ClassFileUtils.removeClass(nameToSootClass.get(className), classPathsOfConcern);
+//            } catch (Exception e) {
+//                System.out.println(e);
+//            }
+//        }
+
+        for (String n: ccAnalysis.getNameChangeList().keySet()) {
+            System.out.println("name change: " + n + " " + ccAnalysis.getNameChangeList().get(n));
         }
-        for (String className: classesToRemove) {
-            try {
-                ClassFileUtils.removeClass(nameToSootClass.get(className), classPathsOfConcern);
-            } catch (Exception e) {
-                System.out.println(e);
-            }
-        }
+
+        int originCount = cgAnalysis.getAppClasses().size();
+        int afterCount = originCount - ccAnalysis.getNameChangeList().size();
+        float percentage = (originCount - afterCount) / (float) originCount;
+        System.out.printf("Original class count: %d, After class count: %d, percentage: %f\n", originCount, afterCount, percentage);
     }
 }
