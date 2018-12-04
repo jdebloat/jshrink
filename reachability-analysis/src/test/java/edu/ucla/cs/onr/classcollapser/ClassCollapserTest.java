@@ -70,13 +70,13 @@ public class ClassCollapserTest {
             }
         }
 
-        Set<File> classPathsOfConcern = new HashSet<File>();
-        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
-        try {
-            ClassFileUtils.writeClass(A, classPathsOfConcern);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+//        Set<File> classPathsOfConcern = new HashSet<File>();
+//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
+//        try {
+//            ClassFileUtils.writeClass(A, classPathsOfConcern);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
     }
 
     @Test
@@ -107,14 +107,14 @@ public class ClassCollapserTest {
                 assertNotEquals("B", l.getType().toString());
             }
         }
-
-        Set<File> classPathsOfConcern = new HashSet<File>();
-        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
-        try {
-            ClassFileUtils.writeClass(main, classPathsOfConcern);
-        } catch (Exception e) {
-            System.out.println(e);
-        }
+//
+//        Set<File> classPathsOfConcern = new HashSet<File>();
+//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
+//        try {
+//            ClassFileUtils.writeClass(main, classPathsOfConcern);
+//        } catch (Exception e) {
+//            System.out.println(e);
+//        }
     }
 
 }
