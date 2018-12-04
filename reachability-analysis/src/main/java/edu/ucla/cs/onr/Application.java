@@ -101,34 +101,6 @@ public class Application {
 		projectAnalyser.setup();
 
 		try {
-
-			if(Application.isVerboseMode()){
-				for(File file : projectAnalyser.getAppClasspaths()) {
-					System.out.println("app_size_before_debloat_" + file.getAbsolutePath() + ","
-							+ ClassFileUtils.getSize(file));
-				}
-				for(File file: projectAnalyser.getLibClasspaths()){
-					System.out.println("lib_size_before_debloat_" + file.getAbsolutePath() + ","
-						+ClassFileUtils.getSize(file));
-				}
-			}
-
-			extractJars(projectAnalyser.getAppClasspaths());
-			extractJars(projectAnalyser.getLibClasspaths());
-			extractJars(projectAnalyser.getTestClasspaths());
-
-			if(Application.isVerboseMode()){
-				for(File file : projectAnalyser.getAppClasspaths()){
-					System.out.println("app_size_decompressed_before_debloat_" + file.getAbsolutePath() + ","
-							+ ClassFileUtils.getSize(file));
-				}
-
-				for(File file : projectAnalyser.getLibClasspaths()){
-					System.out.println("lib_size_decompressed_before_debloat_" + file.getAbsolutePath() + ","
-							+ ClassFileUtils.getSize(file));
-				}
-			}
-
 			/*
 			In this mode, the call-graph analysis is run to determine what methods are touched and which are untouched.
 			*/
@@ -153,6 +125,34 @@ public class Application {
 
 				for(MethodData entrypoint : projectAnalyser.getEntryPoints()){
 					System.out.println("entry_point," + entrypoint.getSignature());
+				}
+			}
+
+
+			if(Application.isVerboseMode()){
+				for(File file : projectAnalyser.getAppClasspaths()) {
+					System.out.println("app_size_before_debloat_" + file.getAbsolutePath() + ","
+							+ ClassFileUtils.getSize(file));
+				}
+				for(File file: projectAnalyser.getLibClasspaths()){
+					System.out.println("lib_size_before_debloat_" + file.getAbsolutePath() + ","
+							+ClassFileUtils.getSize(file));
+				}
+			}
+
+			extractJars(projectAnalyser.getAppClasspaths());
+			extractJars(projectAnalyser.getLibClasspaths());
+			extractJars(projectAnalyser.getTestClasspaths());
+
+			if(Application.isVerboseMode()){
+				for(File file : projectAnalyser.getAppClasspaths()){
+					System.out.println("app_size_decompressed_before_debloat_" + file.getAbsolutePath() + ","
+							+ ClassFileUtils.getSize(file));
+				}
+
+				for(File file : projectAnalyser.getLibClasspaths()){
+					System.out.println("lib_size_decompressed_before_debloat_" + file.getAbsolutePath() + ","
+							+ ClassFileUtils.getSize(file));
 				}
 			}
 
