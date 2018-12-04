@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -67,6 +68,8 @@ public class TamiFlexRunner {
 			return;
 		}
 		
+		checkTamiFlexConfig();
+		 
 		// find all submodules if any
 		HashMap<String, File> modules = new HashMap<String, File>();
 		MavenUtils.getModules(new File(project_path), modules);
@@ -138,6 +141,44 @@ public class TamiFlexRunner {
 					System.err.println("[TamiFlexRunner] Error: TamiFlex does not run successfully. "
 							+ "No output folder exists in " + dir.getAbsolutePath());
 				}
+			}
+		}
+	}
+	
+	public void checkTamiFlexConfig() throws IOException {
+		// make sure the TamiFlex property file has the right configuration---dontDumpClasses set to true
+		// and dontNormalize set to true
+		String propFilePath = 
+				System.getProperty("user.home") + File.separator + ".tamiflex" + File.separator + "poa.properties";
+		File propFile = new File(propFilePath);
+		if(!propFile.exists()) {
+			// copy the default TamiFlex property file
+			ClassLoader classLoader = TamiFlexRunner.class.getClassLoader();
+			File template = new File(classLoader.getResource("poa.property").getFile());
+			FileUtils.copyFile(template, propFile);
+		} else {
+			// double check if the existing TamiFlex property file has the right configuration
+			List<String> lines = FileUtils.readLines(propFile, Charset.defaultCharset());
+			boolean isRewritten  = false;
+			for(int i = 0; i < lines.size(); i++) {
+				String line = lines.get(i);
+				if(line.startsWith("dontDumpClasses")) {
+					String value = line.substring(line.indexOf("=") + 1).trim();
+					if(value.equals("false")) {
+						lines.set(i, "dontDumpClasses = true");
+						isRewritten = true;
+					}
+				} else if(line.startsWith("dontNormalize")) {
+					String value = line.substring(line.indexOf("=") + 1).trim();
+					if(value.equals("false")) {
+						lines.set(i, "dontNormalize = true");
+						isRewritten = true;
+					}
+				}
+			}
+			
+			if(isRewritten) {
+				FileUtils.writeLines(propFile, lines, false);
 			}
 		}
 	}
