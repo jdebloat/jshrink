@@ -9,14 +9,17 @@ public class StandardStuff {
 		String temp = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 		this.integer = 6;
 		try{
-			Method method = StandardStuff.class.getMethod("touchedViaReflection");
+			Method method = StandardStuff.class.getDeclaredMethod("touchedViaReflection");
+			method.setAccessible(true);
 			Object o = method.invoke(null);
 		} catch(Exception e){
+			System.out.println("Here reached");
+			e.printStackTrace();
 		}
 	}
 
 	private static void touchedViaReflection(){
-                System.out.println("Hello");
+                System.out.println("touchedViaReflection touched");
         }
 
 	public String getString(){
