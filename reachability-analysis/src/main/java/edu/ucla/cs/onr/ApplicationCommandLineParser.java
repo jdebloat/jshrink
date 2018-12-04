@@ -27,7 +27,7 @@ public class ApplicationCommandLineParser {
 	private final Set<String> classesToIgnore;
 	private final Optional<String> exceptionMessage;
 	private final boolean exception;
-	private final boolean tamiflex;
+	private final Optional<File> tamiflex;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -139,7 +139,20 @@ public class ApplicationCommandLineParser {
 			this.exceptionMessage = Optional.empty();
 		}
 
-		this.tamiflex = commandLine.hasOption("f");
+		if(commandLine.hasOption("f")){
+			File tamiFlexJar = new File(commandLine.getOptionValue("f"));
+			if(!tamiFlexJar.exists()){
+				throw new FileNotFoundException("Specified TamiFlex jar (\"" + tamiFlexJar.getAbsolutePath() + "\") " +
+						"does not exist.");
+			}
+			if(tamiFlexJar.isDirectory()){
+				throw new FileNotFoundException("Specified TamiFlex jar (\"" + tamiFlexJar.getAbsolutePath() + "\") " +
+						"is a directory. Jar file expected.");
+			}
+			this.tamiflex = Optional.of(tamiFlexJar);
+		} else {
+			this.tamiflex = Optional.empty();
+		}
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -272,9 +285,10 @@ public class ApplicationCommandLineParser {
 				.build();
 
 		Option tamiFlexOption = Option.builder("f")
-				.desc("Enable TamiFlex (Warning: Only works on Maven Projects. ")
+				.desc("Enable TamiFlex")
 				.longOpt("tamiflex")
-				.hasArg(false)
+				.hasArg(true)
+				.argName("TamiFlex Jar")
 				.required(false)
 				.build();
 
@@ -402,7 +416,7 @@ public class ApplicationCommandLineParser {
 		return exceptionMessage;
 	}
 
-	public boolean useTamiflex(){
+	public Optional<File> getTamiflex(){
 		return this.tamiflex;
 	}
 }

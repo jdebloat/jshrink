@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -69,7 +70,8 @@ public class MavenProjectAnalysis {
 				
 				CallGraphAnalysis.useSpark = false;
 				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path,
-						new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+						new EntryPointProcessor(true, false, true,
+								new HashSet<MethodData>()), Optional.empty());
 				runner.run();
 				
 				String record = proj_name + "\t"

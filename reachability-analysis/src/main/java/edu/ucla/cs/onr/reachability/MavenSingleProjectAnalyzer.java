@@ -28,7 +28,6 @@ import edu.ucla.cs.onr.util.MavenUtils;
  *
  */
 public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
-	public static boolean useTamiFlex = false; // do not run TamiFlex by default
 	
 	private String project_path;
 	
@@ -51,8 +50,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final HashMap<String, String> classpaths_compile_only;
 	private final EntryPointProcessor entryPointProcessor;
 	private final Set<MethodData> entryPoints;
+	private final Optional<File> tamiFlexJar;
 	
-	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc) {
+	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
+									  Optional<File> tamiFlex) {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
@@ -74,6 +75,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		classpaths_compile_only = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
 		entryPoints = new HashSet<MethodData>();
+		tamiFlexJar = tamiFlex;
 	}
 
 	public void cleanup(){
@@ -321,10 +323,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 		
 		// (optional) use tamiflex to dynamically identify reflection calls
-		if(useTamiFlex) {
-			// TODO: hardcode the path to the tamiflex jar for now, but need to refactor this and let 
-			// the user to pass it in later
-			TamiFlexRunner tamiflex = new TamiFlexRunner("src/test/resources/tamiflex/poa-2.0.3.jar", 
+		if(tamiFlexJar.isPresent()) {
+			TamiFlexRunner tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),
 					project_path, false);
 			try {
 				tamiflex.run();

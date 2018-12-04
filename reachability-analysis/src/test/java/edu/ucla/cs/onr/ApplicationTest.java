@@ -82,6 +82,14 @@ public class ApplicationTest {
 		return f;
 	}
 
+	private File getReflectionProjectDir(){
+		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+		File f = new File(classLoader.getResource("reflection-test-project").getFile());
+		assert(f.exists());
+		assert(f.isDirectory());
+		return f;
+	}
+
 	private List<File> getModueFilesToRectify(){
 		List<File> toReturn = new ArrayList<File>();
 
@@ -94,11 +102,38 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
+	private List<File> getReflectionFilesToRectify(){
+		List<File> toReturn = new ArrayList<File>();
+
+		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+		File f = new File(classLoader.getResource(
+				"reflection-test-project/simple-test-project/libs/standard-stuff-library.jar").getFile());
+		assert(f.exists());
+		toReturn.add(f);
+
+		return toReturn;
+	}
+
+	private File getTamiFlexJar(){
+		File toReturn = new File(
+				ApplicationTest.class.getClassLoader().getResource("tamiflex/poa-2.0.3.jar").getFile());
+		return toReturn;
+	}
+
 	private void revertModule(){
 
 		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
 				getModuleProjectDir().getAbsolutePath(),
-				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()));
+				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				Optional.empty());
+		mavenSingleProjectAnalyzer.cleanup();
+	}
+
+	private void revertReflection(){
+		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
+				getReflectionProjectDir().getAbsolutePath(),
+				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				Optional.empty());
 		mavenSingleProjectAnalyzer.cleanup();
 	}
 
@@ -109,8 +144,10 @@ public class ApplicationTest {
 		files.addAll(getLibClassPath());
 		files.addAll(getTestClassPath());
 		files.addAll(getModueFilesToRectify());
+		files.addAll(getReflectionFilesToRectify());
 		ClassFileUtils.rectifyChanges(files);
 		revertModule();
+		revertReflection();
 		G.reset();
 	}
 
@@ -325,6 +362,61 @@ public class ApplicationTest {
         assertTrue(jarIntact());
 	}
 
+	@Test
+	public void mainTest_targetAllEntryPoints_withTamiFlex(){
+		/*
+		Note: There is actually no reflection in this target, i just want to ensure reflection isn't making anything
+		crash.
+		 */
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--public-entry ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--include-exception \"message_removed\" ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classRemoved = Application.removedClasses;
+
+		assertFalse(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertTrue(Application.wipedMethodBodyWithExceptionAndMessage);
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(1, classRemoved.size());
+
+		assertTrue(jarIntact());
+	}
+
+
 	@Ignore @Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
 	public void mainTest_targetCustomEntryPoint(){
 		StringBuilder arguments = new StringBuilder();
@@ -421,7 +513,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
-		arguments.append("--tamiflex ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -507,4 +599,94 @@ public class ApplicationTest {
 
 		assertTrue(jarIntact());
 	}
+
+	@Test
+	public void reflectionTest_mainMethodEntry_withTamiFlex(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved, "ReflectionStuff", "touchedViaReflection"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("ReflectionStuff"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
+
+		assertTrue(jarIntact());
+	}
+
+	@Test
+	public void reflectionTest_mainMethodEntry_withoutTamiFlex(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved, "ReflectionStuff", "touchedViaReflection"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertTrue(classesRemoved.contains("ReflectionStuff"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
+
+		assertTrue(jarIntact());
+	}
+
 }

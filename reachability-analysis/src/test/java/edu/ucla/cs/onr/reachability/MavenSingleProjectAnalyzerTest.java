@@ -12,6 +12,7 @@ import soot.G;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Optional;
 
 public class MavenSingleProjectAnalyzerTest {
 
@@ -27,12 +28,21 @@ public class MavenSingleProjectAnalyzerTest {
 		gitGetter.removeGitDir();
 	}
 
+	private File getTamiFlexJar(){
+		File toReturn = new File(
+				MavenSingleProjectAnalyzer.class.getClassLoader().getResource("tamiflex/poa-2.0.3").getFile());
+		return toReturn;
+	}
+
 	@Test
 	public void testMavenProjectWithNoSubmodulesSparkOnly() {
 		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
 
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner =
+				new MavenSingleProjectAnalyzer(junit_project,
+						new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+						Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
@@ -45,11 +55,12 @@ public class MavenSingleProjectAnalyzerTest {
 	
 	@Test
 	public void testMavenProjectWithNoSubmodulesBothSparkAndTamiFlex() {
-		MavenSingleProjectAnalyzer.useTamiFlex = true;
 
 		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
 		assertEquals(73, runner.getUsedLibClasses().size());
@@ -65,7 +76,9 @@ public class MavenSingleProjectAnalyzerTest {
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = gitGetter.addGitHubProject("google","gson",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
@@ -79,12 +92,13 @@ public class MavenSingleProjectAnalyzerTest {
 	
 	@Test
 	public void testMavenProjectWithOneSubmoduleBothSparkAndTamiFlex() {
-		MavenSingleProjectAnalyzer.useTamiFlex = true;
-		
+
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = gitGetter.addGitHubProject("google","gson",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(89, runner.getUsedLibClasses().size());
@@ -101,7 +115,9 @@ public class MavenSingleProjectAnalyzerTest {
 		// real Java class files, the other two only have resources
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(1168, runner.getUsedLibClasses().size());
@@ -115,13 +131,13 @@ public class MavenSingleProjectAnalyzerTest {
 	
 	@Test
 	public void testMavenProjectWithMultiSubmodulesBothSparkAndTamiFlex() {
-		MavenSingleProjectAnalyzer.useTamiFlex = true;
-		
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
 		assertEquals(1184, runner.getUsedLibClasses().size());
@@ -139,7 +155,9 @@ public class MavenSingleProjectAnalyzerTest {
 		// have test classes
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(968, runner.getUsedLibClasses().size());
@@ -155,14 +173,14 @@ public class MavenSingleProjectAnalyzerTest {
 	 */
 	@Test
 	public void testMavenProjectWithMultiSubmodules2SparkAndTamiFlex() {
-		MavenSingleProjectAnalyzer.useTamiFlex = true;
-
 		// the cglib project has five modules
 		// four of them have java class files and only two of them 
 		// have test classes
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
 		assertEquals(970, runner.getUsedLibClasses().size());
@@ -178,7 +196,9 @@ public class MavenSingleProjectAnalyzerTest {
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 		assertEquals(1159, runner.getUsedLibClasses().size());
@@ -191,11 +211,12 @@ public class MavenSingleProjectAnalyzerTest {
 	
 	@Test
 	public void testMavenProjectWithMultiSubmodules3BothSparkAndTamiFlex() {
-		MavenSingleProjectAnalyzer.useTamiFlex = true;
 		
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j";
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.of(getTamiFlexJar()));
 		runner.run();
 		assertEquals(1196, runner.getUsedLibClasses().size());
 		assertEquals(3766, runner.getUsedLibMethods().size());
@@ -214,7 +235,9 @@ public class MavenSingleProjectAnalyzerTest {
 	public void testNPEInJCTools() {
 		String jctools_project = gitGetter.addGitHubProject("JCTools","JCTools",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 	}
@@ -224,7 +247,9 @@ public class MavenSingleProjectAnalyzerTest {
 		CallGraphAnalysis.useSpark = false;
 		String project = gitGetter.addGitHubProject("davidmoten","rxjava-extras",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras")).getAbsolutePath();
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project,
+				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				Optional.empty());
 		runner.setup();
 		runner.run();
 	}

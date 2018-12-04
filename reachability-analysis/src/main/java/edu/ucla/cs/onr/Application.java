@@ -88,9 +88,8 @@ public class Application {
 
 		if(commandLineParser.getMavenDirectory().isPresent()){
 			projectAnalyser =  new MavenSingleProjectAnalyzer(
-					commandLineParser.getMavenDirectory().get().getAbsolutePath(), entryPointProcessor);
-
-			((MavenSingleProjectAnalyzer) projectAnalyser).useTamiFlex = commandLineParser.useTamiflex();
+					commandLineParser.getMavenDirectory().get().getAbsolutePath(), entryPointProcessor,
+					commandLineParser.getTamiflex());
 		} else {
 			projectAnalyser =  new CallGraphAnalysis(commandLineParser.getLibClassPath(),
 					commandLineParser.getAppClassPath(), commandLineParser.getTestClassPath(), entryPointProcessor);
