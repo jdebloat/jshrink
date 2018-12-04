@@ -143,6 +143,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--debug");
 
+
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
@@ -367,14 +368,13 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void mavenTest_mainMethodEntry(){
+	public void mavenTest_mainMethodEntry_withOutTamiFlex(){
 		//Warning: This test takes a while! 6 minutes on my system
 		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
-		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -382,7 +382,52 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		System.out.println(methodsRemoved.size());
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "touchedViaReflection"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
+
+		assertTrue(jarIntact());
+	}
+
+	@Test
+	public void mavenTest_mainMethodEntry_withTamiFlex(){
+		//Warning: This test takes a while! 6 minutes on my system
+		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
+		arguments.append("--tamiflex ");
+		arguments.append("--debug ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));

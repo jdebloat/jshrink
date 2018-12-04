@@ -27,6 +27,7 @@ public class ApplicationCommandLineParser {
 	private final Set<String> classesToIgnore;
 	private final Optional<String> exceptionMessage;
 	private final boolean exception;
+	private final boolean tamiflex;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -137,6 +138,8 @@ public class ApplicationCommandLineParser {
 		} else {
 			this.exceptionMessage = Optional.empty();
 		}
+
+		this.tamiflex = commandLine.hasOption("f");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -268,6 +271,13 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option tamiFlexOption = Option.builder("f")
+				.desc("Enable TamiFlex (Warning: Only works on Maven Projects. ")
+				.longOpt("tamiflex")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Option debugOption = Option.builder("d")
 			.desc("Run the program in 'debug' mode. Used for testing")
 			.longOpt("debug")
@@ -306,6 +316,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(publicEntryPointOption);
 		toReturn.addOption(testEntryPointOption);
 		toReturn.addOption(pruneAppOption);
+		toReturn.addOption(tamiFlexOption);
 		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(ignoreClassesOption);
 		toReturn.addOption(specifyExceptionOption);
@@ -389,5 +400,9 @@ public class ApplicationCommandLineParser {
 
 	public Optional<String> getExceptionMessage(){
 		return exceptionMessage;
+	}
+
+	public boolean useTamiflex(){
+		return this.tamiflex;
 	}
 }

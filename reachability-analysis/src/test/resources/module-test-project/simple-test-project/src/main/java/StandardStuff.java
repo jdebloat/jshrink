@@ -1,3 +1,5 @@
+import java.lang.reflect.Method;
+
 public class StandardStuff {
 	private static final String HELLO_WORLD_STRING = "Hello world";
 	private static final String GOODBYE_STRING="Goodbye";
@@ -7,13 +9,13 @@ public class StandardStuff {
 		String temp = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 		this.integer = 6;
 		try{
-                        Method method = StandardStuff.class.getMethod("touchedViaReflection");
-                        Object o = method.invoke(null);
-                } catch(Exception e){
-                }
-        }
+			Method method = StandardStuff.class.getMethod("touchedViaReflection");
+			Object o = method.invoke(null);
+		} catch(Exception e){
+		}
+	}
 
-        private static void touchedViaReflection(){
+	private static void touchedViaReflection(){
                 System.out.println("Hello");
         }
 
