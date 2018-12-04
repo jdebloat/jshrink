@@ -13,7 +13,7 @@ public class MavenUtils {
 	public static HashMap<String, String> getClasspaths(String log_file_contents){
 		HashMap<String, String> cp_map = new HashMap<String, String>();
 
-		String[] lines = log_file_contents.split("[\\r\\n]+");
+		String[] lines = log_file_contents.split(System.lineSeparator());
 		for (int i = 0; i < lines.length; i++) {
 			String line = lines[i];
 			if (line.equals("[INFO] Dependencies classpath:")) {

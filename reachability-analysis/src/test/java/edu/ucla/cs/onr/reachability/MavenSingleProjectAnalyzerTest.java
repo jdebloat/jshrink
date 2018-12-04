@@ -37,6 +37,8 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
 		assertEquals(350, runner.getUsedLibMethods().size());
+		assertEquals(37, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(195, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(254, runner.getUsedAppClasses().size());
 		assertEquals(1474, runner.getUsedAppMethods().size());
 	}
@@ -52,6 +54,8 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(73, runner.getUsedLibClasses().size());
 		assertEquals(359, runner.getUsedLibMethods().size());
+		assertEquals(38, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(200, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(282, runner.getUsedAppClasses().size());
 		assertEquals(1567, runner.getUsedAppMethods().size());
 	}
@@ -66,6 +70,9 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
 		assertEquals(219, runner.getUsedLibMethods().size());
+		// This project has no library dependencies in the compile scope 
+		assertEquals(0, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(0, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(163, runner.getUsedAppClasses().size());
 		assertEquals(930, runner.getUsedAppMethods().size());
 	}
@@ -82,6 +89,8 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(89, runner.getUsedLibClasses().size());
 		assertEquals(306, runner.getUsedLibMethods().size());
+		assertEquals(0, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(0, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(168, runner.getUsedAppClasses().size());
 		assertEquals(940, runner.getUsedAppMethods().size());
 	}
@@ -97,6 +106,9 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(1168, runner.getUsedLibClasses().size());
 		assertEquals(5684, runner.getUsedLibMethods().size());
+		// this project also has no dependencies in the compile scope
+		assertEquals(0, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(0, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(26, runner.getUsedAppClasses().size());
 		assertEquals(195, runner.getUsedAppMethods().size());
 	}
@@ -114,6 +126,8 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(1184, runner.getUsedLibClasses().size());
 		assertEquals(5735, runner.getUsedLibMethods().size());
+		assertEquals(0, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(0, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(26, runner.getUsedAppClasses().size());
 		assertEquals(195, runner.getUsedAppMethods().size());
 	}
@@ -130,6 +144,8 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(968, runner.getUsedLibClasses().size());
 		assertEquals(4429, runner.getUsedLibMethods().size());
+		assertEquals(899, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(4257, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(157, runner.getUsedAppClasses().size());
 		assertEquals(902, runner.getUsedAppMethods().size());
 	}
@@ -151,12 +167,14 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 		assertEquals(970, runner.getUsedLibClasses().size());
 		assertEquals(4523, runner.getUsedLibMethods().size());
+		assertEquals(899, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(4257, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(158, runner.getUsedAppClasses().size());
 		assertEquals(903, runner.getUsedAppMethods().size());
 	}
 	
 	@Test
-	public void testMavenProjectWithMultiSubmodules3() {
+	public void testMavenProjectWithMultiSubmodules3SparkOnly() {
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
@@ -164,9 +182,27 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.setup();
 		runner.run();
 		assertEquals(1159, runner.getUsedLibClasses().size());
-		assertEquals(3608, runner.getUsedLibMethods().size());
+		assertEquals(3609, runner.getUsedLibMethods().size());
+		assertEquals(268, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(1133, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(64, runner.getUsedAppClasses().size());
 		assertEquals(323, runner.getUsedAppMethods().size());
+	}
+	
+	@Test
+	public void testMavenProjectWithMultiSubmodules3BothSparkAndTamiFlex() {
+		MavenSingleProjectAnalyzer.useTamiFlex = true;
+		
+		// the pf4j project has two submodules and one of them has two subsubmodules
+		String pf4j_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j";
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
+		runner.run();
+		assertEquals(1196, runner.getUsedLibClasses().size());
+		assertEquals(3766, runner.getUsedLibMethods().size());
+		assertEquals(269, runner.getUsedLibClassesCompileOnly().size());
+		assertEquals(1146, runner.getUsedLibMethodsCompileOnly().size());
+		assertEquals(69, runner.getUsedAppClasses().size());
+		assertEquals(384, runner.getUsedAppMethods().size());
 	}
 	
 	/**

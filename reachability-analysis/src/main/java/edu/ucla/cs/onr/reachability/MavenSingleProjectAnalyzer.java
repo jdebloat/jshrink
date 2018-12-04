@@ -33,18 +33,22 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private String project_path;
 	
 	private final Set<String> libClasses;
+	private final Set<String> libClassesCompileOnly;
 	private final Set<MethodData> libMethods;
+	private final Set<MethodData> libMethodsCompileOnly;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
+	private final Set<String> usedLibClassesCompileOnly;
 	private final Set<MethodData> usedLibMethods;
+	private final Set<MethodData> usedLibMethodsCompileOnly;
 	private final Set<String> usedAppClasses;
 	private final Set<MethodData> usedAppMethods;
 	private final Map<String,List<File>> app_class_paths;
 	private final Map<String,List<File>> app_test_paths;
 	private final Map<String,List<File>> lib_class_paths;
-	private final Map<String,CallGraphAnalysis> callGraphAnalysises;
 	private final HashMap<String, String> classpaths;
+	private final HashMap<String, String> classpaths_compile_only;
 	private final EntryPointProcessor entryPointProcessor;
 	private final Set<MethodData> entryPoints;
 	
@@ -52,20 +56,24 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
+		libClassesCompileOnly = new HashSet<String>();
 		libMethods = new HashSet<MethodData>();
+		libMethodsCompileOnly = new HashSet<MethodData>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
+		usedLibClassesCompileOnly = new HashSet<String>();
 		usedLibMethods = new HashSet<MethodData>();
+		usedLibMethodsCompileOnly = new HashSet<MethodData>();
 		usedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashSet<MethodData>();
 		app_class_paths = new HashMap<String, List<File>>();
 		app_test_paths = new HashMap<String, List<File>>();
 		lib_class_paths = new HashMap<String, List<File>>();
 		classpaths = new HashMap<String, String>();
+		classpaths_compile_only = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
 		entryPoints = new HashSet<MethodData>();
-		callGraphAnalysises = new HashMap<String, CallGraphAnalysis>();
 	}
 
 	public void cleanup(){
@@ -110,15 +118,19 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 		// get all classpaths for submodules if any
 		String classpathInfo = "";
-
+		String classpathInfo_compile_only = "";
 		try {
 			 File pomFile = new File(root_dir + File.separator + "pom.xml");
 			 File libsDir = new File(root_dir + File.separator + "libs");
 
-			//Ensure the project is compiled.
-			 Process process1 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-				 " install " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() + " --quiet --batch-mode -fn");
-
+			// Ensure the project is compiled.
+			// Prepare the command and its arguments in a String array in case there is a space or special 
+			// character in the pom file path or lib dir path.
+			String[] cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "install", 
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
+			Process process1 = Runtime.getRuntime().exec(cmd);
+			process1.waitFor();
+			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 			
 			String line;
@@ -132,18 +144,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				System.err.println("'mvn install' fails.");
 			}
 
-			// Get the classpath information
-			// We cannot only get the classpath of libraries in the compile scope, since it will make our
-			// call graph incomplete when using test cases as entry points
-			Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-					" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
-					" --batch-mode");
-			// Process process2 = Runtime.getRuntime().exec("mvn -f " + pomFile.getAbsolutePath() +
-			//		" dependency:build-classpath " + "-Dmaven.repo.local=" + libsDir.getAbsolutePath() +
-			//		" -DincludeScope=compile --batch-mode");
+			// first get the full classpath (compile scope + test scope) so that we will get a more complete
+			// call graph in the static analysis later 
+			String[] cmd2 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode"};
+			Process process2 = Runtime.getRuntime().exec(cmd2);
+			process2.waitFor();
 
 			reader = new BufferedReader(new InputStreamReader(process2.getInputStream()));
-			while((line=reader.readLine()) != null){
+			while((line=reader.readLine()) != null) {
 				classpathInfo += line + System.lineSeparator();
 			}
 			reader.close();
@@ -151,13 +160,30 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(classpathInfo.contains("BUILD FAILURE")) {
 				System.err.println("'mvn dependency:build-classpath' fails.");
 			}
-		}catch(IOException e){
+			
+			// then get the classpath of the compile scope only for the future method removal
+			String[] cmd3 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
+			Process process3 = Runtime.getRuntime().exec(cmd3);
+			process3.waitFor();
+			
+			reader = new BufferedReader(new InputStreamReader(process3.getInputStream()));
+			while((line = reader.readLine()) != null) {
+				classpathInfo_compile_only += line + System.lineSeparator();
+			}
+			reader.close();
+			
+			if(classpathInfo_compile_only.contains("BUILD FAILURE")) {
+				System.err.println("'mvn dependency:build-classpath -DincludeScope=compile' fails.");
+			}
+		}catch(IOException | InterruptedException e){
 			e.printStackTrace();
 			System.exit(1);
 		}
 
 
 		classpaths.putAll(MavenUtils.getClasspaths(classpathInfo));
+		classpaths_compile_only.putAll(MavenUtils.getClasspaths(classpathInfo_compile_only));
 
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
@@ -250,13 +276,41 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				runner.setup();
 				runner.run();
 				
+				
+				String cp_compile_only = classpaths_compile_only.get(artifact_id);
+				HashSet<String> compile_lib_paths = 
+						new HashSet<String>(Arrays.asList(cp_compile_only.split(File.pathSeparator)));
 				// aggregate the analysis result of the submodule
-				this.libClasses.addAll(runner.getLibClasses());
-				this.libMethods.addAll(runner.getLibMethods());
+				for(String libClass : runner.getLibClasses()) {
+					this.libClasses.add(libClass);
+					String lib_path = runner.getLibPathOfClass(libClass);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.libClassesCompileOnly.add(libClass);
+					}
+				}
+				for(MethodData libMethod : runner.getLibMethods()) {
+					this.libMethods.add(libMethod);
+					String lib_path = runner.getLibPathOfMethod(libMethod);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.libMethodsCompileOnly.add(libMethod);
+					}
+				}				
+				for(String usedLibClass : runner.getUsedLibClasses()) {
+					this.usedLibClasses.add(usedLibClass);
+					String lib_path = runner.getLibPathOfClass(usedLibClass);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.usedLibClassesCompileOnly.add(usedLibClass);
+					}
+				}
+				for(MethodData libMethod : runner.getUsedLibMethods()) {
+					this.usedLibMethods.add(libMethod);
+					String lib_path = runner.getLibPathOfMethod(libMethod);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.usedLibMethodsCompileOnly.add(libMethod);
+					}
+				}
 				this.appClasses.addAll(runner.getAppClasses());
 				this.appMethods.addAll(runner.getAppMethods());
-				this.usedLibClasses.addAll(runner.getUsedLibClasses());
-				this.usedLibMethods.addAll(runner.getUsedLibMethods());
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				this.usedAppMethods.addAll(runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
@@ -264,10 +318,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
 			}
-		}
-		
-		if(count > 1) {
-			adjustClassesAndMethodsFromSubmodules();
 		}
 		
 		// (optional) use tamiflex to dynamically identify reflection calls
@@ -334,6 +384,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 									set.add(md);
 									usedLibMethods.add(md);
 									usedLibClasses.add(md.getClassName());
+									
+									// also need to update usedLibMethodsCompileOnly and usedLibClassesCompile only
+									if(libMethodsCompileOnly.contains(md)) {
+										usedLibMethodsCompileOnly.add(md);
+										usedLibClasses.add(md.getClassName());
+									}
 									foundInApp = true;
 									break;
 								}
@@ -345,13 +401,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				}
 			}
 			
-			
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
-			int count2 = 0;
-			for(String module : new_entry_points.keySet()) {
-				count2 ++;
-				
+			for(String module : new_entry_points.keySet()) {				
 				HashSet<MethodData> entry_methods = new_entry_points.get(module);
 				
 				List<File> localLibClassPaths =
@@ -369,8 +421,18 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				runner.run(entry_methods);
 				
 				// aggregate the analysis result of the submodule
-				this.usedLibClasses.addAll(runner.getUsedLibClasses());
-				this.usedLibMethods.addAll(runner.getUsedLibMethods());
+				for(String class_name : runner.getUsedLibClasses()) {
+					this.usedLibClasses.add(class_name);
+					if(this.libClassesCompileOnly.contains(class_name)) {
+						this.usedLibClassesCompileOnly.add(class_name);
+					}
+				}
+				for(MethodData md : runner.getUsedLibMethods()) {
+					this.usedLibMethods.add(md);
+					if(this.libMethodsCompileOnly.contains(md)) {
+						this.usedLibMethodsCompileOnly.add(md);
+					}
+				}
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				this.usedAppMethods.addAll(runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
@@ -378,32 +440,66 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
 			}
-			
-			if (count2 > 1) {
-				adjustClassesAndMethodsFromSubmodules();
-			}
+		}
+		
+		if(count > 1) {
+			adjustClassesAndMethodsFromSubmodules();
 		}
 	}
 	
+	/**
+	 * When analyzing different submodules, the application classes in one module may
+	 * be treated as library classes in another module. We need to adjust this so that 
+	 * application classes/methods are always stored in the application related fields, 
+	 * though they are used as library classes/methods in other modules
+	 */
 	private void adjustClassesAndMethodsFromSubmodules() {
-		// When analyzing different submodules, the application classes in one module may
-		// be treated as library classes in another module
-		// We need to adjust this so that application classes/methods are always stored in
-		// the application related fields, though they are used as library classes/methods 
-		// in other modules
 		Set<String> lib_classes_copy = new HashSet<String>(this.libClasses);
+		// only keep the app classes from other modules
 		lib_classes_copy.retainAll(this.appClasses);
+		// after removing the app classes from other modules, only classes from external libs remain 
 		this.libClasses.removeAll(lib_classes_copy);
+		// do the same to get classes from external libs in the compile scope
+		Set<String> lib_classes_compile_only_copy = new HashSet<String>(this.libClassesCompileOnly);
+		lib_classes_compile_only_copy.retainAll(this.appClasses);
+		this.libClassesCompileOnly.removeAll(lib_classes_compile_only_copy);
+		
 		Set<MethodData> lib_methods_copy = new HashSet<MethodData>(this.libMethods);
+		// only keep the app methods from other modules
 		lib_methods_copy.retainAll(this.appMethods);
+		// after removing the app methods from other modules, only methods from external libs remain
 		this.libMethods.removeAll(lib_methods_copy);
+		// do the same to get methods from external libs in the compile scope
+		Set<MethodData> lib_methods_compile_only_copy = new HashSet<MethodData>(this.libMethodsCompileOnly);
+		lib_methods_compile_only_copy.retainAll(this.appMethods);
+		this.libMethodsCompileOnly.removeAll(lib_methods_compile_only_copy);
+		
 		Set<String> used_lib_classes_copy = new HashSet<String>(this.usedLibClasses);
+		// only keep used app classes from other modules
 		used_lib_classes_copy.retainAll(this.appClasses);
+		// after removing used app classes from other modules, only used classes from external libs remain 
 		this.usedLibClasses.removeAll(used_lib_classes_copy);
+		// do the same to get used classes from external libs in the compile scope 
+		Set<String> used_lib_classes_compile_only_copy = new HashSet<String>(this.usedLibClassesCompileOnly);
+		used_lib_classes_compile_only_copy.retainAll(this.appClasses); 
+		this.usedLibClassesCompileOnly.removeAll(used_lib_classes_compile_only_copy);
+		
+		// also need to add the used app classes from other modules back to the set of used app classes
+		// just in case that those classes are not used in their own modules
 		this.usedAppClasses.addAll(used_lib_classes_copy);
+		
 		Set<MethodData> used_lib_methods_copy = new HashSet<MethodData>(this.usedLibMethods);
+		// only keep used app methods from other modules
 		used_lib_methods_copy.retainAll(this.appMethods);
+		// after removing used app methods from other modules, only used methods from external libs remain 
 		this.usedLibMethods.removeAll(used_lib_methods_copy);
+		// do the same to get used methods from external libs in the compile scope
+		Set<MethodData> used_lib_methods_compile_only_copy = new HashSet<MethodData>(this.usedLibMethodsCompileOnly);
+		used_lib_methods_compile_only_copy.retainAll(this.appMethods);
+		this.usedLibMethodsCompileOnly.removeAll(used_lib_methods_compile_only_copy);
+		
+		// also need to add the used app methods from other modules back to the set of used app methods
+		// just in case that those methods are not called in their own modules
 		this.usedAppMethods.addAll(used_lib_methods_copy);
 	}
 
@@ -415,6 +511,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
+	}
+	
+	@Override
+	public Set<String> getLibClassesCompileOnly() {
+		return Collections.unmodifiableSet(this.libClassesCompileOnly);
+	}
+	
+	@Override
+	public Set<MethodData> getLibMethodsCompileOnly() {
+		return Collections.unmodifiableSet(this.libMethodsCompileOnly);
 	}
 
 	@Override
@@ -431,10 +537,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
+	
+	@Override
+	public Set<String> getUsedLibClassesCompileOnly() {
+		return Collections.unmodifiableSet(this.usedLibClassesCompileOnly);
+	}
 
 	@Override
 	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
+	}
+	
+	@Override
+	public Set<MethodData> getUsedLibMethodsCompileOnly() {
+		return Collections.unmodifiableSet(this.usedLibMethodsCompileOnly);
 	}
 
 	@Override

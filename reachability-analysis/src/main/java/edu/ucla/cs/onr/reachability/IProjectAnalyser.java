@@ -13,11 +13,15 @@ public interface IProjectAnalyser {
     public void setup();
     public void run();
     public Set<String> getLibClasses();
+    public Set<String> getLibClassesCompileOnly();
     public Set<MethodData> getLibMethods();
+    public Set<MethodData> getLibMethodsCompileOnly();
     public Set<String> getAppClasses();
     public Set<MethodData> getAppMethods();
     public Set<String> getUsedLibClasses();
+    public Set<String> getUsedLibClassesCompileOnly();
     public Set<MethodData> getUsedLibMethods();
+    public Set<MethodData> getUsedLibMethodsCompileOnly();
     public Set<String> getUsedAppClasses();
     public Set<MethodData> getUsedAppMethods();
     public List<File> getAppClasspaths();

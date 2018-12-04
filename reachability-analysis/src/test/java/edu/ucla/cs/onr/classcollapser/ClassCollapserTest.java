@@ -13,10 +13,7 @@ import soot.jimple.InvokeStmt;
 import soot.options.Options;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class ClassCollapserTest {
     private static SootClass getSootClassFromResources(String pathName, String className){
@@ -56,7 +53,15 @@ public class ClassCollapserTest {
         assertEquals(2, A.getMethods().size());
         assertEquals(2, B.getMethodCount());
 
-        ClassCollapser.mergeTwoClasses(B, A);
+        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
+        usedMethods.put("B", new HashSet<String>());
+        for (SootMethod m : B.getMethods()) {
+            usedMethods.get("B").add(m.getSubSignature());
+        }
+
+        System.out.println(usedMethods);
+
+        ClassCollapser.mergeTwoClasses(B, A, usedMethods);
 
         assertEquals(2, A.getMethodCount());
         for (Unit u: A.getMethodByName("foo").retrieveActiveBody().getUnits()) {
@@ -64,7 +69,7 @@ public class ClassCollapserTest {
                 assertEquals("\"class B\"", ((InvokeStmt)u).getInvokeExpr().getArg(0).toString());
             }
         }
-//
+
 //        Set<File> classPathsOfConcern = new HashSet<File>();
 //        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
 //        try {
@@ -82,7 +87,7 @@ public class ClassCollapserTest {
         assertEquals(1, A.getFieldCount());
         assertEquals(1, B.getFieldCount());
 
-        ClassCollapser.mergeTwoClasses(B, A);
+        ClassCollapser.mergeTwoClasses(B, A, new HashMap<String, Set<String>>());
 
         assertEquals(2, A.getFieldCount());
         assertNotNull(A.getFieldByName("a"));

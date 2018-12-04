@@ -20,7 +20,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final List<File> appTestPath;
 	private final Set<MethodData> entryMethods;
 	private final Set<String> libClasses;
+	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
+	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
@@ -41,7 +43,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.entryMethods = new HashSet<MethodData>();
 
 		libClasses = new HashSet<String>();
+		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
+		methodToLib = new HashMap<MethodData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
@@ -97,7 +101,19 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 
 	private void findAllClassesAndMethods() {
 		for (File lib : this.libJarPath) {
-			ASMUtils.readClass(lib, libClasses, libMethods);
+			HashSet<String> classes_in_this_lib = new HashSet<String>();
+			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib);
+			this.libClasses.addAll(classes_in_this_lib);
+			this.libMethods.addAll(methods_in_this_lib);
+			
+			String lib_path = lib.getAbsolutePath();
+			for(String class_name : classes_in_this_lib) {
+				classToLib.put(class_name, lib_path);
+			}
+			for(MethodData md : methods_in_this_lib) {
+				methodToLib.put(md, lib_path);
+			}
 		}
 
 		for (File appPath : appClassPath) {
@@ -152,10 +168,18 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
+	
+	public String getLibPathOfClass(String libClass) {
+		return this.classToLib.get(libClass);
+	}
 
 	@Override
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
+	}
+	
+	public String getLibPathOfMethod(MethodData methodData) {
+		return this.methodToLib.get(methodData);
 	}
 
 	@Override
@@ -206,5 +230,29 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public Set<MethodData> getEntryPoints() {
 		return Collections.unmodifiableSet(this.entryMethods);
+	}
+
+	@Override
+	public Set<String> getUsedLibClassesCompileOnly() {
+		// this method should not be called
+		return null;
+	}
+
+	@Override
+	public Set<MethodData> getUsedLibMethodsCompileOnly() {
+		// this method should not be called
+		return null;
+	}
+
+	@Override
+	public Set<String> getLibClassesCompileOnly() {
+		// this method should not be called
+		return null;
+	}
+
+	@Override
+	public Set<MethodData> getLibMethodsCompileOnly() {
+		// this method should not be called
+		return null;
 	}
 }

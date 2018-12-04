@@ -142,12 +142,12 @@ public class Application {
 
 			if(Application.isVerboseMode()) {
 
-				System.out.println("number_lib_classes," + projectAnalyser.getLibClasses().size());
-				System.out.println("number_lib_methods," + projectAnalyser.getLibMethods().size());
+				System.out.println("number_lib_classes," + projectAnalyser.getLibClassesCompileOnly().size());
+				System.out.println("number_lib_methods," + projectAnalyser.getLibMethodsCompileOnly().size());
 				System.out.println("number_app_classes," + projectAnalyser.getAppClasses().size());
 				System.out.println("number_app_methods," + projectAnalyser.getAppMethods().size());
-				System.out.println("number_used_lib_classes," + projectAnalyser.getUsedLibClasses().size());
-				System.out.println("number_used_lib_methods," + projectAnalyser.getUsedLibMethods().size());
+				System.out.println("number_used_lib_classes," + projectAnalyser.getUsedLibClassesCompileOnly().size());
+				System.out.println("number_used_lib_methods," + projectAnalyser.getUsedLibMethodsCompileOnly().size());
 				System.out.println("number_used_app_classes," + projectAnalyser.getUsedAppClasses().size());
 				System.out.println("number_used_app_methods," + projectAnalyser.getUsedAppMethods().size());
 
@@ -164,9 +164,9 @@ public class Application {
 
 			//Note the unused Library methods
 			classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
-			for(MethodData methodData : projectAnalyser.getLibMethods()){
+			for(MethodData methodData : projectAnalyser.getLibMethodsCompileOnly()){
 				if(!classesToIgnore.contains(methodData.getClassName())
-				&& !projectAnalyser.getUsedLibMethods().contains(methodData)){
+				&& !projectAnalyser.getUsedLibMethodsCompileOnly().contains(methodData)){
 					methodsToRemove.add(methodData);
 				}
 			}
@@ -257,7 +257,7 @@ public class Application {
 
 
 			if(Application.isVerboseMode()) {
-				int numberLibMethodsRemoved = Sets.intersection(projectAnalyser.getLibMethods(),
+				int numberLibMethodsRemoved = Sets.intersection(projectAnalyser.getLibMethodsCompileOnly(),
 						Application.removedMethods).size();
 				int numberAppMethodsRemoved = Sets.intersection(projectAnalyser.getAppMethods(),
 						Application.removedMethods).size();
