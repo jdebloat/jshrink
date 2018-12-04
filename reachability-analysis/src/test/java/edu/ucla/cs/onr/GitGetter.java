@@ -31,7 +31,6 @@ public class GitGetter {
 	}
 
 	public File addGitHubProject(String username, String project){
-		//Warning: assumes Git exists
 		File localRepo = new File(this.gitDir.getAbsolutePath() + File.separator + username + "_" + project);
 
 		if(!localRepo.exists()) {
