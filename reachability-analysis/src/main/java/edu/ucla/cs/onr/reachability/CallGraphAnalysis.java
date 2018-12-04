@@ -234,25 +234,21 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 
 	@Override
 	public Set<String> getUsedLibClassesCompileOnly() {
-		// this method should not be called
-		return null;
+		return this.getUsedLibClasses();
 	}
 
 	@Override
 	public Set<MethodData> getUsedLibMethodsCompileOnly() {
-		// this method should not be called
-		return null;
+		return this.getUsedLibMethods();
 	}
 
 	@Override
 	public Set<String> getLibClassesCompileOnly() {
-		// this method should not be called
-		return null;
+		return this.getLibClasses();
 	}
 
 	@Override
 	public Set<MethodData> getLibMethodsCompileOnly() {
-		// this method should not be called
-		return null;
+		return this.getLibMethods();
 	}
 }
