@@ -1,6 +1,11 @@
 import edu.ucla.cs.onr.test.LibraryClass;
 import edu.ucla.cs.onr.test.LibraryClass2;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.ArrayList;
+
 public class Main {
 	public static void main(String[] args){
 		String temp = "Lorem ipsum dolor sit amet, prima adipisci et est, mel et purto duis ludus." +
@@ -28,5 +33,21 @@ public class Main {
 		LibraryClass lc = new LibraryClass();
 		LibraryClass2 l;
 		lc.getNumber();
+
+		List<Integer> toSort = new ArrayList<Integer>();
+		toSort.add(10);
+		toSort.add(4);
+		toSort.add(1);
+
+		Collections.sort(toSort, new Comparator<Integer>(){
+			@Override
+			public int compare(Integer one, Integer two){
+				return Main.compare(one, two);
+			}
+		});
+	}
+
+	private static int compare(Integer one, Integer two){
+		return one - two;
 	}
 }
