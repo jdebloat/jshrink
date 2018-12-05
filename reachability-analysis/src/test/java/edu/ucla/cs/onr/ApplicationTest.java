@@ -214,6 +214,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -263,6 +264,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -285,7 +287,9 @@ public class ApplicationTest {
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
 		assertTrue(classesRemoved.contains("Main"));
-		assertEquals(3, classesRemoved.size());
+		assertTrue(classesRemoved.contains("Main$1"));
+
+		assertEquals(4, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -315,6 +319,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -364,6 +369,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -419,6 +425,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
@@ -463,6 +470,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
