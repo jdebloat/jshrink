@@ -31,6 +31,8 @@ public class EntryPointUtil {
 		toReturn.add("org.junit.Rule");
 		toReturn.add("org.junit.experimental.theories.Theory");
 		toReturn.add("org.junit.experimental.theories.DataPoint");
+		toReturn.add("org.junit.runners.Parameterized");
+		toReturn.add("org.junit.runners.Parameterized.Parameters");
 
 		return toReturn;
 	}
