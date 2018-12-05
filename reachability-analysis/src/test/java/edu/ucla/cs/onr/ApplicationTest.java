@@ -10,8 +10,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import soot.G;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -90,6 +92,14 @@ public class ApplicationTest {
 		return f;
 	}
 
+	private File getJunitProjectDir(){
+		ClassLoader classLoader = Application.class.getClassLoader();
+		File f = new File(classLoader.getResource("junit4").getFile());
+		assert(f.exists());
+		assert(f.isDirectory());
+		return f;
+	}
+
 	private List<File> getModueFilesToRectify(){
 		List<File> toReturn = new ArrayList<File>();
 
@@ -137,6 +147,14 @@ public class ApplicationTest {
 		mavenSingleProjectAnalyzer.cleanup();
 	}
 
+	private void revertJunit(){
+		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
+				getJunitProjectDir().getAbsolutePath(),
+				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				Optional.empty());
+		mavenSingleProjectAnalyzer.cleanup();
+	}
+
 	@After
 	public void rectifyChanges() throws IOException{
 		Collection<File> files = new HashSet<File>();
@@ -148,6 +166,7 @@ public class ApplicationTest {
 		ClassFileUtils.rectifyChanges(files);
 		revertModule();
 		revertReflection();
+		revertJunit();
 		G.reset();
 	}
 
@@ -178,6 +197,7 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug");
 
 
@@ -227,6 +247,7 @@ public class ApplicationTest {
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -278,6 +299,7 @@ public class ApplicationTest {
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--public-entry ");
 		arguments.append("--include-exception ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -360,8 +382,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertEquals(1, classRemoved.size());
+		assertFalse(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(0, classRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -415,8 +437,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertEquals(1, classRemoved.size());
+		assertFalse(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(0, classRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -430,6 +452,7 @@ public class ApplicationTest {
 		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -473,6 +496,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -520,6 +544,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -567,6 +592,7 @@ public class ApplicationTest {
 		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--ignore-classes edu.ucla.cs.onr.test.LibraryClass edu.ucla.cs.onr.test.UnusedClass ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug");
 
 		try {
@@ -615,6 +641,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -659,6 +686,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
+		arguments.append("--remove-classes ");
 		arguments.append("--debug ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -694,6 +722,55 @@ public class ApplicationTest {
 		assertFalse(classesRemoved.contains("StandardStuff"));
 
 		assertTrue(jarIntact());
+	}
+
+	public String getJunitTestOutput(){
+		File junitDir = this.getJunitProjectDir();
+		File pomFile = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "pom.xml");
+		File libsDir = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "libs");
+
+		String maven_log = "";
+		try {
+			String[] cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
+			Process process1 = Runtime.getRuntime().exec(cmd);
+			//process1.waitFor();
+
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+
+			String line;
+
+			while ((line = reader.readLine()) != null) {
+				maven_log += line + System.lineSeparator();
+			}
+			reader.close();
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return maven_log;
+	}
+
+	@Test @Ignore
+	public void junit_test(){
+		//This tests ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--debug ");
+
+		String before = getJunitTestOutput();
+		Application.main(arguments.toString().split("\\s+"));
+		String after =getJunitTestOutput();
+
+		assertEquals(before,after);
+
 	}
 
 }

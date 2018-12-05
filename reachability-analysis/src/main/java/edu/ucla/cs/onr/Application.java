@@ -181,42 +181,44 @@ public class Application {
 				}
 			}
 
-			//Not the classes in which all the methods are removed
-			Map<SootClass, Set<MethodData>> classIntCount = new HashMap<SootClass, Set<MethodData>>();
-			for(MethodData method : methodsToRemove){
-				SootClass sootClass = Scene.v().loadClassAndSupport(method.getClassName());
-				if(!classIntCount.containsKey(sootClass)){
-					Set<MethodData> methods = new HashSet<MethodData>();
-					for(SootMethod sootMethod : sootClass.getMethods()){
-						methods.add(SootUtils.sootMethodToMethodData(sootMethod));
-					}
-					classIntCount.put(sootClass, methods);
-				}
-				classIntCount.get(sootClass).remove(method);
-			}
-
-			for(Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()){
-				if(entry.getValue().isEmpty()){
-
-					SootClass sootClass = entry.getKey();
-					boolean containsAccessibleStaticFields = false;
-					for(SootField sootField : sootClass.getFields()){
-						if(!sootField.isPrivate() && sootField.isStatic()){
-							containsAccessibleStaticFields = true;
-							break;
-						}
-					}
-
-					if(!containsAccessibleStaticFields) {
-						classesToRemove.add(entry.getKey());
+			if(commandLineParser.removeClasses()) {
+				//Not the classes in which all the methods are removed
+				Map<SootClass, Set<MethodData>> classIntCount = new HashMap<SootClass, Set<MethodData>>();
+				for (MethodData method : methodsToRemove) {
+					SootClass sootClass = Scene.v().loadClassAndSupport(method.getClassName());
+					if (!classIntCount.containsKey(sootClass)) {
 						Set<MethodData> methods = new HashSet<MethodData>();
-						for (SootMethod sootMethod : entry.getKey().getMethods()) {
+						for (SootMethod sootMethod : sootClass.getMethods()) {
 							methods.add(SootUtils.sootMethodToMethodData(sootMethod));
 						}
-						//If we remove the class we obviously remove the method
-						Application.removedMethods.addAll(methods);
-						Application.removedClasses.add(entry.getKey().getName());
-						methodsToRemove.removeAll(methods);
+						classIntCount.put(sootClass, methods);
+					}
+					classIntCount.get(sootClass).remove(method);
+				}
+
+				for (Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()) {
+					if (entry.getValue().isEmpty()) {
+
+						SootClass sootClass = entry.getKey();
+						boolean containsAccessibleStaticFields = false;
+						for (SootField sootField : sootClass.getFields()) {
+							if (!sootField.isPrivate() && sootField.isStatic()) {
+								containsAccessibleStaticFields = true;
+								break;
+							}
+						}
+
+						if (!containsAccessibleStaticFields) {
+							classesToRemove.add(entry.getKey());
+							Set<MethodData> methods = new HashSet<MethodData>();
+							for (SootMethod sootMethod : entry.getKey().getMethods()) {
+								methods.add(SootUtils.sootMethodToMethodData(sootMethod));
+							}
+							//If we remove the class we obviously remove the method
+							Application.removedMethods.addAll(methods);
+							Application.removedClasses.add(entry.getKey().getName());
+							methodsToRemove.removeAll(methods);
+						}
 					}
 				}
 			}

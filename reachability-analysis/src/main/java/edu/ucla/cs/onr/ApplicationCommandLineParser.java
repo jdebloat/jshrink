@@ -10,7 +10,7 @@ import java.util.*;
 
 public class ApplicationCommandLineParser {
 
-	private final static String APPLICATION_STATUS = "[APP]";
+	private final static String APPLICATION_NAME = "debloat.jar";
 
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
@@ -28,6 +28,7 @@ public class ApplicationCommandLineParser {
 	private final Optional<String> exceptionMessage;
 	private final boolean exception;
 	private final Optional<File> tamiflex;
+	private final boolean removeClasses;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -35,7 +36,7 @@ public class ApplicationCommandLineParser {
 		String header = "An application to get the call-graph analysis of an application and to wipe unused methods";
 		String footer = "";
 
-		helpFormatter.printHelp(APPLICATION_STATUS, header, getOptions(),footer, true);
+		helpFormatter.printHelp(APPLICATION_NAME, header, getOptions(),footer, true);
 		System.out.println();
 	}
 
@@ -153,6 +154,8 @@ public class ApplicationCommandLineParser {
 		} else {
 			this.tamiflex = Optional.empty();
 		}
+
+		this.removeClasses = commandLine.hasOption("o");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -284,6 +287,13 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option removeClassesOption = Option.builder("o")
+				.desc("Remove unused classes")
+				.longOpt("remove-classes")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Option tamiFlexOption = Option.builder("f")
 				.desc("Enable TamiFlex")
 				.longOpt("tamiflex")
@@ -334,6 +344,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(customEntryPointOption);
 		toReturn.addOption(ignoreClassesOption);
 		toReturn.addOption(specifyExceptionOption);
+		toReturn.addOption(removeClassesOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
@@ -418,5 +429,9 @@ public class ApplicationCommandLineParser {
 
 	public Optional<File> getTamiflex(){
 		return this.tamiflex;
+	}
+
+	public boolean removeClasses(){
+		return this.removeClasses;
 	}
 }
