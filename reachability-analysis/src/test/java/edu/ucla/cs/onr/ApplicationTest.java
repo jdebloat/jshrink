@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -859,6 +861,7 @@ public class ApplicationTest {
 		File junitDir = this.getJunitProjectDir();
 		File pomFile = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "pom.xml");
 		File libsDir = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "libs");
+		String test_regex = "Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+)$";
 
 		String maven_log = "";
 		try {
@@ -880,10 +883,25 @@ public class ApplicationTest {
 			System.exit(1);
 		}
 
-		return maven_log;
+		String testLog="";
+
+		String[] log_lines = maven_log.split(System.lineSeparator());
+
+		Pattern pattern = Pattern.compile(test_regex);
+		for (String line : log_lines) {
+			if (line.contains("Tests run: ")) {
+				Matcher matcher = pattern.matcher(line);
+				while (matcher.find()) {
+					testLog += matcher.group() + System.lineSeparator();
+
+				}
+			}
+		}
+
+		return testLog;
 	}
 
-	@Test @Ignore
+	@Test
 	public void junit_test(){
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
