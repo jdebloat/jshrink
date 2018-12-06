@@ -1,11 +1,13 @@
 import org.junit.Test;
 
+import java.io.IOException;
+
 import static org.junit.Assert.assertEquals;
+import java.io.IOException;
 
 public class StandardStuffTest {
 
-	@Test
-	public void getStringTest(){
+	@Test public void getStringTest() throws IOException {
 		StandardStuff s = new StandardStuff();
 		assertEquals("Hello world", s.getString());
 	}
