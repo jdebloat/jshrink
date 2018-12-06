@@ -15,4 +15,10 @@ public class StandardStuffTest {
 		StandardStuff s = new StandardStuff();
 		s.publicAndTestedButUntouched();
 	}
+
+	@Test(expected = RuntimeException.class)
+	public void standardStuffSubTest(){
+		StandardStuffSub s = new StandardStuffSub();
+		throw new RuntimeException();
+	}
 }

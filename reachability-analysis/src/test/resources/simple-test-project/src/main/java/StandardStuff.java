@@ -29,7 +29,6 @@ public class StandardStuff {
 
 	protected void doNothing(){}
 
-
 	private static void touchedViaReflection(){
                 System.out.println("touchedViaReflection touched");
         }
@@ -88,5 +87,9 @@ public class StandardStuff {
 		i++;
 		i++;
 		return i;
+	}
+
+	protected void protectedAndUntouched(){
+		System.out.println("protectedAndUntouched touched");
 	}
 }

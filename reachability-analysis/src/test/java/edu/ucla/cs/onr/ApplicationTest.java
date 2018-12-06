@@ -220,6 +220,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -234,7 +237,8 @@ public class ApplicationTest {
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertEquals(1, classesRemoved.size());
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(2, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -270,6 +274,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -325,6 +332,9 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -375,6 +385,9 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -431,6 +444,9 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -476,6 +492,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -623,6 +642,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertFalse(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -636,7 +657,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		assertEquals(0, classesRemoved.size());
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(1, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
