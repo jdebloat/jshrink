@@ -223,6 +223,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -277,6 +280,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -335,6 +341,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -388,6 +397,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -447,6 +459,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
@@ -495,6 +510,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
 		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));

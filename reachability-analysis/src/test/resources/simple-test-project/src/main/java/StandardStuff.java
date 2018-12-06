@@ -25,6 +25,9 @@ public class StandardStuff {
 				return one - two;
 			}
 		});
+
+		NestedClass nestedClass = new NestedClass();
+		nestedClass.nestedClassMethod();
 	}
 
 	protected void doNothing(){}
@@ -91,5 +94,20 @@ public class StandardStuff {
 
 	protected void protectedAndUntouched(){
 		System.out.println("protectedAndUntouched touched");
+	}
+
+	private static class NestedClass{
+		public void nestedClassMethod(){
+			System.out.println("nestedClassMethod touched");
+			nestedClassMethodCallee();
+		}
+
+		private void nestedClassMethodCallee(){
+			System.out.println("nestedClassMethodCallee touched");
+		}
+
+		protected void nestedClassNeverTouched(){
+			System.out.println("nestedClassNeverTouched touched");
+		}
 	}
 }
