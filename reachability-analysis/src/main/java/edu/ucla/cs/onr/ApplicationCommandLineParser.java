@@ -29,6 +29,7 @@ public class ApplicationCommandLineParser {
 	private final boolean exception;
 	private final Optional<File> tamiflex;
 	private final boolean removeClasses;
+	private final boolean spark;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -156,6 +157,7 @@ public class ApplicationCommandLineParser {
 		}
 
 		this.removeClasses = commandLine.hasOption("o");
+		this.spark = commandLine.hasOption("k");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -331,6 +333,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option sparkOption = Option.builder("k")
+				.desc("Use Spark (Uses Soot by default)")
+				.longOpt("use-spark")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -345,6 +354,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(ignoreClassesOption);
 		toReturn.addOption(specifyExceptionOption);
 		toReturn.addOption(removeClassesOption);
+		toReturn.addOption(sparkOption);
 		toReturn.addOption(debugOption);
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
@@ -434,4 +444,6 @@ public class ApplicationCommandLineParser {
 	public boolean removeClasses(){
 		return this.removeClasses;
 	}
+
+	public boolean useSpark(){return this.spark;}
 }

@@ -82,6 +82,10 @@ public class Application {
 
 		IProjectAnalyser projectAnalyser = null;
 
+
+		//I'm not a fan of this kind of stuff... variable setting TODO: Fix this at some point
+		CallGraphAnalysis.useSpark = commandLineParser.useSpark();
+
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(commandLineParser.includeMainEntryPoint(),
 				commandLineParser.includePublicEntryPoints(), commandLineParser.includeTestEntryPoints(),
 				commandLineParser.getCustomEntryPoints());

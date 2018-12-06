@@ -1,5 +1,6 @@
 package edu.ucla.cs.onr;
 
+import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
 import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MavenSingleProjectAnalyzer;
 import edu.ucla.cs.onr.reachability.MethodData;
@@ -206,6 +207,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(Application.removedMethod);
 		assertTrue(Application.wipedMethodBody);
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
@@ -247,6 +250,66 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void mainTest_targetMainEntryPoint_withSpark(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
+		arguments.append("--use-spark ");
+		arguments.append("--debug");
+
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertTrue(CallGraphAnalysis.useSpark);
+
+		assertFalse(Application.removedMethod);
+		assertTrue(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
+
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertTrue(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(2, classesRemoved.size());
+
+		assertTrue(jarIntact());
+	}
+
+	@Test
 	public void mainTest_targetTestEntryPoints(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -262,6 +325,8 @@ public class ApplicationTest {
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
 
 		assertTrue(Application.removedMethod);
 		assertFalse(Application.wipedMethodBody);
@@ -324,6 +389,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(Application.removedMethod);
 		assertFalse(Application.wipedMethodBody);
 		assertTrue(Application.wipedMethodBodyWithExceptionNoMessage);
@@ -379,6 +446,8 @@ public class ApplicationTest {
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
 
 		assertFalse(Application.removedMethod);
 		assertFalse(Application.wipedMethodBody);
@@ -442,6 +511,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(Application.removedMethod);
 		assertFalse(Application.wipedMethodBody);
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
@@ -498,6 +569,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertTrue(isPresent(methodsRemoved,"StandardStuff","<init>"));
@@ -549,6 +622,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
@@ -596,6 +671,8 @@ public class ApplicationTest {
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
@@ -652,6 +729,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
@@ -697,6 +776,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
+		assertFalse(CallGraphAnalysis.useSpark);
+
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
@@ -741,6 +822,8 @@ public class ApplicationTest {
 
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
 
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
 		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
