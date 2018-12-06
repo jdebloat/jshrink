@@ -158,7 +158,7 @@ public class MethodWiper {
 
 	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
 
-		if(sootMethod.isAbstract() || sootMethod.isNative()){
+		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.isConstructor()){
 			return false;
 		}
 
@@ -212,10 +212,14 @@ public class MethodWiper {
 	 * @return a boolean specifying whether the method was deleted or not
 	 */
 	public static boolean wipeMethod(SootMethod sootMethod){
+
+		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.isConstructor()){
+			return false;
+		}
+
 		SootClass sootClass = sootMethod.getDeclaringClass();
 		int index =sootClass.getMethods().indexOf(sootMethod);
 		sootClass.getMethods().remove(sootMethod);
-
 		if(!validClass(sootClass)){
 			//If not valid, re-add the method
 			sootClass.getMethods().add(index, sootMethod);
