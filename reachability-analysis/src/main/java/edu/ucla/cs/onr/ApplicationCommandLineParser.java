@@ -334,7 +334,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option sparkOption = Option.builder("k")
-				.desc("Use Spark (Uses Soot by default)")
+				.desc("Use Spark (Uses CHA by default)")
 				.longOpt("use-spark")
 				.hasArg(false)
 				.required(false)
