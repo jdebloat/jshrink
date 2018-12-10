@@ -266,7 +266,7 @@ public class TamiFlexRunner {
 	}
 	
 	public boolean runMavenTest() throws IOException, InterruptedException {
-		Process p = Runtime.getRuntime().exec("mvn test", null, new File(project_path));
+		Process p = Runtime.getRuntime().exec("mvn test -fn --batch-mode", null, new File(project_path));
 		BufferedReader stdInput = new BufferedReader(new InputStreamReader(
 				p.getInputStream()));
 
