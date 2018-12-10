@@ -3,8 +3,10 @@ package edu.ucla.cs.onr.reachability;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -154,8 +156,15 @@ public class TamiFlexRunner {
 		if(!propFile.exists()) {
 			// copy the default TamiFlex property file
 			ClassLoader classLoader = TamiFlexRunner.class.getClassLoader();
+			
+			// ATTENTION: comment the following two lines of code before packaging our tool to a jar
+			// to avoid the file-not-found error
 			File template = new File(classLoader.getResource("poa.property").getFile());
 			FileUtils.copyFile(template, propFile);
+			// ATTENTION: uncomment the following two lines of code before packaging our tool to a jar
+			// to avoid the file-not-found error
+//			InputStream in = classLoader.getResourceAsStream("resources/poa.property");
+//			Files.copy(in, propFile.toPath());
 		} else {
 			// double check if the existing TamiFlex property file has the right configuration
 			List<String> lines = FileUtils.readLines(propFile, Charset.defaultCharset());
