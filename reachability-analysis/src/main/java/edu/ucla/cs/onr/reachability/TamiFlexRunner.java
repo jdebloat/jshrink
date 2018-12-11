@@ -156,6 +156,9 @@ public class TamiFlexRunner {
 		if(!propFile.exists()) {
 			// copy the default TamiFlex property file
 			ClassLoader classLoader = TamiFlexRunner.class.getClassLoader();
+			if(!propFile.getParentFile().exists()) {
+				Files.createDirectory(propFile.getParentFile().toPath());
+			}
 			
 			// ATTENTION: comment the following two lines of code before packaging our tool to a jar
 			// to avoid the file-not-found error
@@ -163,8 +166,8 @@ public class TamiFlexRunner {
 			FileUtils.copyFile(template, propFile);
 			// ATTENTION: uncomment the following two lines of code before packaging our tool to a jar
 			// to avoid the file-not-found error
-//			InputStream in = classLoader.getResourceAsStream("resources/poa.property");
-//			Files.copy(in, propFile.toPath());
+			//InputStream in = classLoader.getResourceAsStream("poa.property");
+			//Files.copy(in, propFile.toPath());
 		} else {
 			// double check if the existing TamiFlex property file has the right configuration
 			List<String> lines = FileUtils.readLines(propFile, Charset.defaultCharset());
