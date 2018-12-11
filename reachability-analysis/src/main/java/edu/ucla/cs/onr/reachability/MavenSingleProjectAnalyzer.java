@@ -580,7 +580,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			HashSet<String> compile_lib_paths =
 					new HashSet<String>(Arrays.asList(cp_compile_only.split(File.pathSeparator)));
 			for(String classPath : compile_lib_paths){
-				toReturn.add(new File(classPath));
+				File toAdd = new File(classPath);
+				if(directoryContains(new File(this.project_path), toAdd)) {
+					toReturn.add(new File(classPath));
+				}
 			}
 		}
 		return Collections.unmodifiableList(toReturn);
