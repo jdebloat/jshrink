@@ -570,7 +570,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	@Override
 	public List<File> getLibClasspaths() {
-		return Collections.unmodifiableList(getClassPath(this.lib_class_paths));
+		/*
+		TODO: This is a bit of a mess --- really don't like this classpath/classpath_compile_only thing. It's a mess.
+		Can we clean this up at some point? It's confusing and it'll just introduce more bugs going forward.
+		 */
+		List<File> toReturn = new ArrayList<File>();
+		for(String key : classpaths_compile_only.keySet()){
+			String cp_compile_only = classpaths_compile_only.get(key);
+			HashSet<String> compile_lib_paths =
+					new HashSet<String>(Arrays.asList(cp_compile_only.split(File.pathSeparator)));
+			for(String classPath : compile_lib_paths){
+				toReturn.add(new File(classPath));
+			}
+		}
+		return Collections.unmodifiableList(toReturn);
 	}
 
 	@Override
