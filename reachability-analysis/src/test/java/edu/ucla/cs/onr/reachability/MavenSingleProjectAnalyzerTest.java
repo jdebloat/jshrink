@@ -30,7 +30,7 @@ public class MavenSingleProjectAnalyzerTest {
 
 	private File getTamiFlexJar(){
 		File toReturn = new File(
-				MavenSingleProjectAnalyzer.class.getClassLoader().getResource("tamiflex/poa-2.0.3").getFile());
+				MavenSingleProjectAnalyzer.class.getClassLoader().getResource("tamiflex/poa-2.0.3.jar").getFile());
 		return toReturn;
 	}
 
