@@ -10,7 +10,7 @@ import java.util.*;
 
 public class ApplicationCommandLineParser {
 
-	private final static String APPLICATION_NAME = "debloat.jar";
+	private final static String APPLICATION_NAME = "jdebloat.jar";
 
 	private final List<File> libClassPath;
 	private final List<File> appClassPath;
@@ -212,7 +212,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option libClassPathOption = Option.builder("l")
-			.desc("The library classpath")
+			.desc("Specify the classpath for libraries")
 			.longOpt("lib-classpath")
 			.hasArg(true)
 			.required(false)
@@ -220,7 +220,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option appClassPathOption = Option.builder("a")
-			.desc("The application classpath")
+			.desc("Specify the application classpath")
 			.longOpt("app-classpath")
 			.hasArg(true)
 			.required(false)
@@ -228,7 +228,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option testClassPathOption = Option.builder("t")
-			.desc("The test classpath")
+			.desc("Specify the test classpath")
 			.longOpt("test-classpath")
 			.hasArg(true)
 			.required(false)
@@ -243,7 +243,7 @@ public class ApplicationCommandLineParser {
 				.build();
 
 		Option mainEntryPointOption = Option.builder("m")
-			.desc("Include the main method as the entry point")
+			.desc("Include the main method as an entry point")
 			.longOpt("main-entry")
 			.hasArg(false)
 			.required(false)
@@ -273,7 +273,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option ignoreClassesOption = Option.builder("i")
-				.desc("Specify class/classes that should not be delete or modified")
+				.desc("Specify classes that should not be delete or modified")
 				.longOpt("ignore-classes")
 				.hasArgs()
 				.valueSeparator()
@@ -305,21 +305,21 @@ public class ApplicationCommandLineParser {
 				.build();
 
 		Option debugOption = Option.builder("d")
-			.desc("Run the program in 'debug' mode. Used for testing")
+			.desc("Run JDebloat in 'debug' mode. Used for testing")
 			.longOpt("debug")
 			.hasArg(false)
 			.required(false)
 			.build();
 
 		Option verboseMove = Option.builder("v")
-			.desc("Run the program in 'verbose' mode. Outputs methods analysed and methods touched")
+			.desc("Run JDebloat in 'verbose' mode. Outputs analysed methods and touched methods")
 			.longOpt("verbose")
 			.hasArg(false)
 			.required(false)
 			.build();
 
 		Option removeMethodsOption = Option.builder("r")
-			.desc("Run remove methods (by default, the bodies are wiped and replaced by RuntimeExceptions)")
+			.desc("Remove methods header and body (by default, the bodies are wiped)")
 			.longOpt("remove-methods")
 			.hasArg(false)
 			.required(false)
@@ -334,7 +334,7 @@ public class ApplicationCommandLineParser {
 			.build();
 
 		Option sparkOption = Option.builder("k")
-				.desc("Use Spark (Uses CHA by default)")
+				.desc("Use Spark call graph analysis (Uses CHA by default)")
 				.longOpt("use-spark")
 				.hasArg(false)
 				.required(false)
