@@ -128,6 +128,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private void runCallGraphAnalysis() {
 		// must call this first, and we only need to call it once
 		SootUtils.setup_trimming(this.libJarPath, this.appClassPath, this.appTestPath);
+		Scene.v().loadNecessaryClasses();
 
 		List<SootMethod> entryPoints = EntryPointUtil.convertToSootMethod(entryMethods);
 		Scene.v().setEntryPoints(entryPoints);
