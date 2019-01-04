@@ -6,6 +6,7 @@ import soot.SootClass;
 
 import edu.ucla.cs.onr.reachability.MethodData;
 import soot.SootMethod;
+import soot.util.EmptyChain;
 
 
 import java.util.*;
@@ -97,16 +98,27 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 if (cont) {
                     continue;
                 }
-                if (collapsable(child, singleParent)) {
+                SootClass fromClass = Scene.v().loadClassAndSupport(child);
+                SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
+                if (collapsable(child, singleParent, fromClass, toClass)) {
 //                    String parent = parentsMap.get(child);
 //                    ClassCollapser.mergeTwoClasses(appClassMap.get(child), appClassMap.get(parent));
                     ArrayList<String> collapse = new ArrayList<String>();
+//                    if ((toClass.isInterface() && !fromClass.isInterface()) || (toClass.isAbstract() && !fromClass.isAbstract())) {
+//                        collapse.add(singleParent);
+//                        collapse.add(child);
+//                        collapseList.addLast(collapse);
+//                        nameChangeList.put(singleParent, child);
+//                        usedAppClasses.add(child);
+//                        removeList.add(singleParent);
+//                    } else {
                     collapse.add(child);
                     collapse.add(singleParent);
                     collapseList.addLast(collapse);
                     nameChangeList.put(child, singleParent);
                     usedAppClasses.add(singleParent);
                     removeList.add(child);
+//                    }
 //                    queue.add(parent);
                 }
             }
@@ -149,11 +161,21 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         }
     }
 
-    private boolean collapsable(String from, String to) {
+    private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
 //        System.out.printf("collapsable: from %s, to %s\n", from, to);
-        SootClass fromClass = Scene.v().loadClassAndSupport(from);
-        SootClass toClass = Scene.v().loadClassAndSupport(to);
-        if (toClass.isAbstract()) {
+//        if (toClass.isAbstract()) {
+//            return false;
+//        }
+        if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
+            return false;
+        }
+        if (fromClass.isEnum() || toClass.isEnum()) {
+            return false;
+        }
+        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || toClass.getFields() instanceof EmptyChain) {
+            return false;
+        }
+        if (fromClass.isStatic() || toClass.isStatic()) {
             return false;
         }
         int numUsedChildren = 0;
@@ -191,6 +213,23 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         return true;
     }
 
+    private boolean isAnnoymousInner(String name) {
+        int realNameIndex = name.length() - 1;
+        while(realNameIndex >= 0 && name.charAt(realNameIndex) != '$') {
+            realNameIndex -= 1;
+        }
+        if (realNameIndex < 0) {
+            return false;
+        }
+        String realName = name.substring(realNameIndex + 1);
+        for (int i = 0; i < realName.length(); ++ i) {
+            if (!Character.isDigit(realName.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     private void initLeaves() {
         for (String parent: childrenMap.keySet()) {
             if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0) {
@@ -222,7 +261,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         Set<String> visited = new HashSet<String>();
 
         for (String c: appClasses) {
-            System.out.println(c);
+//            System.out.println(c);
             parentsMap.put(c, "");
             childrenMap.put(c, new HashSet<String>());
             parentsVirtualMap.put(c, new HashSet<String>());

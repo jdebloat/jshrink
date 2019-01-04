@@ -175,7 +175,6 @@ public class ClassFileUtils {
 		streamOut.close();
 	}
 
-
 	public static void rectifyChanges(Collection<File> classpaths) throws IOException{
 		for(File f : classpaths) {
 			if (f.isFile()) {

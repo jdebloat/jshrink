@@ -169,6 +169,10 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 
+	public Set<String> getTestClasses() {
+		return Collections.unmodifiableSet(this.testClasses);
+	}
+
 	@Override
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);

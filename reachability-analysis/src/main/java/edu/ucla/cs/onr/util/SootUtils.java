@@ -4,10 +4,7 @@ import java.io.File;
 import java.util.*;
 
 import edu.ucla.cs.onr.reachability.MethodData;
-import soot.MethodOrMethodContext;
-import soot.Scene;
-import soot.SootMethod;
-import soot.Type;
+import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
@@ -179,12 +176,20 @@ public class SootUtils {
 			Pair<SootMethod, SootMethod> first = methods_to_visit.pop();
 			SootMethod firstMethod = first.getO1();
 			MethodData firstMethodData = sootMethodToMethodData(firstMethod);
-			MethodData callSiteData = (first.getO2() == null) ? null : sootMethodToMethodData(first.getO2());
+			SootMethod callSite = first.getO2();
+			MethodData callSiteData = (callSite == null) ? null : sootMethodToMethodData(callSite);
 
 			String className = firstMethodData.getClassName();
 			if(!visited.contains(firstMethod.getSignature())) {
 				// avoid recursion
-				if (callSiteData == null || !callSiteData.getName().equals("<init>")) {
+				SootClass superClass = (callSite == null || !callSite.getDeclaringClass().hasSuperclass()) ? null : callSite.getDeclaringClass().getSuperclass();
+//				if (superClass != null) {
+//					superClasses.add(superClass.getName());
+//				}
+//				for (SootClass inter: firstMethod.getDeclaringClass().getInterfaces()) {
+//					superClasses.add(inter.getName());
+//				}
+				if (callSiteData == null || !(callSiteData.getName().equals("<init>") && superClass != null && superClass.getName().equals(className))) {
 					usedClass.add(className);
 					usedMethods.add(firstMethodData);
 				}

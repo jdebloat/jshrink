@@ -7,6 +7,7 @@ import edu.ucla.cs.onr.util.MethodBodyUtils;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.toolkits.invoke.SiteInliner;
+import soot.util.EmptyChain;
 
 import java.io.File;
 import java.util.*;
@@ -23,14 +24,28 @@ public class ClassCollapser implements IClassCollapser {
 
     /**
      * Merges one soot class into another
-     * @param from The class that will be merged from, and discarded
-     * @param to The class that will be merged into, and kept
+     * @param from The class that will be merged from, and discarded (the super class)
+     * @param to The class that will be merged into, and kept (the sub class)
      */
     public static void mergeTwoClasses(SootClass from, SootClass to, Map<String, Set<String>> usedMethods) {
+        System.out.println(from.getMethodCount() + " " + to.getMethodCount());
         HashMap<String, SootField> originalFields = new HashMap<String, SootField>();
         for (SootField field : to.getFields()) {
             originalFields.put(field.getName(), field);
         }
+        to.setModifiers(from.getModifiers());
+//        if (to.getFields() instanceof EmptyChain && !from.getFields() instanceof EmptyChain) {
+//            to.field
+//        }
+//        if (to.getSuperclass().getName().equals(from.getName())) {
+//            to.setSuperclass(from.getSuperclass());
+//        }
+//        if (to.getInterfaces().contains(from)) {
+//            to.getInterfaces().remove(from);
+//        }
+//        for (SootClass inter: from.getInterfaces()) {
+//            to.getInterfaces().add(inter);
+//        }
         for (SootField field : from.getFields()) {
             if (originalFields.containsKey(field.getName())) {
                 to.getFields().remove(originalFields.get(field.getName()));
@@ -39,17 +54,24 @@ public class ClassCollapser implements IClassCollapser {
 //            to.addField(field);
             to.getFields().add(field);
         }
+//        for (SootField filed: from.getFields()) {
+//            if (!to.getFields().contains(filed)) {
+//                to.getFields().add(filed);
+//            }
+//        }
 
         HashMap<String, SootMethod> originalMethods = new HashMap<String, SootMethod>();
         for (SootMethod method : to.getMethods()) {
-            System.out.println("original: " + method.getSubSignature());
+//            System.out.println("original: " + method.getSubSignature());
             originalMethods.put(method.getSubSignature(), method);
         }
         for (SootMethod method : from.getMethods()) {
-            System.out.println(method.getSubSignature());
+//            System.out.println(method.getSubSignature());
+//            System.out.println(method.getName());
+            Stmt toInLine = null;
+            SootMethod inlinee = null;
             if (method.getName().equals("<init>")) {
-                Stmt toInLine = null;
-                SootMethod inlinee = null;
+//                System.out.println(method.getDeclaringClass().getName());
                 Body b = method.retrieveActiveBody();
                 for (Unit u : b.getUnits()) {
                     if (u instanceof InvokeStmt) {
@@ -59,11 +81,18 @@ public class ClassCollapser implements IClassCollapser {
                             toInLine = (InvokeStmt) u;
                             inlinee = m;
                         }
+//                        else {
+//                            System.out.printf("not inlining, methodName: %s, declareName: %s, to.getNmae: %s\n", m.getName(), m.getDeclaringClass().getName(), to.getName());
+//                        }
                     }
                 }
-                if (inlinee == null || toInLine == null) {
-                    continue;
-                }
+//                if (inlinee == null || toInLine == null) {
+//                    continue;
+//                }
+//                System.out.println("inlining");
+
+            }
+            if (inlinee != null && toInLine != null) {
                 inlinee.retrieveActiveBody();
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
@@ -93,6 +122,7 @@ public class ClassCollapser implements IClassCollapser {
      * @param changeFrom The original name of the class to be changed
      * @param changeTo The new name of the class to be changed
      */
+    @Deprecated
     public static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
         assert c != changeFrom && c != changeTo;
         boolean changed = false;
@@ -114,6 +144,7 @@ public class ClassCollapser implements IClassCollapser {
         for (SootMethod m: c.getMethods()) {
             changed = changed || changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
         }
+        System.out.printf("change name in %s, from %s to %s, result %d\n", c.getName(), changeFrom.getName(), changeTo.getName(), changed ? 1:0);
         return changed;
     }
 
@@ -180,6 +211,8 @@ public class ClassCollapser implements IClassCollapser {
                         ((NewExpr) rightOp).setBaseType((RefType) Scene.v().getType(changeTo.getName()));
                         changed = true;
                     }
+                } else if (u instanceof ReturnStmt) {
+
                 }
             }
         }
