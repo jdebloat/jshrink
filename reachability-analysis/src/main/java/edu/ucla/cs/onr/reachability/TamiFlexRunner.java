@@ -203,6 +203,17 @@ public class TamiFlexRunner {
 
 				for(String line : lines) {
 					String[] ss = line.split(";");
+					String containing_method = ss[2];
+					if(containing_method.equals("java.lang.Class.searchMethods") 
+							|| containing_method.equals("java.lang.Class.searchFields")) {
+						// ignore the java reflection calls in java.lang.Class.searchMethods
+						// and java.lang.Class.searchFields, because these two methods iterate 
+						// all method or field members in a class and find the one that match the given
+						// name. Therefore, all members in that class will be marked as used. But
+						// only the needed one is actually used after search.
+						continue;
+					}
+					
 					String reference = ss[1];
 					if(reference.startsWith("[L")) {
 						// sometimes it starts with [L, seems like a formating issue in TamiFlex

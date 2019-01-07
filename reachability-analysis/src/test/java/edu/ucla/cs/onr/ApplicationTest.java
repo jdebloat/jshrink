@@ -656,7 +656,8 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-	@Test @Ignore
+	@Test 
+//	@Ignore
 	public void mavenTest_mainMethodEntry_withTamiFlex(){
 		//Warning: This test takes a while! 6 minutes on my system
 		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
