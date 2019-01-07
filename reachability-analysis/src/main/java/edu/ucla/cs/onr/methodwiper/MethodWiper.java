@@ -2,8 +2,10 @@ package edu.ucla.cs.onr.methodwiper;
 
 import soot.*;
 import soot.jimple.*;
+import soot.util.NumberedString;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,16 +33,18 @@ public class MethodWiper {
 		Body toReturn = new JimpleBody();
 
 		//Need to add 'this', if a non-static method
-		if(!sootMethod.isStatic()){
+		Local thisLocal = null;
+		if(!sootMethod.isStatic()) {
 
 			SootClass declClass = sootMethod.getDeclaringClass();
 			Type classType = declClass.getType();
-			Local thisLocal = Jimple.v().newLocal("r0",classType);
+			thisLocal = Jimple.v().newLocal("r0", classType);
 			toReturn.getLocals().add(thisLocal);
 
 			Unit thisIdentityStatement = Jimple.v().newIdentityStmt(thisLocal,
 				Jimple.v().newThisRef(RefType.v(declClass)));
 			toReturn.getUnits().add(thisIdentityStatement);
+
 		}
 
 		//Handle the parameters
@@ -54,32 +58,65 @@ public class MethodWiper {
 			toReturn.getUnits().add(paramIdentifyStatement);
 		}
 
-		return toReturn;
+		/* If the method is a contructor, I add a 'this()' call. This stops "java.lang.Verify.Error ... Constructor
+	       must call 'super()' or 'this()'" errors
+	    */
+		if(sootMethod.isConstructor()){
+			assert(thisLocal != null);
+			SootClass superClass =  sootMethod.getDeclaringClass().getSuperclass();
 
+			SootMethod superClassConstructor = null;
+			for(SootMethod method : superClass.getMethods()){
+				if(method.isConstructor()){
+					if(superClassConstructor == null
+						|| superClassConstructor.getParameterCount() > method.getParameterCount() ){
+						superClassConstructor = method;
+					}
+				}
+			}
+
+			assert(superClassConstructor!=null);
+			List<Value> parameters =new ArrayList<Value>();
+			for(Type type : superClassConstructor.getParameterTypes()){
+				parameters.add(getDefaultUnitFromType(type));
+			}
+
+
+			InvokeStmt superInvoke = Jimple.v().newInvokeStmt(
+				Jimple.v().newSpecialInvokeExpr(thisLocal,superClassConstructor.makeRef(),parameters));
+			toReturn.getUnits().add(superInvoke);
+		}
+
+
+		return toReturn;
+	}
+
+	private static Value getDefaultUnitFromType(Type type){
+
+		Value toReturn = null;
+		 if (type == LongType.v()) {
+			toReturn = LongConstant.v(0);
+		} else if (type == FloatType.v()) {
+			toReturn = FloatConstant.v(0.0f);
+		} else if (type == DoubleType.v()){
+			toReturn = DoubleConstant.v(0.0);
+		} else if (type == BooleanType.v() || type == IntType.v()
+			|| type == ByteType.v() || type == ShortType.v() || type == CharType.v()) {
+			return IntConstant.v(0);
+		} else { //If not a primitive, must be an object (can therefore be null)
+			return NullConstant.v();
+		}
+
+		return toReturn;
 	}
 
 	private static void addReturnUnit(Body body, SootMethod sootMethod) {
-
-		//Add a return statement
-		Type returnType = sootMethod.getReturnType();
-		Unit toReturnStatement = null;
-		if (returnType == VoidType.v()) {
-			toReturnStatement = Jimple.v().newReturnVoidStmt();
-		} else if (returnType == LongType.v()) {
-			toReturnStatement = Jimple.v().newReturnStmt(LongConstant.v(0));
-		} else if (returnType == FloatType.v()) {
-			toReturnStatement = Jimple.v().newReturnStmt(FloatConstant.v(0.0f));
-		} else if (returnType == DoubleType.v()){
-			toReturnStatement = Jimple.v().newReturnStmt(DoubleConstant.v(0.0));
-		} else if (returnType == BooleanType.v() || returnType == IntType.v()
-			|| returnType == ByteType.v() || returnType == ShortType.v() || returnType == CharType.v()) {
-			toReturnStatement = Jimple.v().newReturnStmt(IntConstant.v(0));
-		} else { //If not a primitive, must be an object (can therefore be null)
-			toReturnStatement = Jimple.v().newReturnStmt(NullConstant.v());
+		Type returnType  = sootMethod.getReturnType();
+		if(returnType == VoidType.v()){
+			body.getUnits().add(Jimple.v().newReturnVoidStmt());
+		} else {
+			body.getUnits().add(Jimple.v().newReturnStmt(getDefaultUnitFromType(returnType)));
 		}
-
-		body.getUnits().add(toReturnStatement);
-
 	}
 
 	private static void addThrowRuntimeException(Body body, Optional<String> message) {
@@ -158,7 +195,7 @@ public class MethodWiper {
 
 	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
 
-		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.isConstructor()){
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
 		}
 
@@ -213,7 +250,7 @@ public class MethodWiper {
 	 */
 	public static boolean wipeMethod(SootMethod sootMethod){
 
-		if(sootMethod.isAbstract() || sootMethod.isNative() || sootMethod.isConstructor()){
+		if(sootMethod.isAbstract() || sootMethod.isNative()){
 			return false;
 		}
 
