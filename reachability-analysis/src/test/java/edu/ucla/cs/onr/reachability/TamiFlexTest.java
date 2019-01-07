@@ -206,8 +206,8 @@ public class TamiFlexTest {
 		String log = "src/test/resources/tamiflex/junit_refl.log";
 		tamiflex.analyze("junit", log);
 		assertEquals(1040, tamiflex.accessed_classes.get("junit").size());
-		assertEquals(698, tamiflex.accessed_fields.get("junit").size());
-		assertEquals(3846, tamiflex.used_methods.get("junit").size());
+		assertEquals(626, tamiflex.accessed_fields.get("junit").size());
+		assertEquals(2975, tamiflex.used_methods.get("junit").size());
 	}
 	
 	@Test
@@ -216,8 +216,8 @@ public class TamiFlexTest {
 		String log = "src/test/resources/tamiflex/apache_commons_lang_refl.log";
 		tamiflex.analyze("commons-lang3", log);
 		assertEquals(896, tamiflex.accessed_classes.get("commons-lang3").size());
-		assertEquals(985, tamiflex.accessed_fields.get("commons-lang3").size());
-		assertEquals(5824, tamiflex.used_methods.get("commons-lang3").size());
+		assertEquals(867, tamiflex.accessed_fields.get("commons-lang3").size());
+		assertEquals(4705, tamiflex.used_methods.get("commons-lang3").size());
 	}
 	
 	@Test
@@ -228,8 +228,8 @@ public class TamiFlexTest {
 		try {
 			tamiflex.run();
 			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
-			assertEquals(979, tamiflex.accessed_fields.get("commons-lang3").size());
-			assertEquals(5805, tamiflex.used_methods.get("commons-lang3").size());
+			assertEquals(861, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(4696, tamiflex.used_methods.get("commons-lang3").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -243,8 +243,8 @@ public class TamiFlexTest {
 		try {
 			tamiflex.run();
 			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
-			assertEquals(979, tamiflex.accessed_fields.get("commons-lang3").size());
-			assertEquals(5805, tamiflex.used_methods.get("commons-lang3").size());
+			assertEquals(861, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(4696, tamiflex.used_methods.get("commons-lang3").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -261,8 +261,8 @@ public class TamiFlexTest {
 			tamiflex.run();
 			// flaky
 			assertEquals(435, tamiflex.accessed_classes.get("gson").size());
-			assertEquals(626, tamiflex.accessed_fields.get("gson").size());
-			assertEquals(2477, tamiflex.used_methods.get("gson").size());
+			assertEquals(521, tamiflex.accessed_fields.get("gson").size());
+			assertEquals(1668, tamiflex.used_methods.get("gson").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -282,9 +282,9 @@ public class TamiFlexTest {
 			assertEquals(1, tamiflex.accessed_fields.size());
 			assertEquals(1, tamiflex.used_methods.size());
 			assertEquals(72, tamiflex.accessed_classes.get("essentials").size());
-			assertEquals(133, tamiflex.accessed_fields.get("essentials").size());
+			assertEquals(72, tamiflex.accessed_fields.get("essentials").size());
 			// some tests are not deterministic, so the assertion below may fail
-			assertEquals(703, tamiflex.used_methods.get("essentials").size());
+			assertEquals(262, tamiflex.used_methods.get("essentials").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -318,13 +318,13 @@ public class TamiFlexTest {
 				all_accessed_fields.addAll(tamiflex.accessed_fields.get(module));
 			}
 			// flaky
-			assertEquals(96, all_accessed_fields.size());
+			assertEquals(37, all_accessed_fields.size());
 			HashSet<String> all_used_methods = new HashSet<String>();
 			for(String module : tamiflex.used_methods.keySet()) {
 				all_used_methods.addAll(tamiflex.used_methods.get(module));
 			}
 			// flaky
-			assertEquals(734, all_used_methods.size());
+			assertEquals(391, all_used_methods.size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
