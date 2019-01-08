@@ -6,6 +6,7 @@ import java.util.jar.JarFile;
 
 import com.google.common.collect.Sets;
 import edu.ucla.cs.onr.reachability.*;
+import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
 import edu.ucla.cs.onr.methodwiper.MethodWiper;
 import edu.ucla.cs.onr.util.ClassFileUtils;
@@ -86,8 +87,9 @@ public class Application {
 		//I'm not a fan of this kind of stuff... variable setting TODO: Fix this at some point
 		CallGraphAnalysis.useSpark = commandLineParser.useSpark();
 
+
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(commandLineParser.includeMainEntryPoint(),
-				commandLineParser.includePublicEntryPoints(), commandLineParser.includeTestEntryPoints(),
+				commandLineParser.includePublicEntryPoints(), commandLineParser.includeTestEntryPoints(), true,
 				commandLineParser.getCustomEntryPoints());
 
 		if(commandLineParser.getMavenDirectory().isPresent()){

@@ -148,7 +148,7 @@ public class ApplicationTest {
 
 		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
 				getModuleProjectDir().getAbsolutePath(),
-				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				new EntryPointProcessor(false, false, false,false, new HashSet<MethodData>()),
 				Optional.empty());
 		mavenSingleProjectAnalyzer.cleanup();
 	}
@@ -156,7 +156,7 @@ public class ApplicationTest {
 	private void revertReflection(){
 		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
 				getReflectionProjectDir().getAbsolutePath(),
-				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				new EntryPointProcessor(false, false, false,false, new HashSet<MethodData>()),
 				Optional.empty());
 		mavenSingleProjectAnalyzer.cleanup();
 	}
@@ -164,7 +164,7 @@ public class ApplicationTest {
 	private void revertJunit(){
 		MavenSingleProjectAnalyzer mavenSingleProjectAnalyzer = new MavenSingleProjectAnalyzer(
 				getJunitProjectDir().getAbsolutePath(),
-				new EntryPointProcessor(false, false, false, new HashSet<MethodData>()),
+				new EntryPointProcessor(false, false, false,false, new HashSet<MethodData>()),
 				Optional.empty());
 		mavenSingleProjectAnalyzer.cleanup();
 	}
@@ -934,13 +934,12 @@ public class ApplicationTest {
 
 	}
 
-	@Test @Ignore
+	@Test
 	public void lambdaMethodTest(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--app-classpath " + fileListToClasspathString(getLambdaAppClassPath()) + " ");
 		arguments.append("--main-entry ");
-		arguments.append("--verbose ");
 		arguments.append("--debug");
 
 
@@ -956,6 +955,37 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "isEven"));
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
+	}
+
+	@Test @Ignore
+	public void lambdaMethodTest_full(){
+		/*
+		This test fails do to Soot which cannot properly process convert SootClass to .java files which contain Lambda
+		expressions. I've set it to ignore for the time being as it's not something we can presently fix.
+		 */
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getLambdaAppClassPath()) + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--debug");
+
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
+
+		assertFalse(Application.removedMethod);
+		assertTrue(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
+
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "isEven"));
 		assertFalse(isPresent(methodsRemoved,"Main","main"));
 		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
 		assertTrue(isPresent(methodsRemoved,"Main","methodNotUsed"));

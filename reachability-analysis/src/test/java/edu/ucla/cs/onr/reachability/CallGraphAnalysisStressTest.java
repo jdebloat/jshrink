@@ -79,7 +79,7 @@ public class CallGraphAnalysisStressTest {
         String project_folder = "junit-team_junit4";
 		setup(project_folder);
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -88,7 +88,7 @@ public class CallGraphAnalysisStressTest {
 		String project_folder = "apache_commons-lang";
 		setup(project_folder);
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -100,7 +100,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//19 library dependencies
 		CallGraphAnalysis runner =
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -112,7 +112,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//30 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -124,7 +124,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//40 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -136,7 +136,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//68 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -148,7 +148,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//71 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -160,7 +160,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//75 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -172,7 +172,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//78 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -184,7 +184,7 @@ public class CallGraphAnalysisStressTest {
 		
 		//116 library dependencies
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -198,7 +198,7 @@ public class CallGraphAnalysisStressTest {
 		// disable spark since it will be out of memory
 		CallGraphAnalysis.useSpark = false;
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	
@@ -212,7 +212,7 @@ public class CallGraphAnalysisStressTest {
 		// disable spark since it will be out of memory
 		CallGraphAnalysis.useSpark = false;
 		CallGraphAnalysis runner = 
-				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false, entryPoints));
+				new CallGraphAnalysis(lib_class_paths, app_class_paths, app_test_paths, new EntryPointProcessor(false, false, false,false, entryPoints));
 		runner.run();
 	}
 	

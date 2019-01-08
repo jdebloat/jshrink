@@ -70,7 +70,7 @@ public class MavenProjectAnalysis {
 				
 				CallGraphAnalysis.useSpark = false;
 				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path,
-						new EntryPointProcessor(true, false, true,
+						new EntryPointProcessor(true, false, true, false,
 								new HashSet<MethodData>()), Optional.empty());
 				runner.run();
 				

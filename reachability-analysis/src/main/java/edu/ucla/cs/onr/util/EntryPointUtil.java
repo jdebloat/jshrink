@@ -98,6 +98,18 @@ public class EntryPointUtil {
 		return testMethods;
 	}
 
+	public static Set<MethodData> getLambdaExpressionsAsEntryPoints(Set<MethodData> methods){
+		Set<MethodData> lambdaExpressions = new HashSet<MethodData>();
+
+		for(MethodData methodData: methods){
+			if(methodData.getName().startsWith("lambda$")){
+				lambdaExpressions.add(methodData);
+			}
+		}
+
+		return lambdaExpressions;
+	}
+
 	
 	/**
 	 * 

@@ -1,6 +1,6 @@
 public class Main {
 	public static void main(String[] args){
-		NumericTest isEven = (n) -> (n%2)==0;
+		NumericTest isEven = (n) -> StandardStuff.isEven(n);
 		NumericTest isNegNum = (n) -> {
 			if(Main.isNegativeNumber(n)){
 				return true;

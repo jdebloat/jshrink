@@ -41,7 +41,7 @@ public class MavenSingleProjectAnalyzerTest {
 
 		MavenSingleProjectAnalyzer runner =
 				new MavenSingleProjectAnalyzer(junit_project,
-						new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+						new EntryPointProcessor(true, false, true, false, new HashSet<MethodData>()),
 						Optional.empty());
 		runner.setup();
 		runner.run();
@@ -59,7 +59,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
@@ -77,7 +77,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String gson_project = gitGetter.addGitHubProject("google","gson",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -97,7 +97,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String gson_project = gitGetter.addGitHubProject("google","gson",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -116,7 +116,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -136,7 +136,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
@@ -156,7 +156,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -179,7 +179,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()));
 		runner.setup();
 		runner.run();
@@ -197,7 +197,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -215,7 +215,7 @@ public class MavenSingleProjectAnalyzerTest {
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j";
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()));
 		runner.run();
 		assertEquals(1196, runner.getUsedLibClasses().size());
@@ -236,7 +236,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String jctools_project = gitGetter.addGitHubProject("JCTools","JCTools",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();
@@ -248,7 +248,7 @@ public class MavenSingleProjectAnalyzerTest {
 		String project = gitGetter.addGitHubProject("davidmoten","rxjava-extras",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project,
-				new EntryPointProcessor(true, false, true, new HashSet<MethodData>()),
+				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.empty());
 		runner.setup();
 		runner.run();

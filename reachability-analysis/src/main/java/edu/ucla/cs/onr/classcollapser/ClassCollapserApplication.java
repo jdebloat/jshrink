@@ -25,7 +25,7 @@ public class ClassCollapserApplication {
         appClassPath.add(f);
 //        File f2 = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-test/target/classes");
 //        appClassPath.add(f2);
-        IProjectAnalyser cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, new ArrayList<File>(), new EntryPointProcessor(true, true, true, new HashSet<MethodData>()));
+        IProjectAnalyser cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, new ArrayList<File>(), new EntryPointProcessor(true, true, true, false, new HashSet<MethodData>()));
         cgAnalysis.setup();
         cgAnalysis.run();
 //        Set<String> usedAppClasses = cgAnalysis.getUsedAppClasses();
