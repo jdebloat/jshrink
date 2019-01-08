@@ -48,13 +48,6 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
-	private boolean jarIntact(){
-        ClassLoader classLoader = ApplicationTest.class.getClassLoader();
-        File f =
-                new File(classLoader.getResource("simple-test-project/libs/standard-stuff-library.jar").getFile());
-        return f.exists() && !f.isDirectory();
-    }
-
 	private static List<File> getTestClassPath(){
 		List<File> toReturn = new ArrayList<File>();
 
@@ -65,6 +58,24 @@ public class ApplicationTest {
 
 		return toReturn;
 	}
+
+	private static List<File> getLambdaAppClassPath(){
+		List<File> toReturn = new ArrayList<File>();
+
+		ClassLoader classLoader = Application.class.getClassLoader();
+		File f = new File(classLoader.getResource("lambda-test-project/target/classes").getFile());
+		assert(f.exists());
+		toReturn.add(f);
+
+		return toReturn;
+	}
+
+	private boolean jarIntact(){
+        ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+        File f =
+                new File(classLoader.getResource("simple-test-project/libs/standard-stuff-library.jar").getFile());
+        return f.exists() && !f.isDirectory();
+    }
 
 	private static String fileListToClasspathString(List<File> fList){
 		StringBuilder sb = new StringBuilder();
@@ -166,6 +177,7 @@ public class ApplicationTest {
 		files.addAll(getTestClassPath());
 		files.addAll(getModueFilesToRectify());
 		files.addAll(getReflectionFilesToRectify());
+		files.addAll(getLambdaAppClassPath());
 		ClassFileUtils.rectifyChanges(files);
 		revertModule();
 		revertReflection();
@@ -358,7 +370,9 @@ public class ApplicationTest {
 		//(Method is untouched by too small to remove)
 //		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
 		assertTrue(isPresent(methodsRemoved,"Main","main"));
-		assertTrue(isPresent(methodsRemoved, "Main", "compare"));
+		assertFalse(isPresent(methodsRemoved, "Main$1", "compare"));
+
+
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
@@ -366,10 +380,7 @@ public class ApplicationTest {
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		assertTrue(classesRemoved.contains("Main"));
-		assertTrue(classesRemoved.contains("Main$1"));
-
-		assertEquals(4, classesRemoved.size());
+		assertEquals(2, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -921,6 +932,34 @@ public class ApplicationTest {
 
 		assertEquals(before,after);
 
+	}
+
+	@Test @Ignore
+	public void lambdaMethodTest(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getLambdaAppClassPath()) + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--verbose ");
+		arguments.append("--debug");
+
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertFalse(CallGraphAnalysis.useSpark);
+
+		assertFalse(Application.removedMethod);
+		assertTrue(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
+
+		assertFalse(isPresent(methodsRemoved,"Main","main"));
+		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
+		assertTrue(isPresent(methodsRemoved,"Main","methodNotUsed"));
+		assertEquals(0, methodsRemoved.size());
 	}
 
 }
