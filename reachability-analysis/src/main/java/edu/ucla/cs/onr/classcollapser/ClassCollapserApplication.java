@@ -21,19 +21,24 @@ public class ClassCollapserApplication {
     public static void main(String[] args) {
         ArrayList<File> appClassPath = new ArrayList<File>();
         ArrayList<File> testClassPath = new ArrayList<File>();
-        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/commons-net/target/classes";
-        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/commons-net/target/test-classes";
-//        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes";
-//        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/test-classes";
+        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes";
+        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/test-classes";
+//        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/call-graph-analysis/reachability-analysis/src/test/resources/classcollapser/ldc";
+//        String testClassPathName = null;
 
-        File f = new File(appClassPathName);
-        File tf = new File(testClassPathName);
-//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-client/target/classes");
-        appClassPath.add(f);
-        testClassPath.add(tf);
-//        File f2 = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-test/target/classes");
-//        appClassPath.add(f2);
+
+        if (appClassPathName != null) {
+            File f = new File(appClassPathName);
+            appClassPath.add(f);
+        }
+
+        if (testClassPathName != null) {
+            File tf = new File(testClassPathName);
+            testClassPath.add(tf);
+        }
         ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, testClassPath, new EntryPointProcessor(true, true, true, new HashSet<MethodData>()));
+
+//        ClassCollapserMavenSingleProjectAnalyzer cgAnalysis = new ClassCollapserMavenSingleProjectAnalyzer(mavenPath, new EntryPointProcessor(true, true, true, new HashSet<MethodData>()), null);
         cgAnalysis.setup();
         cgAnalysis.run();
 
@@ -62,7 +67,7 @@ public class ClassCollapserApplication {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
 
-            ClassCollapser.mergeTwoClasses(from, to, ((ClassCollapserAnalysis) ccAnalysis).getProcessedUsedMethods());
+            ClassCollapser.mergeTwoClasses(from, to, ccAnalysis.getProcessedUsedMethods());
 
 //            nameToSootClass.put(toName, to);
             classesToRewrite.add(toName);
@@ -103,6 +108,8 @@ public class ClassCollapserApplication {
         Set<File> classPathsOfConcern = new HashSet<File>();
         classPathsOfConcern.addAll(appClassPath);
         classPathsOfConcern.addAll(testClassPath);
+//        classPathsOfConcern.addAll(cgAnalysis.getAppClasspaths());
+//        classPathsOfConcern.addAll(cgAnalysis.getTestClasspaths());
         for (String className: classesToRewrite) {
             if (!classesToRemove.contains(className)) {
                 System.out.println("rewriting: " + className);

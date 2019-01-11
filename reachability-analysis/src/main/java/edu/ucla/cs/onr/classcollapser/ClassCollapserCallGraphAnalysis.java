@@ -1,8 +1,9 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import edu.ucla.cs.onr.reachability.EntryPointProcessor;
-import edu.ucla.cs.onr.reachability.IProjectAnalyser;
-import edu.ucla.cs.onr.reachability.MethodData;
+import java.io.File;
+import java.util.*;
+
+import edu.ucla.cs.onr.reachability.*;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -12,9 +13,6 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
-import java.io.File;
-import java.util.*;
-
 public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 	public static boolean useSpark = true; // use Spark by default
 
@@ -23,37 +21,37 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 	private final List<File> appTestPath;
 	private final Set<MethodData> entryMethods;
 	private final Set<String> libClasses;
+	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
+	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
-	private final Set<String> touchedLibClasses;
 	private final Set<MethodData> usedLibMethods;
 	private final Set<String> usedAppClasses;
-	private final Set<String> touchedAppClasses;
 	private final Set<MethodData> usedAppMethods;
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
 
 	public ClassCollapserCallGraphAnalysis(List<File> libJarPath,
-                                           List<File> appClassPath,
-                                           List<File> appTestPath,
-                                           EntryPointProcessor entryPointProc) {
+							 List<File> appClassPath,
+							 List<File> appTestPath,
+							 EntryPointProcessor entryPointProc) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
 		this.entryMethods = new HashSet<MethodData>();
 
 		libClasses = new HashSet<String>();
+		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
+		methodToLib = new HashMap<MethodData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
-		touchedLibClasses = new HashSet<String>();
 		usedLibMethods = new HashSet<MethodData>();
 		usedAppClasses = new HashSet<String>();
-		touchedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashSet<MethodData>();
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
@@ -69,17 +67,54 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 
 	@Override
 	public void run() {
-        // 1. use ASM to find all classes and methods
-        this.findAllClassesAndMethods();
-        // 2. get entry points
-        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
-		// 3. use Spark to construct the call graph and compute the reachable classes and methods
+		// 1. use ASM to find all classes and methods
+		this.findAllClassesAndMethods();
+		// 2. get entry points
+		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+		// 3. construct the call graph and compute the reachable classes and methods
+		this.runCallGraphAnalysis();
+	}
+
+
+	/**
+	 *
+	 * This method is used to run Spark/CHA given a set of entry methods found by TamiFlex
+	 *
+	 * @param entryPoints
+	 */
+	public void run(Set<MethodData> entryPoints) {
+		// 1. use ASM to find all classes and methods
+		this.findAllClassesAndMethods();
+
+		// clear just in case this method is misused---should not call this method twice or call this
+		// after calling the overriden run method
+		if(!this.entryMethods.isEmpty()) {
+			this.entryMethods.clear();
+		}
+
+		// 2. add the given entry points
+		entryMethods.addAll(entryPoints);
+
+
+		// 3. run call graph analysis
 		this.runCallGraphAnalysis();
 	}
 
 	private void findAllClassesAndMethods() {
 		for (File lib : this.libJarPath) {
-			ASMUtils.readClass(lib, libClasses, libMethods);
+			HashSet<String> classes_in_this_lib = new HashSet<String>();
+			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib);
+			this.libClasses.addAll(classes_in_this_lib);
+			this.libMethods.addAll(methods_in_this_lib);
+
+			String lib_path = lib.getAbsolutePath();
+			for(String class_name : classes_in_this_lib) {
+				classToLib.put(class_name, lib_path);
+			}
+			for(MethodData md : methods_in_this_lib) {
+				methodToLib.put(md, lib_path);
+			}
 		}
 
 		for (File appPath : appClassPath) {
@@ -104,14 +139,15 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		} else {
 			CHATransformer.v().transform();
 		}
-		
 
+//		System.out.println("call graph analysis starts.");
+//		System.out.println(entryPoints.size() + " entry points.");
 		CallGraph cg = Scene.v().getCallGraph();
+//		System.out.println("call graph analysis done.");
 
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();
 
-		Set<String> visited = new HashSet<String>();
 		for (SootMethod entryMethod : entryPoints) {
 			SootUtils.visitMethodClassCollapser(entryMethod, cg, usedClasses, usedMethods);
 		}
@@ -134,9 +170,17 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
 
+	public String getLibPathOfClass(String libClass) {
+		return this.classToLib.get(libClass);
+	}
+
 	@Override
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
+	}
+
+	public String getLibPathOfMethod(MethodData methodData) {
+		return this.methodToLib.get(methodData);
 	}
 
 	@Override
@@ -169,10 +213,6 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 
-	public Set<String> getTestClasses() {
-		return Collections.unmodifiableSet(this.testClasses);
-	}
-
 	@Override
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);
@@ -182,6 +222,7 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 	public List<File> getLibClasspaths() {
 		return Collections.unmodifiableList(this.libJarPath);
 	}
+
 
 	@Override
 	public List<File> getTestClasspaths() {
@@ -195,25 +236,23 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 
 	@Override
 	public Set<String> getUsedLibClassesCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getUsedLibClasses();
 	}
 
 	@Override
 	public Set<MethodData> getUsedLibMethodsCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getUsedLibMethods();
 	}
 
 	@Override
 	public Set<String> getLibClassesCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getLibClasses();
 	}
 
 	@Override
 	public Set<MethodData> getLibMethodsCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getLibMethods();
 	}
+
+	public Set<String> getTestClasses() {return this.testClasses;}
 }

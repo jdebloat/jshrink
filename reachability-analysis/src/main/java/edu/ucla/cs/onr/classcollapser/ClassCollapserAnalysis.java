@@ -14,7 +14,7 @@ import java.util.*;
 public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     private Set<String> appClasses;
     private Set<String> usedAppClasses;
-    private Map<String, Set<String>> usedAppMethods;
+    public Map<String, Set<String>> usedAppMethods;
     private Set<String> processableLeaves;
     private LinkedList<ArrayList<String>> collapseList;
     private Set<String> removeList;
@@ -162,22 +162,45 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     }
 
     private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
-//        System.out.printf("collapsable: from %s, to %s\n", from, to);
+        System.out.printf("collapsable: from %s, to %s\n", from, to);
 //        if (toClass.isAbstract()) {
 //            return false;
 //        }
         if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
+            System.out.println("false annoymousinner");
             return false;
         }
         if (fromClass.isEnum() || toClass.isEnum()) {
+            System.out.println("false enum");
             return false;
         }
-        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || toClass.getFields() instanceof EmptyChain) {
+        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || (!(fromClass.getFields() instanceof EmptyChain) && toClass.getFields() instanceof EmptyChain)) {
+            System.out.println("false interface");
             return false;
         }
+//        if (!(fromClass.getFields() instanceof EmptyChain) && toClass.getFields() instanceof EmptyChain) {
+//            System.out.println("false empty chain");
+//            return false;
+//        }
         if (fromClass.isStatic() || toClass.isStatic()) {
+            System.out.println("false static");
             return false;
         }
+
+        System.out.println("Used methods in " + from + ":");
+        if (usedAppMethods.containsKey(from)) {
+            for (String m: usedAppMethods.get(from)) {
+                System.out.println(m);
+            }
+        }
+        System.out.println("Used methods in " + to + ":");
+        if (usedAppMethods.containsKey(to)) {
+            for (String m: usedAppMethods.get(to)) {
+                System.out.println(m);
+            }
+        }
+
+//        if (fromClass.)
         int numUsedChildren = 0;
         for (String child: childrenMap.get(to)) {
             if (usedAppClasses.contains(child)) {
@@ -189,10 +212,10 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 numUsedChildren += 1;
             }
         }
-        if (numUsedChildren == 1) {
-            if (!usedAppClasses.contains(to)) {
-                return true;
-            }
+        if (numUsedChildren <= 1) {
+//            if (!usedAppClasses.contains(to)) {
+//                return true;
+//            }
             for (SootMethod m: fromClass.getMethods()) {
 //                if (m.getName().equals("<init>") && !MethodBodyUtils.isEmptyConstructor(m)) {
 //                    return false;
@@ -200,16 +223,30 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
 //                System.out.printf("method name: %s, declare: %s, used: %s\n", m.getName(), toClass.declaresMethod(m.getSubSignature()), toClass.declaresMethod(m.getSubSignature())&& usedAppMethods.containsKey(toClass.getName())
 //                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature()));
 //                System.out.println(toClass.getMethod(m.getSubSignature()).getSignature());
-                if (toClass.declaresMethod(m.getSubSignature())
-                        && usedAppMethods.containsKey(toClass.getName())
-                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature())) {
+//                if (toClass.declaresMethod(m.getSubSignature())
+//                        && usedAppMethods.containsKey(toClass.getName())
+//                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature())) {
+                if (usedAppMethods.containsKey(to)
+                        && usedAppMethods.get(to).contains(m.getSubSignature())) {
                     return false;
                 }
             }
         } else {
             return false;
         }
-
+        System.out.printf("collapse true, from: %s, to: %s\n", from, to);
+        System.out.println("Used methods in " + from + ":");
+        if (usedAppMethods.containsKey(from)) {
+            for (String m: usedAppMethods.get(from)) {
+                System.out.println(m);
+            }
+        }
+        System.out.println("Used methods in " + to + ":");
+        if (usedAppMethods.containsKey(to)) {
+            for (String m: usedAppMethods.get(to)) {
+                System.out.println(m);
+            }
+        }
         return true;
     }
 
