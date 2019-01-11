@@ -463,54 +463,57 @@ public class NameChangeMethodWriter extends MethodVisitor implements NameChangeW
     // Special instructions
     // -----------------------------------------------------------------------------------------------
 
-//    /**
-//     * Visits a LDC instruction. Note that new constant types may be added in future versions of the
-//     * Java Virtual Machine. To easily detect new constant types, implementations of this method
-//     * should check for unexpected constant types, like this:
-//     *
-//     * <pre>
-//     * if (cst instanceof Integer) {
-//     *     // ...
-//     * } else if (cst instanceof Float) {
-//     *     // ...
-//     * } else if (cst instanceof Long) {
-//     *     // ...
-//     * } else if (cst instanceof Double) {
-//     *     // ...
-//     * } else if (cst instanceof String) {
-//     *     // ...
-//     * } else if (cst instanceof Type) {
-//     *     int sort = ((Type) cst).getSort();
-//     *     if (sort == Type.OBJECT) {
-//     *         // ...
-//     *     } else if (sort == Type.ARRAY) {
-//     *         // ...
-//     *     } else if (sort == Type.METHOD) {
-//     *         // ...
-//     *     } else {
-//     *         // throw an exception
-//     *     }
-//     * } else if (cst instanceof Handle) {
-//     *     // ...
-//     * } else if (cst instanceof ConstantDynamic) {
-//     *     // ...
-//     * } else {
-//     *     // throw an exception
-//     * }
-//     * </pre>
-//     *
-//     * @param value the constant to be loaded on the stack. This parameter must be a non null {@link
-//     *     Integer}, a {@link Float}, a {@link Long}, a {@link Double}, a {@link String}, a {@link
-//     *     Type} of OBJECT or ARRAY sort for {@code .class} constants, for classes whose version is
-//     *     49, a {@link Type} of METHOD sort for MethodType, a {@link Handle} for MethodHandle
-//     *     constants, for classes whose version is 51 or a {@link ConstantDynamic} for a constant
-//     *     dynamic for classes whose version is 55.
-//     */
-//    public void visitLdcInsn(final Object value) {
-//        if (mv != null) {
-//            mv.visitLdcInsn(value);
-//        }
-//    }
+    /**
+     * Visits a LDC instruction. Note that new constant types may be added in future versions of the
+     * Java Virtual Machine. To easily detect new constant types, implementations of this method
+     * should check for unexpected constant types, like this:
+     *
+     * <pre>
+     * if (cst instanceof Integer) {
+     *     // ...
+     * } else if (cst instanceof Float) {
+     *     // ...
+     * } else if (cst instanceof Long) {
+     *     // ...
+     * } else if (cst instanceof Double) {
+     *     // ...
+     * } else if (cst instanceof String) {
+     *     // ...
+     * } else if (cst instanceof Type) {
+     *     int sort = ((Type) cst).getSort();
+     *     if (sort == Type.OBJECT) {
+     *         // ...
+     *     } else if (sort == Type.ARRAY) {
+     *         // ...
+     *     } else if (sort == Type.METHOD) {
+     *         // ...
+     *     } else {
+     *         // throw an exception
+     *     }
+     * } else if (cst instanceof Handle) {
+     *     // ...
+     * } else if (cst instanceof ConstantDynamic) {
+     *     // ...
+     * } else {
+     *     // throw an exception
+     * }
+     * </pre>
+     *
+     * @param value the constant to be loaded on the stack. This parameter must be a non null {@link
+     *     Integer}, a {@link Float}, a {@link Long}, a {@link Double}, a {@link String}, a {@link
+     *     Type} of OBJECT or ARRAY sort for {@code .class} constants, for classes whose version is
+     *     49, a {@link Type} of METHOD sort for MethodType, a {@link Handle} for MethodHandle
+     *     constants, for classes whose version is 51 or a {@link ConstantDynamic} for a constant
+     *     dynamic for classes whose version is 55.
+     */
+    public void visitLdcInsn(final Object value) {
+        Object newValue = value;
+        if (value instanceof Type) {
+            String newDesc = ASMUtils.changeType(((Type) value).getDescriptor(), changeFrom, changeTo);
+            newValue = Type.getType(newDesc);
+        }
+        super.visitLdcInsn(newValue);
+    }
 //
 //    /**
 //     * Visits an IINC instruction.
