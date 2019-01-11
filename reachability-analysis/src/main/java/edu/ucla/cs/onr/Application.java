@@ -171,7 +171,7 @@ public class Application {
 			classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
 			for(MethodData methodData : projectAnalyser.getLibMethodsCompileOnly()){
 				if(!classesToIgnore.contains(methodData.getClassName())
-				&& !projectAnalyser.getUsedLibMethodsCompileOnly().contains(methodData)){
+				&& !projectAnalyser.getUsedLibMethodsCompileOnly().keySet().contains(methodData)){
 					methodsToRemove.add(methodData);
 				}
 			}
@@ -181,7 +181,7 @@ public class Application {
 				classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
 				for(MethodData methodData : projectAnalyser.getAppMethods()){
 					if(!classesToIgnore.contains(methodData.getClassName())
-					&& !projectAnalyser.getUsedAppMethods().contains(methodData)){
+					&& !projectAnalyser.getUsedAppMethods().keySet().contains(methodData)){
 						methodsToRemove.add(methodData);
 					}
 				}

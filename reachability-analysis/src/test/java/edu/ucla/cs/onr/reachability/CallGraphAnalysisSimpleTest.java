@@ -3,15 +3,14 @@ package edu.ucla.cs.onr.reachability;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.After;
 import org.junit.Test;
 
 import soot.G;
+
+import javax.swing.text.html.Option;
 
 public class CallGraphAnalysisSimpleTest {
 	
@@ -247,6 +246,98 @@ public class CallGraphAnalysisSimpleTest {
         runner.run();
         assertEquals(4, runner.getUsedAppClasses().size());
         assertEquals(9, runner.getUsedAppMethods().size());
+	}
+
+	@Test
+	public void testCallGraphInfo(){
+		CallGraphAnalysis.useSpark = true;
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		List<File> libJarPath = new ArrayList<File>();
+		libJarPath.add(
+				new File(classLoader.getResource("simple-test-project/libs/standard-stuff-library.jar").getFile()));
+		List<File> appClassPath = new ArrayList<File>();
+		appClassPath.add(new File(classLoader.getResource("simple-test-project/target/classes").getFile()));
+		List<File> appTestPath = new ArrayList<File>();
+		appTestPath.add(new File(classLoader.getResource("simple-test-project/target/test-classes").getFile()));
+		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+				new EntryPointProcessor(true, false, false,
+						false, new HashSet<MethodData>()));
+		runner.run();
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+		Map<MethodData, Set<MethodData>> usedLibMethods = runner.getUsedLibMethods();
+
+		Optional<Set<MethodData>> mainMethod = get(usedAppMethods, "Main", "main");
+		assertTrue(mainMethod.isPresent());
+		assertEquals(0, mainMethod.get().size());
+
+		Optional<Set<MethodData>> standardStuffInit = get(usedAppMethods, "StandardStuff", "<init>");
+		assertTrue(standardStuffInit.isPresent());
+		assertEquals(1,standardStuffInit.get().size());
+		assertTrue(contains(standardStuffInit.get(),"Main", "main"));
+
+		/*
+		The following is a bit unintuitive, but "StandardStuff$NestClass:<init>(StandardStuff$1)" is called by
+		"StandardStuff:<init>()". StandardStuff$NestedClass<init>() is then called by
+		"StandardStuff$NestedClass<init>(StandardStuff$1)". However, our "get" method does not consider parameters so
+		this is a bit incomplete.
+		 */
+		Optional<Set<MethodData>> nestedClassInit =
+				get(usedAppMethods, "StandardStuff$NestedClass", "<init>");
+		assertTrue(nestedClassInit.isPresent());
+		assertEquals(1, nestedClassInit.get().size());
+		assertTrue(contains(nestedClassInit.get(),"StandardStuff$NestedClass", "<init>"));
+
+		Optional<Set<MethodData>> nestedClassMethod =
+				get(usedAppMethods, "StandardStuff$NestedClass", "nestedClassMethod");
+		assertTrue(nestedClassMethod.isPresent());
+		assertEquals(1, nestedClassMethod.get().size());
+		assertTrue(contains(nestedClassMethod.get(),"StandardStuff", "<init>"));
+
+		Optional<Set<MethodData>> getString = get(usedAppMethods, "StandardStuff", "getString");
+		assertTrue(getString.isPresent());
+		assertEquals(1, getString.get().size());
+		assertTrue(contains(getString.get(), "Main", "main"));
+
+		Optional<Set<MethodData>> getStringStatic =
+				get(usedAppMethods, "StandardStuff", "getStringStatic");
+		assertTrue(getStringStatic.isPresent());
+		assertEquals(1, getStringStatic.get().size());
+		assertTrue(contains(getStringStatic.get(), "StandardStuff", "getString"));
+
+		Optional<Set<MethodData>> libraryClassInit =
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "<init>");
+		assertTrue(libraryClassInit.isPresent());
+		assertEquals(1,libraryClassInit.get().size());
+		assertTrue(contains(libraryClassInit.get(), "Main", "main"));
+
+		Optional<Set<MethodData>> getNumber =
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "getNumber");
+		assertTrue(getNumber.isPresent());
+		assertEquals(1, getNumber.get().size());
+		assertTrue(contains(getNumber.get(), "Main", "main"));
+	}
+
+	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map, String className, String methodName){
+		MethodData methodData = null;
+		for(Map.Entry<MethodData, Set<MethodData>> entry : map.entrySet()){
+			if(entry.getKey().getClassName().equals(className) && entry.getKey().getName().equals(methodName)
+			&& (methodData == null || methodData.getArgs().length > entry.getKey().getArgs().length)){
+				methodData = entry.getKey();
+			}
+		}
+		if(methodData != null){
+			return Optional.of(map.get(methodData));
+		}
+		return Optional.empty();
+	}
+
+	private static boolean contains(Set<MethodData> set, String className, String methodName){
+		for(MethodData methodData : set){
+			if(methodData.getClassName().equals(className) && methodData.getName().equals(methodName)){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@After

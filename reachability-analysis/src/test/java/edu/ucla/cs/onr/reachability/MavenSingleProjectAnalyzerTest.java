@@ -12,7 +12,9 @@ import soot.G;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class MavenSingleProjectAnalyzerTest {
 
@@ -226,6 +228,90 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(69, runner.getUsedAppClasses().size());
 		assertEquals(384, runner.getUsedAppMethods().size());
 	}
+
+	@Test
+	public void testCallGraphInfo(){
+		ClassLoader classLoader = MavenSingleProjectAnalyzerTest.class.getClassLoader();
+		File mavenProject = new File(classLoader.getResource("module-test-project").getFile());
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(mavenProject.getAbsolutePath(),
+				new EntryPointProcessor(true, false, false,false,
+						new HashSet<MethodData>()), Optional.of(getTamiFlexJar()));
+		runner.setup();
+		runner.run();
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+		Map<MethodData, Set<MethodData>> usedLibMethods = runner.getUsedLibMethods();
+
+		Optional<Set<MethodData>> anotherMain =
+				get(usedAppMethods, "edu.ucla.cs.onr.test.another.Main", "main");
+		assertTrue(anotherMain.isPresent());
+		assertEquals(0, anotherMain.get().size());
+
+		Optional<Set<MethodData>> main = get(usedAppMethods, "Main", "main");
+		assertTrue(main.isPresent());
+		assertEquals(0, main.get().size());
+
+		Optional<Set<MethodData>> standardStuffInit =
+				get(usedAppMethods, "StandardStuff", "<init>");
+		assertTrue(standardStuffInit.isPresent());
+		assertEquals(1, standardStuffInit.get().size());
+		assertTrue(contains(standardStuffInit.get(), "Main", "main"));
+
+		Optional<Set<MethodData>> standardStuffGetString =
+				get(usedAppMethods, "StandardStuff", "getString");
+		assertTrue(standardStuffGetString.isPresent());
+		assertEquals(1, standardStuffGetString.get().size());
+		assertTrue(contains(standardStuffGetString.get(), "Main", "main"));
+
+		Optional<Set<MethodData>> libraryClassInit =
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "<init>");
+		assertTrue(libraryClassInit.isPresent());
+		assertEquals(1, libraryClassInit.get().size());
+		assertTrue(contains(libraryClassInit.get(), "Main", "main"));
+
+		Optional<Set<MethodData>> libraryClassgetNumber =
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "getNumber");
+		assertTrue(libraryClassgetNumber.isPresent());
+		assertEquals(1, libraryClassgetNumber.get().size());
+		assertTrue(contains(libraryClassgetNumber.get(), "Main", "main"));
+
+		/*
+		Technically this is called by "StandardStuff:<init>()" but this is called via reflection and is therefore
+		treated as an entry point.
+		 */
+		Optional<Set<MethodData>> standardStuffTouchedViaReflect =
+				get(usedAppMethods, "StandardStuff", "touchedViaReflection");
+		assertTrue(standardStuffTouchedViaReflect.isPresent());
+		assertEquals(0, standardStuffTouchedViaReflect.get().size());
+
+		Optional<Set<MethodData>> standardStuffGetStaticString =
+				get(usedAppMethods, "StandardStuff", "getStringStatic");
+		assertTrue(standardStuffGetStaticString.isPresent());
+		assertEquals(1, standardStuffGetStaticString.get().size());
+		assertTrue(contains(standardStuffGetStaticString.get(), "StandardStuff", "getString"));
+	}
+
+	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map, String className, String methodName){
+		MethodData methodData = null;
+		for(Map.Entry<MethodData, Set<MethodData>> entry : map.entrySet()){
+			if(entry.getKey().getClassName().equals(className) && entry.getKey().getName().equals(methodName)
+					&& (methodData == null || methodData.getArgs().length > entry.getKey().getArgs().length)){
+				methodData = entry.getKey();
+			}
+		}
+		if(methodData != null){
+			return Optional.of(map.get(methodData));
+		}
+		return Optional.empty();
+	}
+
+	private static boolean contains(Set<MethodData> set, String className, String methodName){
+		for(MethodData methodData : set){
+			if(methodData.getClassName().equals(className) && methodData.getName().equals(methodName)){
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * Must manually remove JCTools_JCTools/jctools-experimental/target/classes/
@@ -242,7 +328,7 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.setup();
 		runner.run();
 	}
-	
+
 	@Test
 	public void testClassResolution() {
 		CallGraphAnalysis.useSpark = false;

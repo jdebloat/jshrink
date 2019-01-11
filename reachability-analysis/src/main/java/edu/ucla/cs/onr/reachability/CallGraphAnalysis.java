@@ -26,9 +26,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
-	private final Set<MethodData> usedLibMethods;
+	private final Map<MethodData,Set<MethodData>> usedLibMethods;
 	private final Set<String> usedAppClasses;
-	private final Set<MethodData> usedAppMethods;
+	private final Map<MethodData,Set<MethodData>> usedAppMethods;
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
@@ -49,9 +49,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
-		usedLibMethods = new HashSet<MethodData>();
+		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
 		usedAppClasses = new HashSet<String>();
-		usedAppMethods = new HashSet<MethodData>();
+		usedAppMethods = new HashMap<MethodData, Set<MethodData>>();
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		entryPointProcessor = entryPointProc;
@@ -145,24 +145,40 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		CallGraph cg = Scene.v().getCallGraph();
 //		System.out.println("call graph analysis done.");
 
-		Set<MethodData> usedMethods = new HashSet<MethodData>();
+		Map<MethodData,Set<MethodData>> usedMethods = new HashMap<MethodData,Set<MethodData>>();
 		Set<String> usedClasses = new HashSet<String>();
 
 		for (SootMethod entryMethod : entryPoints) {
+			MethodData entryMethodData = SootUtils.sootMethodToMethodData(entryMethod);
+			if(!usedMethods.containsKey(entryMethodData)) {
+				usedMethods.put(entryMethodData, new HashSet<MethodData>());
+			}
+			usedClasses.add(entryMethodData.getClassName());
 			SootUtils.visitMethodNonRecur(entryMethod, cg, usedClasses, usedMethods);
 		}
 
 		// check for used library classes and methods
 		this.usedLibClasses.addAll(this.libClasses);
 		this.usedLibClasses.retainAll(usedClasses);
-		this.usedLibMethods.addAll(this.libMethods);
-		this.usedLibMethods.retainAll(usedMethods);
+		//this.usedLibMethods.addAll(this.libMethods);
+		//this.usedLibMethods.retainAll(usedMethods);
+		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
+			if(this.libMethods.contains(e.getKey())){
+				this.usedLibMethods.put(e.getKey(), e.getValue());
+			}
+		}
 
 		// check for used application classes and methods
 		this.usedAppClasses.addAll(this.appClasses);
 		this.usedAppClasses.retainAll(usedClasses);
-		this.usedAppMethods.addAll(this.appMethods);
-		this.usedAppMethods.retainAll(usedMethods);
+		//this.usedAppMethods.addAll(this.appMethods);
+		//this.usedAppMethods.retainAll(usedMethods);
+		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
+			if(this.appMethods.contains(e.getKey())){
+				this.usedAppMethods.put(e.getKey(),e.getValue());
+			}
+		}
+
 	}
 
 	@Override
@@ -199,8 +215,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<MethodData> getUsedLibMethods() {
-		return Collections.unmodifiableSet(this.usedLibMethods);
+	public Map<MethodData,Set<MethodData>> getUsedLibMethods() {
+		return Collections.unmodifiableMap(this.usedLibMethods);
 	}
 
 	@Override
@@ -209,8 +225,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<MethodData> getUsedAppMethods() {
-		return Collections.unmodifiableSet(this.usedAppMethods);
+	public Map<MethodData,Set<MethodData>>getUsedAppMethods() {
+		return Collections.unmodifiableMap(this.usedAppMethods);
 	}
 
 	@Override
@@ -239,7 +255,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<MethodData> getUsedLibMethodsCompileOnly() {
+	public Map<MethodData,Set<MethodData>> getUsedLibMethodsCompileOnly() {
 		return this.getUsedLibMethods();
 	}
 

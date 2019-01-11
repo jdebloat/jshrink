@@ -39,10 +39,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
 	private final Set<String> usedLibClassesCompileOnly;
-	private final Set<MethodData> usedLibMethods;
-	private final Set<MethodData> usedLibMethodsCompileOnly;
+	private final Map<MethodData, Set<MethodData>> usedLibMethods;
+	private final Map<MethodData, Set<MethodData>> usedLibMethodsCompileOnly;
 	private final Set<String> usedAppClasses;
-	private final Set<MethodData> usedAppMethods;
+	private final Map<MethodData, Set<MethodData>> usedAppMethods;
 	private final Map<String,List<File>> app_class_paths;
 	private final Map<String,List<File>> app_test_paths;
 	private final Map<String,List<File>> lib_class_paths;
@@ -64,10 +64,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
 		usedLibClassesCompileOnly = new HashSet<String>();
-		usedLibMethods = new HashSet<MethodData>();
-		usedLibMethodsCompileOnly = new HashSet<MethodData>();
+		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
+		usedLibMethodsCompileOnly = new HashMap<MethodData,Set<MethodData>>();
 		usedAppClasses = new HashSet<String>();
-		usedAppMethods = new HashSet<MethodData>();
+		usedAppMethods = new HashMap<MethodData, Set<MethodData>>();
 		app_class_paths = new HashMap<String, List<File>>();
 		app_test_paths = new HashMap<String, List<File>>();
 		lib_class_paths = new HashMap<String, List<File>>();
@@ -247,6 +247,21 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return directoryContains(dir, file.getParentFile());
 	}
 
+	private static void addToMap(Map<MethodData, Set<MethodData>> map, MethodData key, Collection<MethodData> elements){
+		if(!map.containsKey(key)){
+			map.put(key, new HashSet<MethodData>());
+		}
+		for(MethodData element : elements){
+			map.get(key).add(element);
+		}
+	}
+
+	private static void addToMap(Map<MethodData,Set<MethodData>> map, Map<MethodData, Set<MethodData>> toAdd){
+		for(Map.Entry<MethodData, Set<MethodData>> entry : toAdd.entrySet()){
+			addToMap(map, entry.getKey(), entry.getValue());
+		}
+	}
+
 	@Override
 	public void run() {
 		File root_dir = new File(project_path);
@@ -304,17 +319,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						this.usedLibClassesCompileOnly.add(usedLibClass);
 					}
 				}
-				for(MethodData libMethod : runner.getUsedLibMethods()) {
-					this.usedLibMethods.add(libMethod);
-					String lib_path = runner.getLibPathOfMethod(libMethod);
+				for(Map.Entry<MethodData,Set<MethodData>> libMethod : runner.getUsedLibMethods().entrySet()) {
+					addToMap(this.usedLibMethods, libMethod.getKey(),libMethod.getValue());
+					String lib_path = runner.getLibPathOfMethod(libMethod.getKey());
 					if(compile_lib_paths.contains(lib_path)) {
-						this.usedLibMethodsCompileOnly.add(libMethod);
+						addToMap(this.usedLibMethodsCompileOnly, libMethod.getKey(), libMethod.getValue());
 					}
 				}
 				this.appClasses.addAll(runner.getAppClasses());
 				this.appMethods.addAll(runner.getAppMethods());
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
-				this.usedAppMethods.addAll(runner.getUsedAppMethods());
+				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
 				
 				// make sure to reset Soot after running reachability analysis
@@ -360,10 +375,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						String method_signature2 = md.getSubSignature(); 
 						if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
 							// this is a library method 
-							if(!usedAppMethods.contains(md)) {
+							if(!usedAppMethods.containsKey(md)) {
 								// this method is already identified as a used method by static analysis
 								set.add(md);
-								usedAppMethods.add(md);
+								usedAppMethods.put(md, new HashSet<MethodData>());
 								usedAppClasses.add(md.getClassName());
 								foundInApp = true;
 								break;
@@ -379,15 +394,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 							String method_signature2 = md.getSubSignature(); 
 							if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
 								// this is a library method 
-								if(!usedLibMethods.contains(md)) {
+								if(!usedLibMethods.containsKey(md)) {
 									// this method is already identified as a used method by static analysis
 									set.add(md);
-									usedLibMethods.add(md);
+									usedLibMethods.put(md, new HashSet<MethodData>());
 									usedLibClasses.add(md.getClassName());
 									
 									// also need to update usedLibMethodsCompileOnly and usedLibClassesCompile only
 									if(libMethodsCompileOnly.contains(md)) {
-										usedLibMethodsCompileOnly.add(md);
+										usedLibMethodsCompileOnly.put(md, new HashSet<MethodData>());
 										usedLibClasses.add(md.getClassName());
 									}
 									foundInApp = true;
@@ -427,14 +442,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						this.usedLibClassesCompileOnly.add(class_name);
 					}
 				}
-				for(MethodData md : runner.getUsedLibMethods()) {
-					this.usedLibMethods.add(md);
-					if(this.libMethodsCompileOnly.contains(md)) {
-						this.usedLibMethodsCompileOnly.add(md);
+				for(Map.Entry<MethodData, Set<MethodData>> entry: runner.getUsedLibMethods().entrySet()){
+					addToMap(this.usedLibMethods, entry.getKey(), entry.getValue());
+
+					if(this.libMethodsCompileOnly.contains(entry.getKey())) {
+						addToMap(this.usedLibMethodsCompileOnly, entry.getKey(), entry.getValue());
 					}
 				}
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
-				this.usedAppMethods.addAll(runner.getUsedAppMethods());
+				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
 				
 				// make sure to reset Soot after running reachability analysis
@@ -488,19 +504,33 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		// just in case that those classes are not used in their own modules
 		this.usedAppClasses.addAll(used_lib_classes_copy);
 		
-		Set<MethodData> used_lib_methods_copy = new HashSet<MethodData>(this.usedLibMethods);
+		Map<MethodData, Set<MethodData>> used_lib_methods_copy
+				= new HashMap<MethodData, Set<MethodData>>();
 		// only keep used app methods from other modules
-		used_lib_methods_copy.retainAll(this.appMethods);
-		// after removing used app methods from other modules, only used methods from external libs remain 
-		this.usedLibMethods.removeAll(used_lib_methods_copy);
+		for(Map.Entry<MethodData,Set<MethodData>> methodData : this.usedLibMethods.entrySet()){
+			if(this.appMethods.contains(methodData.getKey())) {
+				addToMap(used_lib_methods_copy, methodData.getKey(), methodData.getValue());
+			}
+		}
+		// after removing used app methods from other modules, only used methods from external libs remain
+		for(Map.Entry<MethodData, Set<MethodData>> methodData : used_lib_methods_copy.entrySet()){
+			this.usedLibMethods.remove(methodData.getKey());
+		}
 		// do the same to get used methods from external libs in the compile scope
-		Set<MethodData> used_lib_methods_compile_only_copy = new HashSet<MethodData>(this.usedLibMethodsCompileOnly);
-		used_lib_methods_compile_only_copy.retainAll(this.appMethods);
-		this.usedLibMethodsCompileOnly.removeAll(used_lib_methods_compile_only_copy);
-		
+		Map<MethodData,Set<MethodData>> used_lib_methods_compile_only_copy = new HashMap<MethodData,Set<MethodData>>();
+		for(Map.Entry<MethodData,Set<MethodData>> entry : this.usedLibMethodsCompileOnly.entrySet()){
+			if(this.appMethods.contains(entry.getKey())){
+				addToMap(used_lib_methods_compile_only_copy, entry.getKey(), entry.getValue());
+			}
+		}
+
+		for(Map.Entry<MethodData, Set<MethodData>> entry : used_lib_methods_compile_only_copy.entrySet()){
+			this.usedLibMethodsCompileOnly.remove(entry.getKey());
+		}
+
 		// also need to add the used app methods from other modules back to the set of used app methods
 		// just in case that those methods are not called in their own modules
-		this.usedAppMethods.addAll(used_lib_methods_copy);
+		addToMap(this.usedAppMethods,used_lib_methods_copy);
 	}
 
 	@Override
@@ -544,13 +574,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<MethodData> getUsedLibMethods() {
-		return Collections.unmodifiableSet(this.usedLibMethods);
+	public Map<MethodData, Set<MethodData>> getUsedLibMethods() {
+		return Collections.unmodifiableMap(this.usedLibMethods);
 	}
 	
 	@Override
-	public Set<MethodData> getUsedLibMethodsCompileOnly() {
-		return Collections.unmodifiableSet(this.usedLibMethodsCompileOnly);
+	public Map<MethodData, Set<MethodData>> getUsedLibMethodsCompileOnly() {
+		return Collections.unmodifiableMap(this.usedLibMethodsCompileOnly);
 	}
 
 	@Override
@@ -559,8 +589,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<MethodData> getUsedAppMethods() {
-		return Collections.unmodifiableSet(this.usedAppMethods);
+	public Map<MethodData, Set<MethodData>> getUsedAppMethods() {
+		return Collections.unmodifiableMap(this.usedAppMethods);
 	}
 
 	@Override

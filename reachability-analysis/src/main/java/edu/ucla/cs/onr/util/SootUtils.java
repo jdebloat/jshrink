@@ -199,28 +199,32 @@ public class SootUtils {
 			}
 		}
 	}
-	
-	public static void visitMethodNonRecur(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> visited) {
-		Stack<SootMethod> methods_to_visit = new Stack<SootMethod>();
-		methods_to_visit.add(m);
-		while(!methods_to_visit.isEmpty()) {
-			SootMethod first = methods_to_visit.pop();
-			MethodData firstMethodData = sootMethodToMethodData(first);
 
-			String className = firstMethodData.getClassName();
+	public static void visitMethodNonRecur(SootMethod parent, CallGraph cg, Set<String> usedClass, Map<MethodData,
+			Set<MethodData>> visited){
+		Queue<SootMethod> stack = new LinkedList<SootMethod>();
+		stack.add(parent);
 
-			if(!visited.contains(firstMethodData)) {
-				// avoid recursion
-				usedClass.add(className);
-				visited.add(firstMethodData);
-				
-				// add callees to the stack
-				Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(first));
-				while (targets.hasNext()){
-					SootMethod method = (SootMethod)targets.next();
-					methods_to_visit.push(method);
+		while(!stack.isEmpty()) {
+			SootMethod par = stack.poll();
+			MethodData parentMethodData = sootMethodToMethodData(par);
+			usedClass.add(parentMethodData.getClassName());
+
+			Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(par));
+			while (targets.hasNext()) {
+				SootMethod method = (SootMethod) targets.next();
+				MethodData methodMethodData = sootMethodToMethodData(method);
+				if (!visited.containsKey(methodMethodData)) {
+					visited.put(methodMethodData, new HashSet<MethodData>());
+				} else if (visited.get(methodMethodData).contains(parentMethodData)
+						|| parentMethodData.equals(methodMethodData)) {
+					continue;
 				}
-			}	
+
+				visited.get(methodMethodData).add(parentMethodData);
+				stack.add(method);
+			//	visitMethodNonRecur(method, cg, usedClass, visited);
+			}
 		}
 	}
 }

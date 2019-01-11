@@ -15,7 +15,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import java.io.File;
 import java.util.*;
 
-public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
+public class ClassCollapserCallGraphAnalysis {
 	public static boolean useSpark = true; // use Spark by default
 
 	private final List<File> libJarPath;
@@ -60,14 +60,12 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		entryPointProcessor = entryPointProc;
 	}
 
-	@Override
 	public void setup() {
 		/* Setup is used to get the app/test/lib classpath information. In ClassGraphAnalysis, this is given via the
 		constructor and, therefore, does not need generated as in MavenProjectAnalysis
 		 */
 	}
 
-	@Override
 	public void run() {
         // 1. use ASM to find all classes and methods
         this.findAllClassesAndMethods();
@@ -129,85 +127,69 @@ public class ClassCollapserCallGraphAnalysis implements IProjectAnalyser {
 		this.usedAppMethods.retainAll(usedMethods);
 	}
 
-	@Override
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
 
-	@Override
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
-	@Override
 	public Set<String> getAppClasses() {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
 
-	@Override
 	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
-	@Override
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
 
-	@Override
 	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
 	}
 
-	@Override
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
 	}
 
-	@Override
 	public Set<MethodData> getUsedAppMethods() {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 
-	@Override
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);
 	}
 
-	@Override
 	public List<File> getLibClasspaths() {
 		return Collections.unmodifiableList(this.libJarPath);
 	}
 
-	@Override
 	public List<File> getTestClasspaths() {
 		return Collections.unmodifiableList(this.appTestPath);
 	}
 
-	@Override
 	public Set<MethodData> getEntryPoints() {
 		return Collections.unmodifiableSet(this.entryMethods);
 	}
 
-	@Override
 	public Set<String> getUsedLibClassesCompileOnly() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<MethodData> getUsedLibMethodsCompileOnly() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<String> getLibClassesCompileOnly() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<MethodData> getLibMethodsCompileOnly() {
 		// TODO Auto-generated method stub
 		return null;
