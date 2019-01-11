@@ -217,6 +217,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,false, new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()));
+		runner.setup();
 		runner.run();
 		assertEquals(1196, runner.getUsedLibClasses().size());
 		assertEquals(3766, runner.getUsedLibMethods().size());
