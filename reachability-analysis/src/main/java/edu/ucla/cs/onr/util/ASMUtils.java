@@ -88,7 +88,7 @@ public class ASMUtils {
     public static String changeType(String descriptor, String changeFrom, String changeTo) {
 		String newDescriptor = changeTypeInternal(descriptor, changeFrom, changeTo);
 		if (!descriptor.equals(newDescriptor)) {
-			System.out.printf("changeType: original: %s & new: %s\n", descriptor, newDescriptor);
+			System.out.printf("changeType: original: %s && new: %s\n", descriptor, newDescriptor);
 		}
 		return changeTypeInternal(descriptor, changeFrom, changeTo);
 	}
