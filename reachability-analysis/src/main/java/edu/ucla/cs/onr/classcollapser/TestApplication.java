@@ -1,6 +1,7 @@
 package edu.ucla.cs.onr.classcollapser;
 
 import edu.ucla.cs.onr.Application;
+import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MethodData;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.ClassFileUtils;
@@ -34,11 +35,37 @@ public class TestApplication {
         SootClass subc = Scene.v().loadClassAndSupport("org.junit.validator.AnnotationsValidator$ClassValidator");
         SootClass superc = Scene.v().loadClassAndSupport("org.junit.validator.AnnotationsValidator$AnnotatableValidator");
 
+
+
+//        File f = new File(appClassPathName);
+//        File tf = new File(testClassPathName);
+//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-client/target/classes");
+        appClassPath.add(f);
+        testClassPath.add(tf);
+//        File f2 = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-test/target/classes");
+//        appClassPath.add(f2);
+        ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, testClassPath, new EntryPointProcessor(true, true, true, new HashSet<MethodData>()));
+        cgAnalysis.setup();
+        cgAnalysis.run();
+
+        ClassCollapserAnalysis ccAnalysis = new ClassCollapserAnalysis(cgAnalysis.getAppClasses(), cgAnalysis.getUsedAppClasses(), cgAnalysis.getUsedAppMethods());
+        ccAnalysis.run();
+
+        for (String name : ccAnalysis.usedAppMethods.keySet()) {
+            System.out.printf("class name: %s\n used methods: \n", name);
+            for (String method : ccAnalysis.usedAppMethods.get(name)) {
+                System.out.println(method);
+            }
+            System.out.println();
+        }
+
+//        System.out.println(coll)
+
 //        System.out.println("original:");
 //        System.out.println(subc.getSuperclass());
 //        System.out.println(superc.getSuperclass());
 
-        ClassCollapser.mergeTwoClasses(subc, superc, new HashMap<String, Set<String>>());
+//        ClassCollapser.mergeTwoClasses(subc, superc, new HashMap<String, Set<String>>());
 //        System.out.println("\nmodified:");
 //        System.out.println(subc.getSuperclass());
 //
