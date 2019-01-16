@@ -3,7 +3,7 @@ package edu.ucla.cs.onr.classcollapser;
 import edu.ucla.cs.onr.util.ASMUtils;
 import org.objectweb.asm.*;
 
-//FIXME: delete all visitXXX methods without Override annotation
+//TODO: delete all visitXXX methods without Override annotation and the commented out methods
 
 public class NameChangeMethodWriter extends MethodVisitor implements NameChangeWriter {
     private boolean changed;
@@ -506,6 +506,7 @@ public class NameChangeMethodWriter extends MethodVisitor implements NameChangeW
      *     constants, for classes whose version is 51 or a {@link ConstantDynamic} for a constant
      *     dynamic for classes whose version is 55.
      */
+    //FIXME: this is causing error
     public void visitLdcInsn(final Object value) {
         Object newValue = value;
         if (value instanceof Type) {

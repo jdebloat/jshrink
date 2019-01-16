@@ -21,10 +21,10 @@ public class ClassCollapserApplication {
     public static void main(String[] args) {
         ArrayList<File> appClassPath = new ArrayList<File>();
         ArrayList<File> testClassPath = new ArrayList<File>();
-        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes";
-        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/test-classes";
-//        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/call-graph-analysis/reachability-analysis/src/test/resources/classcollapser/ldc";
-//        String testClassPathName = null;
+//        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes";
+//        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/test-classes";
+        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/call-graph-analysis/reachability-analysis/src/test/resources/classcollapser/ldc";
+        String testClassPathName = null;
 
 
         if (appClassPathName != null) {
@@ -36,9 +36,8 @@ public class ClassCollapserApplication {
             File tf = new File(testClassPathName);
             testClassPath.add(tf);
         }
-        ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, testClassPath, new EntryPointProcessor(true, true, true, new HashSet<MethodData>()));
+        ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, testClassPath, new EntryPointProcessor(true, false, true, new HashSet<MethodData>()));
 
-//        ClassCollapserMavenSingleProjectAnalyzer cgAnalysis = new ClassCollapserMavenSingleProjectAnalyzer(mavenPath, new EntryPointProcessor(true, true, true, new HashSet<MethodData>()), null);
         cgAnalysis.setup();
         cgAnalysis.run();
 
@@ -74,42 +73,9 @@ public class ClassCollapserApplication {
             classesToRemove.add(fromName);
         }
 
-//        Map<String, String> nameChangeList = ccAnalysis.getNameChangeList();
-//        for(String fromName: nameChangeList.keySet()) {
-//            String toName = nameChangeList.get(fromName);
-//            if (!nameToSootClass.containsKey(fromName)) {
-//                nameToSootClass.put(fromName, Scene.v().loadClassAndSupport(fromName));
-//            }
-//            if (!nameToSootClass.containsKey(toName)) {
-//                nameToSootClass.put(toName, Scene.v().loadClassAndSupport(toName));
-//            }
-//            SootClass from = nameToSootClass.get(fromName);
-//            SootClass to = nameToSootClass.get(toName);
-//            for (String className : cgAnalysis.getAppClasses()) {
-//                if (!nameToSootClass.containsKey(className)) {
-//                    nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
-//                }
-//                SootClass sootClass = nameToSootClass.get(className);
-//                if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
-//                    classesToRewrite.add(className);
-//                }
-//            }
-//            for (String className : cgAnalysis.getTestClasses()) {
-//                if (!nameToSootClass.containsKey(className)) {
-//                    nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
-//                }
-//                SootClass sootClass = nameToSootClass.get(className);
-//                if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
-//                    classesToRewrite.add(className);
-//                }
-//            }
-//        }
-
         Set<File> classPathsOfConcern = new HashSet<File>();
         classPathsOfConcern.addAll(appClassPath);
         classPathsOfConcern.addAll(testClassPath);
-//        classPathsOfConcern.addAll(cgAnalysis.getAppClasspaths());
-//        classPathsOfConcern.addAll(cgAnalysis.getTestClasspaths());
         for (String className: classesToRewrite) {
             if (!classesToRemove.contains(className)) {
                 System.out.println("rewriting: " + className);
@@ -129,6 +95,7 @@ public class ClassCollapserApplication {
             }
         }
 
+        //Begin ASM approach to change class name
         Map<String, String> nameChangeList = ccAnalysis.getNameChangeList();
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
@@ -136,6 +103,7 @@ public class ClassCollapserApplication {
             String fromNameFormatted = ASMUtils.formatClassName(fromName);
             String toNameFormatted = ASMUtils.formatClassName(toName);
 
+            //Modify class names in all app classes
             for (String className : cgAnalysis.getAppClasses()) {
                 if (!classesToRemove.contains(className)) {
                     String classNameFormatted = ASMUtils.formatClassName(className);
@@ -155,6 +123,7 @@ public class ClassCollapserApplication {
                     }
                 }
             }
+            //Modify class names in all test classes
             for (String className : cgAnalysis.getTestClasses()) {
                 if (!classesToRemove.contains(className)) {
                     String classNameFormatted = ASMUtils.formatClassName(className);
@@ -176,6 +145,7 @@ public class ClassCollapserApplication {
                 }
             }
         }
+        //End ASM change class name
 
         int originCount = cgAnalysis.getAppClasses().size();
         int afterCount = originCount - ccAnalysis.getNameChangeList().size();

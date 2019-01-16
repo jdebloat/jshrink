@@ -34,44 +34,22 @@ public class ClassCollapser implements IClassCollapser {
             originalFields.put(field.getName(), field);
         }
         to.setModifiers(from.getModifiers());
-//        if (to.getFields() instanceof EmptyChain && !from.getFields() instanceof EmptyChain) {
-//            to.field
-//        }
-//        if (to.getSuperclass().getName().equals(from.getName())) {
-//            to.setSuperclass(from.getSuperclass());
-//        }
-//        if (to.getInterfaces().contains(from)) {
-//            to.getInterfaces().remove(from);
-//        }
-//        for (SootClass inter: from.getInterfaces()) {
-//            to.getInterfaces().add(inter);
-//        }
+
         for (SootField field : from.getFields()) {
             if (originalFields.containsKey(field.getName())) {
                 to.getFields().remove(originalFields.get(field.getName()));
-//                to.removeField(originalFields.get(field.getName()))
             }
-//            to.addField(field);
             to.getFields().add(field);
         }
-//        for (SootField filed: from.getFields()) {
-//            if (!to.getFields().contains(filed)) {
-//                to.getFields().add(filed);
-//            }
-//        }
 
         HashMap<String, SootMethod> originalMethods = new HashMap<String, SootMethod>();
         for (SootMethod method : to.getMethods()) {
-//            System.out.println("original: " + method.getSubSignature());
             originalMethods.put(method.getSubSignature(), method);
         }
         for (SootMethod method : from.getMethods()) {
-//            System.out.println(method.getSubSignature());
-//            System.out.println(method.getName());
             Stmt toInLine = null;
             SootMethod inlinee = null;
             if (method.getName().equals("<init>")) {
-//                System.out.println(method.getDeclaringClass().getName());
                 Body b = method.retrieveActiveBody();
                 for (Unit u : b.getUnits()) {
                     if (u instanceof InvokeStmt) {
@@ -81,16 +59,8 @@ public class ClassCollapser implements IClassCollapser {
                             toInLine = (InvokeStmt) u;
                             inlinee = m;
                         }
-//                        else {
-//                            System.out.printf("not inlining, methodName: %s, declareName: %s, to.getNmae: %s\n", m.getName(), m.getDeclaringClass().getName(), to.getName());
-//                        }
                     }
                 }
-//                if (inlinee == null || toInLine == null) {
-//                    continue;
-//                }
-//                System.out.println("inlining");
-
             }
             if (inlinee != null && toInLine != null) {
                 inlinee.retrieveActiveBody();
@@ -108,16 +78,12 @@ public class ClassCollapser implements IClassCollapser {
                         to.getMethods().add(method);
                     }
                 }
-//                if (originalMethods.containsKey(method.getSubSignature())) {
-//                    to.getMethods().remove(originalMethods.get(method.getName()));
-//                }
-//                to.getMethods().add(toAdd);
             }
         }
     }
 
     /**
-     * Changes class names in the body of all methods of a class
+     * Changes class names in the body of all methods of a class (Legacy soot approach)
      * @param c The class in which we are modifying the bodies
      * @param changeFrom The original name of the class to be changed
      * @param changeTo The new name of the class to be changed
@@ -148,6 +114,8 @@ public class ClassCollapser implements IClassCollapser {
         return changed;
     }
 
+    //Supporting method for changeClassNameInClass
+    @Deprecated
     private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo, boolean isAbstract) {
         boolean changed = false;
         if (m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
