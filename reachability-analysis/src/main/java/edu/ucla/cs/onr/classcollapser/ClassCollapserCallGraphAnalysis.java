@@ -1,8 +1,9 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import edu.ucla.cs.onr.reachability.EntryPointProcessor;
-import edu.ucla.cs.onr.reachability.IProjectAnalyser;
-import edu.ucla.cs.onr.reachability.MethodData;
+import java.io.File;
+import java.util.*;
+
+import edu.ucla.cs.onr.reachability.*;
 import edu.ucla.cs.onr.util.ASMUtils;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -60,24 +61,63 @@ public class ClassCollapserCallGraphAnalysis {
 		entryPointProcessor = entryPointProc;
 	}
 
+
 	public void setup() {
 		/* Setup is used to get the app/test/lib classpath information. In ClassGraphAnalysis, this is given via the
 		constructor and, therefore, does not need generated as in MavenProjectAnalysis
 		 */
 	}
 
+	
 	public void run() {
-        // 1. use ASM to find all classes and methods
-        this.findAllClassesAndMethods();
-        // 2. get entry points
-        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
-		// 3. use Spark to construct the call graph and compute the reachable classes and methods
+		// 1. use ASM to find all classes and methods
+		this.findAllClassesAndMethods();
+		// 2. get entry points
+		this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+		// 3. construct the call graph and compute the reachable classes and methods
+		this.runCallGraphAnalysis();
+	}
+
+
+	/**
+	 *
+	 * This method is used to run Spark/CHA given a set of entry methods found by TamiFlex
+	 *
+	 * @param entryPoints
+	 */
+	public void run(Set<MethodData> entryPoints) {
+		// 1. use ASM to find all classes and methods
+		this.findAllClassesAndMethods();
+
+		// clear just in case this method is misused---should not call this method twice or call this
+		// after calling the overriden run method
+		if(!this.entryMethods.isEmpty()) {
+			this.entryMethods.clear();
+		}
+
+		// 2. add the given entry points
+		entryMethods.addAll(entryPoints);
+
+
+		// 3. run call graph analysis
 		this.runCallGraphAnalysis();
 	}
 
 	private void findAllClassesAndMethods() {
 		for (File lib : this.libJarPath) {
-			ASMUtils.readClass(lib, libClasses, libMethods);
+			HashSet<String> classes_in_this_lib = new HashSet<String>();
+			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib);
+			this.libClasses.addAll(classes_in_this_lib);
+			this.libMethods.addAll(methods_in_this_lib);
+
+			String lib_path = lib.getAbsolutePath();
+			for(String class_name : classes_in_this_lib) {
+				classToLib.put(class_name, lib_path);
+			}
+			for(MethodData md : methods_in_this_lib) {
+				methodToLib.put(md, lib_path);
+			}
 		}
 
 		for (File appPath : appClassPath) {
@@ -127,29 +167,36 @@ public class ClassCollapserCallGraphAnalysis {
 		this.usedAppMethods.retainAll(usedMethods);
 	}
 
+
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
+
 
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
+
 	public Set<String> getAppClasses() {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
+
 
 	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
+
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
 
+
 	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
 	}
+
 
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
@@ -159,39 +206,42 @@ public class ClassCollapserCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 
+
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);
 	}
+
 
 	public List<File> getLibClasspaths() {
 		return Collections.unmodifiableList(this.libJarPath);
 	}
 
+
 	public List<File> getTestClasspaths() {
 		return Collections.unmodifiableList(this.appTestPath);
 	}
+
 
 	public Set<MethodData> getEntryPoints() {
 		return Collections.unmodifiableSet(this.entryMethods);
 	}
 
+
 	public Set<String> getUsedLibClassesCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getUsedLibClasses();
 	}
 
 	public Set<MethodData> getUsedLibMethodsCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getUsedLibMethods();
 	}
+
 
 	public Set<String> getLibClassesCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getLibClasses();
 	}
 
+	
 	public Set<MethodData> getLibMethodsCompileOnly() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.getLibMethods();
 	}
 }

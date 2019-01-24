@@ -161,6 +161,9 @@ public class ClassFileUtils {
 
 		if(Application.isDebugMode()) {
 			File copyLocation = new File(fileToReturn.get().getAbsolutePath() + ORIGINAL_FILE_POST_FIX);
+			if (copyLocation.exists()) {
+				FileUtils.forceDelete(copyLocation);
+			}
 			FileUtils.copyFile(fileToReturn.get(), copyLocation);
 		}
 
@@ -172,7 +175,6 @@ public class ClassFileUtils {
 		writerOut.flush();
 		streamOut.close();
 	}
-
 
 	public static void rectifyChanges(Collection<File> classpaths) throws IOException{
 		for(File f : classpaths) {

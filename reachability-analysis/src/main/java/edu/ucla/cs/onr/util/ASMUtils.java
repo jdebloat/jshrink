@@ -1,17 +1,19 @@
 package edu.ucla.cs.onr.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import edu.ucla.cs.onr.Application;
 import edu.ucla.cs.onr.reachability.MethodData;
 import edu.ucla.cs.onr.reachability.ASMClassVisitor;
+import org.apache.commons.io.FileUtils;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 
 
 public class ASMUtils {
@@ -82,4 +84,44 @@ public class ASMUtils {
 	    			"'. It is neither a directory or a jar.");
 	    }
     }
+
+    public static String changeType(String descriptor, String changeFrom, String changeTo) {
+		String newDescriptor = changeTypeInternal(descriptor, changeFrom, changeTo);
+		if (!descriptor.equals(newDescriptor)) {
+			System.out.printf("changeType: original: %s && new: %s\n", descriptor, newDescriptor);
+		}
+		return changeTypeInternal(descriptor, changeFrom, changeTo);
+	}
+
+	private static String changeTypeInternal(String descriptor, String changeFrom, String changeTo) {
+		Type type = Type.getType(descriptor);
+//		Type newType = Type.getType(descriptor);
+		String newDescriptor = descriptor;
+		if (type.getSort() == Type.OBJECT) {
+			if (type.getInternalName().equals(changeFrom)) {
+				newDescriptor = "L" + changeTo + ";";
+			}
+		} else if (type.getSort() == Type.ARRAY) {
+			newDescriptor =  "[" + changeTypeInternal(descriptor.substring(1), changeFrom, changeTo);
+		}
+		return newDescriptor;
+	}
+	public static String formatClassName(String className) {
+		return className.replace('.','/');
+	}
+
+	public static void writeClass(String filePath, ClassWriter writer) {
+		File originalFile = new File(filePath);
+		try {
+			if (Application.isDebugMode()) {
+				File copyLocation = new File(filePath + ClassFileUtils.ORIGINAL_FILE_POST_FIX);
+				FileUtils.copyFile(originalFile, copyLocation);
+			}
+			FileOutputStream outputStream = new FileOutputStream(originalFile);
+			outputStream.write(writer.toByteArray());
+			outputStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }

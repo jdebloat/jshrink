@@ -6,6 +6,7 @@ import soot.SootClass;
 
 import edu.ucla.cs.onr.reachability.MethodData;
 import soot.SootMethod;
+import soot.util.EmptyChain;
 
 
 import java.util.*;
@@ -13,7 +14,7 @@ import java.util.*;
 public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     private Set<String> appClasses;
     private Set<String> usedAppClasses;
-    private Map<String, Set<String>> usedAppMethods;
+    public Map<String, Set<String>> usedAppMethods;
     private Set<String> processableLeaves;
     private LinkedList<ArrayList<String>> collapseList;
     private Set<String> removeList;
@@ -49,15 +50,10 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
             }
             usedAppMethods.get(className).add(m.getSubSignature());
         }
-//        System.out.println(usedAppMethods);
     }
 
     public void run() {
         setup();
-//        System.out.println(childrenMap);
-//        System.out.println(childrenVirtualMap);
-//        System.out.println(parentsMap);
-//        System.out.println(parentsVirtualMap);
         LinkedList<String> queue = new LinkedList<String>();
         HashSet<String> visited = new HashSet<String>();
         for (String leaf: processableLeaves) {
@@ -66,7 +62,6 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         }
         while (!queue.isEmpty()) {
             String child = queue.removeFirst();
-//            System.out.printf("prcessing child class %s, contains: %d, parentsMap contains: %d\n", child, appClasses.contains(child) ? 1 : 0, parentsMap.containsKey(child) ? 1: 0);
             Set<String> parents = new HashSet<String>();
             if (!parentsMap.get(child).isEmpty()) {
                 parents.add(parentsMap.get(child));
@@ -97,9 +92,9 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 if (cont) {
                     continue;
                 }
-                if (collapsable(child, singleParent)) {
-//                    String parent = parentsMap.get(child);
-//                    ClassCollapser.mergeTwoClasses(appClassMap.get(child), appClassMap.get(parent));
+                SootClass fromClass = Scene.v().loadClassAndSupport(child);
+                SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
+                if (collapsable(child, singleParent, fromClass, toClass)) {
                     ArrayList<String> collapse = new ArrayList<String>();
                     collapse.add(child);
                     collapse.add(singleParent);
@@ -107,7 +102,6 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                     nameChangeList.put(child, singleParent);
                     usedAppClasses.add(singleParent);
                     removeList.add(child);
-//                    queue.add(parent);
                 }
             }
             for (String parent: parents) {
@@ -119,7 +113,6 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 }
                 parentsMap.put(child, "");
                 parentsVirtualMap.remove(child);
-//                System.out.printf("parent: %s, children of the parent: %s\n", parent, childrenMap.get(parent));
                 if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0 && !visited.contains(parent)) {
                     queue.addLast(parent);
                     visited.add(parent);
@@ -149,13 +142,38 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         }
     }
 
-    private boolean collapsable(String from, String to) {
-//        System.out.printf("collapsable: from %s, to %s\n", from, to);
-        SootClass fromClass = Scene.v().loadClassAndSupport(from);
-        SootClass toClass = Scene.v().loadClassAndSupport(to);
-        if (toClass.isAbstract()) {
+    private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
+        System.out.printf("collapsable: from %s, to %s\n", from, to);
+        if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
+            System.out.println("false annoymousinner");
             return false;
         }
+        if (fromClass.isEnum() || toClass.isEnum()) {
+            System.out.println("false enum");
+            return false;
+        }
+        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || (!(fromClass.getFields() instanceof EmptyChain) && toClass.getFields() instanceof EmptyChain)) {
+            System.out.println("false interface");
+            return false;
+        }
+        if (fromClass.isStatic() || toClass.isStatic()) {
+            System.out.println("false static");
+            return false;
+        }
+
+        System.out.println("Used methods in " + from + ":");
+        if (usedAppMethods.containsKey(from)) {
+            for (String m: usedAppMethods.get(from)) {
+                System.out.println(m);
+            }
+        }
+        System.out.println("Used methods in " + to + ":");
+        if (usedAppMethods.containsKey(to)) {
+            for (String m: usedAppMethods.get(to)) {
+                System.out.println(m);
+            }
+        }
+
         int numUsedChildren = 0;
         for (String child: childrenMap.get(to)) {
             if (usedAppClasses.contains(child)) {
@@ -167,27 +185,43 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 numUsedChildren += 1;
             }
         }
-        if (numUsedChildren == 1) {
-            if (!usedAppClasses.contains(to)) {
-                return true;
-            }
+        if (numUsedChildren <= 1) {
             for (SootMethod m: fromClass.getMethods()) {
-//                if (m.getName().equals("<init>") && !MethodBodyUtils.isEmptyConstructor(m)) {
-//                    return false;
-//                }
-//                System.out.printf("method name: %s, declare: %s, used: %s\n", m.getName(), toClass.declaresMethod(m.getSubSignature()), toClass.declaresMethod(m.getSubSignature())&& usedAppMethods.containsKey(toClass.getName())
-//                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature()));
-//                System.out.println(toClass.getMethod(m.getSubSignature()).getSignature());
-                if (toClass.declaresMethod(m.getSubSignature())
-                        && usedAppMethods.containsKey(toClass.getName())
-                        && usedAppMethods.get(toClass.getName()).contains(m.getSubSignature())) {
+                if (usedAppMethods.containsKey(to)
+                        && usedAppMethods.get(to).contains(m.getSubSignature())) {
                     return false;
                 }
             }
         } else {
             return false;
         }
+        if (usedAppMethods.containsKey(from)) {
+            for (String m: usedAppMethods.get(from)) {
+                System.out.println(m);
+            }
+        }
+        if (usedAppMethods.containsKey(to)) {
+            for (String m: usedAppMethods.get(to)) {
+                System.out.println(m);
+            }
+        }
+        return true;
+    }
 
+    private boolean isAnnoymousInner(String name) {
+        int realNameIndex = name.length() - 1;
+        while(realNameIndex >= 0 && name.charAt(realNameIndex) != '$') {
+            realNameIndex -= 1;
+        }
+        if (realNameIndex < 0) {
+            return false;
+        }
+        String realName = name.substring(realNameIndex + 1);
+        for (int i = 0; i < realName.length(); ++ i) {
+            if (!Character.isDigit(realName.charAt(i))) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -197,32 +231,12 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
                 processableLeaves.add(parent);
             }
         }
-//        LinkedList<String> queue = new LinkedList<String>();
-//        for (String leaf: processableLeaves) {
-//            queue.addLast(leaf);
-//        }
-//        while (!queue.isEmpty()) {
-//            String leaf = queue.removeFirst();
-//            if (!usedAppClasses.contains(leaf)) {
-////                classesToRemove.add(leaf);
-//                processableLeaves.remove(leaf);
-//                for (String s: parentsMap.get(leaf)) {
-//                    childrenMap.get(s).remove(leaf);
-//                    if (childrenMap.get(s).size() == 0) {
-//                        processableLeaves.add(s);
-//                        queue.addLast(s);
-//                    }
-//                    parentsMap.remove(leaf);
-//                }
-//            }
-//        }
     }
 
     private void initClassHierarchy() {
         Set<String> visited = new HashSet<String>();
 
         for (String c: appClasses) {
-            System.out.println(c);
             parentsMap.put(c, "");
             childrenMap.put(c, new HashSet<String>());
             parentsVirtualMap.put(c, new HashSet<String>());

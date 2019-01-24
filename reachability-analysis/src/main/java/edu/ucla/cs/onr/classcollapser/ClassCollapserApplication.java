@@ -15,17 +15,24 @@ public class ClassCollapserApplication {
 
     public static void main(String[] args) {
         ArrayList<File> appClassPath = new ArrayList<File>();
-//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/test/override");
-        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes");
-//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/commons-lang/target/classes");
-//        System.out.println(f.listFiles().length);
-//        File f = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-client/target/classes");
-//        System.out.println(f.exists());
-//        System.out.println(f.isDirectory());
-        appClassPath.add(f);
-//        File f2 = new File("/Users/zonghengma/Documents/UCLA/capstone_new/prgms/curator/curator-test/target/classes");
-//        appClassPath.add(f2);
-        ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, new ArrayList<File>(), new EntryPointProcessor(true, true, true, false, new HashSet<MethodData>()));
+        ArrayList<File> testClassPath = new ArrayList<File>();
+        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/classes";
+        String testClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/prgms/junit4/target/test-classes";
+//        String appClassPathName = "/Users/zonghengma/Documents/UCLA/capstone_new/call-graph-analysis/reachability-analysis/src/test/resources/classcollapser/ldc";
+//        String testClassPathName = null;
+
+
+        if (appClassPathName != null) {
+            File f = new File(appClassPathName);
+            appClassPath.add(f);
+        }
+
+        if (testClassPathName != null) {
+            File tf = new File(testClassPathName);
+            testClassPath.add(tf);
+        }
+        ClassCollapserCallGraphAnalysis cgAnalysis = new ClassCollapserCallGraphAnalysis(new ArrayList<File>(), appClassPath, testClassPath, new EntryPointProcessor(true, true, true, true, new HashSet<MethodData>()));
+
         cgAnalysis.setup();
         cgAnalysis.run();
 //        Set<String> usedAppClasses = cgAnalysis.getUsedAppClasses();
