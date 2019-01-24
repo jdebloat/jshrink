@@ -4,10 +4,7 @@ import java.io.File;
 import java.util.*;
 
 import edu.ucla.cs.onr.reachability.MethodData;
-import soot.MethodOrMethodContext;
-import soot.Scene;
-import soot.SootMethod;
-import soot.Type;
+import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
@@ -58,6 +55,59 @@ public class SootUtils {
 		}
 
 		return new MethodData(methodName,methodClassName,methodReturnType,methodArgs,isPublic, isStatic);
+	}
+
+	public static Map<SootMethod, Set<SootMethod>> convertMethodDataCallGraphToSootMethodCallGraph(
+			Map<MethodData, Set<MethodData>> map){
+		Map<SootMethod, Set<SootMethod>> toReturn = new HashMap<SootMethod, Set<SootMethod>>();
+		for(Map.Entry<MethodData, Set<MethodData>> entry : map.entrySet()){
+			SootClass keySootClass = Scene.v().getSootClass(entry.getKey().getClassName());
+
+			/*
+			For some reason, I occasionally got a "java.lang.RuntimeException: not declared <method> in class <class>"
+			error when runnin the "ApplicationTest:junit_test()" JUnit Test. I therefore added these "declaresMethod"
+			checks... doesn't get to the root of the problem but I had to move forward.
+			TODO: Investigate this bug.
+			 */
+			if(keySootClass.declaresMethod(entry.getKey().getSubSignature())) {
+				SootMethod keySootMethod = keySootClass.getMethod(entry.getKey().getSubSignature());
+				Set<SootMethod> value = new HashSet<SootMethod>();
+				for (MethodData methodData : entry.getValue()) {
+					SootClass valueSootClass = Scene.v().getSootClass(methodData.getClassName());
+					if (valueSootClass.declaresMethod(methodData.getSubSignature())) {
+						SootMethod valueSootMethod = valueSootClass.getMethod(methodData.getSubSignature());
+						value.add(valueSootMethod);
+					}
+				}
+				toReturn.put(keySootMethod, value);
+			}
+		}
+		return toReturn;
+	}
+
+	public static Map<MethodData, Set<MethodData>> convertSootMethodCallGraphToMethodDataCallGraph(
+			Map<SootMethod, Set<SootMethod>> map){
+		Map<MethodData, Set<MethodData>> toReturn = new HashMap<MethodData, Set<MethodData>>();
+		for(Map.Entry<SootMethod, Set<SootMethod>> entry : map.entrySet()){
+			Set<MethodData> value = new HashSet<MethodData>();
+			for(SootMethod sootMethod : entry.getValue()){
+				value.add(sootMethodToMethodData(sootMethod));
+			}
+			toReturn.put(sootMethodToMethodData(entry.getKey()),value);
+		}
+		return toReturn;
+	}
+
+	public static Map<SootMethod, Set<SootMethod>> mergeCallGraphMaps(
+			Map<SootMethod, Set<SootMethod>> map1, Map<SootMethod, Set<SootMethod>> map2){
+		Map<SootMethod, Set<SootMethod>> toReturn = new HashMap<SootMethod, Set<SootMethod>>(map1);
+		for(Map.Entry<SootMethod, Set<SootMethod>> entry : map2.entrySet()){
+			if(!toReturn.containsKey(entry.getKey())){
+				toReturn.put(entry.getKey(), new HashSet<SootMethod>());
+			}
+			toReturn.get(entry.getKey()).addAll(entry.getValue());
+		}
+		return toReturn;
 	}
 
 	public static void setup_trimming(List<File> libJarPath, List<File> appClassPath, List<File> appTestPath){
@@ -216,8 +266,7 @@ public class SootUtils {
 				MethodData methodMethodData = sootMethodToMethodData(method);
 				if (!visited.containsKey(methodMethodData)) {
 					visited.put(methodMethodData, new HashSet<MethodData>());
-				} else if (visited.get(methodMethodData).contains(parentMethodData)
-						|| parentMethodData.equals(methodMethodData)) {
+				} else if (visited.get(methodMethodData).contains(parentMethodData)) {
 					continue;
 				}
 

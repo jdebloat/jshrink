@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.jar.JarFile;
 
 import com.google.common.collect.Sets;
+import edu.ucla.cs.onr.methodinliner.InlineData;
+import edu.ucla.cs.onr.methodinliner.MethodInliner;
 import edu.ucla.cs.onr.reachability.*;
 import edu.ucla.cs.onr.util.EntryPointUtil;
 import edu.ucla.cs.onr.util.SootUtils;
@@ -14,6 +16,8 @@ import edu.ucla.cs.onr.util.ClassFileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import soot.*;
 
+import static edu.ucla.cs.onr.util.SootUtils.convertSootMethodCallGraphToMethodDataCallGraph;
+
 // TODO: We rely on the output of this application when in "--verbose" mode. This is currently a bit of a mess
 // ,I suggest we use a logger to manage this better
 
@@ -21,13 +25,16 @@ public class Application {
 
 	private static boolean DEBUG_MODE = true; //Enabled by default, needed for testing
 	private static boolean VERBOSE_MODE = false;
-	private static Set<File> decompressedJars = new HashSet<File>();
+	private static final Set<File> decompressedJars = new HashSet<File>();
 
-	//I use this for testing, to see if the correct methods have been removed
-	/*package*/ static Set<MethodData> removedMethods = new HashSet<MethodData>();
+	//I use this for testing to see if the correct methods have been removed
+	/*package*/ static final Set<MethodData> removedMethods = new HashSet<MethodData>();
 
-	//I use this for testing, to see if the correct classes have been removed
-	/*package*/ static Set<String> removedClasses = new HashSet<String>();
+	//I use this for testing to see if the correct classes have been removed
+	/*package*/ static final Set<String> removedClasses = new HashSet<String>();
+
+	//I use this for testing to see if the correct methods have been inlined.
+	/*package*/ static InlineData inlineData = null;
 
 	//I use the following for testing to ensure the right kind of method wipe has been used
 	/*package*/ static boolean removedMethod = false;
@@ -56,6 +63,7 @@ public class Application {
 		decompressedJars.clear();
 		removedClasses.clear();
 		classesToIgnore.clear();
+		inlineData = null;
 		removedMethod = false;
 		wipedMethodBody = false;
 		wipedMethodBodyWithExceptionNoMessage = false;
@@ -145,9 +153,9 @@ public class Application {
 				}
 			}
 
-			extractJars(projectAnalyser.getAppClasspaths());
-			extractJars(projectAnalyser.getLibClasspaths());
-			extractJars(projectAnalyser.getTestClasspaths());
+			decompressedJars.addAll(ClassFileUtils.extractJars(projectAnalyser.getAppClasspaths()));
+			decompressedJars.addAll(ClassFileUtils.extractJars(projectAnalyser.getLibClasspaths()));
+			decompressedJars.addAll(ClassFileUtils.extractJars(projectAnalyser.getTestClasspaths()));
 
 			if(Application.isVerboseMode()){
 				for(File file : projectAnalyser.getAppClasspaths()){
@@ -167,8 +175,36 @@ public class Application {
 			Set<SootClass> classesToRemove = new HashSet<SootClass>(); //Take note of all classes that need to be removed
 			Set<File> classPathsOfConcern = new HashSet<File>(); //The classpaths where these classes can be found
 
-			//Note the unused Library methods
+			//Get classpaths of concern
 			classPathsOfConcern.addAll(projectAnalyser.getLibClasspaths());
+			if(commandLineParser.isPruneAppInstance()){
+				classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
+			}
+
+			//Inline methods
+			if(commandLineParser.inlineMethods()){
+				Map<SootMethod, Set<SootMethod>> callGraph =
+						commandLineParser.isPruneAppInstance() ? SootUtils.mergeCallGraphMaps(
+								SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(
+										projectAnalyser.getUsedLibMethodsCompileOnly()),
+								SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(
+										projectAnalyser.getUsedAppMethods()))
+								: SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(
+										projectAnalyser.getUsedLibMethodsCompileOnly());
+				inlineData = MethodInliner.inlineMethods(callGraph, classPathsOfConcern);
+				classesToRewrite.addAll(inlineData.getClassesModified());
+				if(Application.isVerboseMode()){
+					for(Map.Entry<String, Set<String>> entry : inlineData.getInlineLocations().entrySet()){
+						//inline_<method inlined>,<ultimate inline location>
+						System.out.println("inline_"+entry.getKey() + ","
+								+ inlineData.getUltimateInlineLocations(entry.getKey()).get());
+					}
+				}
+			}
+
+
+
+			//Note the unused Library methods
 			for(MethodData methodData : projectAnalyser.getLibMethodsCompileOnly()){
 				if(!classesToIgnore.contains(methodData.getClassName())
 				&& !projectAnalyser.getUsedLibMethodsCompileOnly().keySet().contains(methodData)){
@@ -178,7 +214,6 @@ public class Application {
 
 			//Note the unused app methods (if applicable)
 			if (commandLineParser.isPruneAppInstance()) {
-				classPathsOfConcern.addAll(projectAnalyser.getAppClasspaths());
 				for(MethodData methodData : projectAnalyser.getAppMethods()){
 					if(!classesToIgnore.contains(methodData.getClassName())
 					&& !projectAnalyser.getUsedAppMethods().keySet().contains(methodData)){
@@ -187,6 +222,7 @@ public class Application {
 				}
 			}
 
+			//Note removed classes
 			if(commandLineParser.removeClasses()) {
 				//Not the classes in which all the methods are removed
 				Map<SootClass, Set<MethodData>> classIntCount = new HashMap<SootClass, Set<MethodData>>();
@@ -204,7 +240,6 @@ public class Application {
 
 				for (Map.Entry<SootClass, Set<MethodData>> entry : classIntCount.entrySet()) {
 					if (entry.getValue().isEmpty()) {
-
 						SootClass sootClass = entry.getKey();
 						boolean containsAccessibleStaticFields = false;
 						for (SootField sootField : sootClass.getFields()) {
@@ -259,6 +294,7 @@ public class Application {
 				}
 			}
 
+
 			removeClasses(classesToRemove,classPathsOfConcern);
 			modifyClasses(classesToRewrite,classPathsOfConcern);
 
@@ -288,7 +324,7 @@ public class Application {
 			e.printStackTrace();
 		} finally{
 			try {
-				compressJars();
+				ClassFileUtils.compressJars(decompressedJars);
 				if(Application.isVerboseMode()){
 					for(File file : projectAnalyser.getAppClasspaths()){
 						System.out.println("app_size_after_debloat_" + file.getAbsolutePath() + ","
@@ -332,34 +368,6 @@ public class Application {
 				e.printStackTrace();
 				System.exit(1);
 			}
-		}
-	}
-
-	private static void extractJars(List<File> classPaths) throws IOException{
-		for(File file : new HashSet<File>(classPaths)){
-			JarFile jarFile = null;
-			try {
-				jarFile = new JarFile(file);
-			} catch (IOException e) {
-				continue;
-			}
-
-			assert(jarFile != null);
-
-			ClassFileUtils.decompressJar(file);
-			decompressedJars.add(file);
-		}
-	}
-
-	private static void compressJars() throws IOException {
-		for(File file : decompressedJars){
-			if(!file.exists()){
-				System.out.println("File '" + file.getAbsolutePath() + "' does not exist");
-			} else if(!file.isDirectory()){
-				System.out.println("File '" + file.getAbsolutePath() + "' is not a directory");
-			}
-			assert(file.exists() && file.isDirectory());
-			ClassFileUtils.compressJar(file);
 		}
 	}
 }

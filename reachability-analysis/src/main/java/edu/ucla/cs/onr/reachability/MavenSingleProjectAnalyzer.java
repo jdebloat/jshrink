@@ -3,6 +3,7 @@ package edu.ucla.cs.onr.reachability;
 import java.io.*;
 import java.util.*;
 
+import edu.ucla.cs.onr.util.ClassFileUtils;
 import org.apache.commons.io.FileUtils;
 
 import soot.G;
@@ -222,29 +223,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				lib_class_paths.put(artifact_id, new ArrayList<File>());
 				for(String path: cps){
 					File pathFile = new File(path);
-					if(!path.isEmpty() && pathFile.exists() && directoryContains(root_dir,pathFile)) {
+					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)) {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}
 			}
 		}
-	}
-
-	private static boolean directoryContains(File dir, File file){
-		/* To find if a file is within a directory, we simply keep calling file.getParentFile(), until we find
-		a parent directory equal to the directory. We will eventually get to a point where file.getParentFile() == null
-		in the case where a file is not within a directory.
-		*/
-
-		if(file.getParentFile() == null){
-			return false;
-		}
-
-		if(file.getParentFile().equals(dir)){
-			return true;
-		}
-
-		return directoryContains(dir, file.getParentFile());
 	}
 
 	private static void addToMap(Map<MethodData, Set<MethodData>> map, MethodData key, Collection<MethodData> elements){
@@ -611,7 +595,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					new HashSet<String>(Arrays.asList(cp_compile_only.split(File.pathSeparator)));
 			for(String classPath : compile_lib_paths){
 				File toAdd = new File(classPath);
-				if(directoryContains(new File(this.project_path), toAdd)) {
+				if(ClassFileUtils.directoryContains(new File(this.project_path), toAdd)) {
 					toReturn.add(new File(classPath));
 				}
 			}

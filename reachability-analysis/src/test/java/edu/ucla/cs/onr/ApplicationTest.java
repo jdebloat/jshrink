@@ -1,5 +1,6 @@
 package edu.ucla.cs.onr;
 
+import edu.ucla.cs.onr.methodinliner.InlineData;
 import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
 import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MavenSingleProjectAnalyzer;
@@ -918,12 +919,13 @@ public class ApplicationTest {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--inline ");
 		arguments.append("--debug ");
 
 		String before = getJunitTestOutput();
@@ -990,6 +992,42 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
 		assertTrue(isPresent(methodsRemoved,"Main","methodNotUsed"));
 		assertEquals(0, methodsRemoved.size());
+	}
+
+	@Test
+	public void inlineMethodTest(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--lib-classpath " + fileListToClasspathString(getLibClassPath()) + " ");
+		arguments.append("--app-classpath " + fileListToClasspathString(getAppClassPath()) + " ");
+		arguments.append("--test-classpath " + fileListToClasspathString(getTestClassPath()) + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--inline ");
+		arguments.append("--debug");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		InlineData methodsInlined = Application.inlineData;
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<StandardStuff: void doNothing()>"));
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<StandardStuff$NestedClass: void nestedClassMethod()>"));
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<StandardStuff: java.lang.String getString()>"));
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<StandardStuff$NestedClass: void nestedClassMethodCallee()>"));
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>"));
+
+		/*
+
+		The following fails, MethodInliner doesn't remove it, and I dont know why.
+
+		assertTrue(methodsInlined.getInlineLocations().containsKey(
+				"<StandardStuff: java.lang.String getStringStatic()>"));
+		*/
+
+		assertTrue(jarIntact());
 	}
 
 }

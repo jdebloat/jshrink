@@ -30,6 +30,7 @@ public class ApplicationCommandLineParser {
 	private final Optional<File> tamiflex;
 	private final boolean removeClasses;
 	private final boolean spark;
+	private final boolean inlineMethods;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -158,6 +159,7 @@ public class ApplicationCommandLineParser {
 
 		this.removeClasses = commandLine.hasOption("o");
 		this.spark = commandLine.hasOption("k");
+		this.inlineMethods = commandLine.hasOption("I");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -340,6 +342,13 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option inlineMethodsOption = Option.builder("I")
+				.desc("Inline methods that are only called from one location")
+				.longOpt("inline")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -359,6 +368,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(verboseMove);
 		toReturn.addOption(removeMethodsOption);
 		toReturn.addOption(helpOption);
+		toReturn.addOption(inlineMethodsOption);
 
 		return toReturn;
 	}
@@ -446,4 +456,8 @@ public class ApplicationCommandLineParser {
 	}
 
 	public boolean useSpark(){return this.spark;}
+
+	public boolean inlineMethods(){
+		return this.inlineMethods;
+	}
 }

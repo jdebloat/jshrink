@@ -14,9 +14,7 @@ import soot.util.JasminOutputStream;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import java.util.jar.JarFile;
 
 public class ClassFileUtils {
@@ -41,7 +39,7 @@ public class ClassFileUtils {
 		return length;
 	}
 
-	private static Optional<File> getClassFile(SootClass sootClass, Collection<File> paths) {
+	public static Optional<File> getClassFile(SootClass sootClass, Collection<File> paths) {
 		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
 
 		for (File p : paths) {
@@ -221,5 +219,52 @@ public class ClassFileUtils {
 			}
 			FileUtils.moveFile(file, original);
 		}
+	}
+
+	public static Set<File> extractJars(List<File> classPaths) throws IOException{
+		Set<File> decompressedJars = new HashSet<File>();
+		for(File file : new HashSet<File>(classPaths)){
+			JarFile jarFile = null;
+			try {
+				jarFile = new JarFile(file);
+			} catch (IOException e) {
+				continue;
+			}
+
+			assert(jarFile != null);
+
+			ClassFileUtils.decompressJar(file);
+			decompressedJars.add(file);
+		}
+		return decompressedJars;
+	}
+
+	public static void compressJars(Set<File> decompressedJars) throws IOException {
+		for(File file : decompressedJars){
+			if(!file.exists()){
+				System.out.println("File '" + file.getAbsolutePath() + "' does not exist");
+			} else if(!file.isDirectory()){
+				System.out.println("File '" + file.getAbsolutePath() + "' is not a directory");
+			}
+			assert(file.exists() && file.isDirectory());
+			ClassFileUtils.compressJar(file);
+		}
+	}
+
+	public static boolean directoryContains(File dir, File file){
+		/* To find if a file is within a directory, we simply keep calling file.getParentFile(), until we find
+		a parent directory equal to the directory. We will eventually get to a point where file.getParentFile() == null
+		in the case where a file is not within a directory.
+		*/
+
+		if(file.getParentFile() == null){
+			return false;
+		}
+
+		if(file.getParentFile().equals(dir)){
+			return true;
+		}
+
+		return directoryContains(dir, file.getParentFile());
 	}
 }
