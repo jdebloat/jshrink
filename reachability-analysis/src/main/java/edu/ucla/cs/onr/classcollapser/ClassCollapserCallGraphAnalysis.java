@@ -13,9 +13,6 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
-import java.io.File;
-import java.util.*;
-
 public class ClassCollapserCallGraphAnalysis {
 	public static boolean useSpark = true; // use Spark by default
 
@@ -24,43 +21,42 @@ public class ClassCollapserCallGraphAnalysis {
 	private final List<File> appTestPath;
 	private final Set<MethodData> entryMethods;
 	private final Set<String> libClasses;
+	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
+	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<String> usedLibClasses;
-	private final Set<String> touchedLibClasses;
 	private final Set<MethodData> usedLibMethods;
 	private final Set<String> usedAppClasses;
-	private final Set<String> touchedAppClasses;
 	private final Set<MethodData> usedAppMethods;
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
 
 	public ClassCollapserCallGraphAnalysis(List<File> libJarPath,
-                                           List<File> appClassPath,
-                                           List<File> appTestPath,
-                                           EntryPointProcessor entryPointProc) {
+										   List<File> appClassPath,
+										   List<File> appTestPath,
+										   EntryPointProcessor entryPointProc) {
 		this.libJarPath = libJarPath;
 		this.appClassPath = appClassPath;
 		this.appTestPath = appTestPath;
 		this.entryMethods = new HashSet<MethodData>();
 
 		libClasses = new HashSet<String>();
+		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
+		methodToLib = new HashMap<MethodData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		usedLibClasses = new HashSet<String>();
-		touchedLibClasses = new HashSet<String>();
 		usedLibMethods = new HashSet<MethodData>();
 		usedAppClasses = new HashSet<String>();
-		touchedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashSet<MethodData>();
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		entryPointProcessor = entryPointProc;
 	}
-
 
 	public void setup() {
 		/* Setup is used to get the app/test/lib classpath information. In ClassGraphAnalysis, this is given via the
@@ -68,7 +64,6 @@ public class ClassCollapserCallGraphAnalysis {
 		 */
 	}
 
-	
 	public void run() {
 		// 1. use ASM to find all classes and methods
 		this.findAllClassesAndMethods();
@@ -142,14 +137,15 @@ public class ClassCollapserCallGraphAnalysis {
 		} else {
 			CHATransformer.v().transform();
 		}
-		
 
+//		System.out.println("call graph analysis starts.");
+//		System.out.println(entryPoints.size() + " entry points.");
 		CallGraph cg = Scene.v().getCallGraph();
+//		System.out.println("call graph analysis done.");
 
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
 		Set<String> usedClasses = new HashSet<String>();
 
-		Set<String> visited = new HashSet<String>();
 		for (SootMethod entryMethod : entryPoints) {
 			SootUtils.visitMethodClassCollapser(entryMethod, cg, usedClasses, usedMethods);
 		}
@@ -167,36 +163,37 @@ public class ClassCollapserCallGraphAnalysis {
 		this.usedAppMethods.retainAll(usedMethods);
 	}
 
-
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
 
+	public String getLibPathOfClass(String libClass) {
+		return this.classToLib.get(libClass);
+	}
 
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
+	public String getLibPathOfMethod(MethodData methodData) {
+		return this.methodToLib.get(methodData);
+	}
 
 	public Set<String> getAppClasses() {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
 
-
 	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
-
 
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
 	}
 
-
 	public Set<MethodData> getUsedLibMethods() {
 		return Collections.unmodifiableSet(this.usedLibMethods);
 	}
-
 
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
@@ -206,11 +203,9 @@ public class ClassCollapserCallGraphAnalysis {
 		return Collections.unmodifiableSet(this.usedAppMethods);
 	}
 
-
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);
 	}
-
 
 	public List<File> getLibClasspaths() {
 		return Collections.unmodifiableList(this.libJarPath);
@@ -221,11 +216,9 @@ public class ClassCollapserCallGraphAnalysis {
 		return Collections.unmodifiableList(this.appTestPath);
 	}
 
-
 	public Set<MethodData> getEntryPoints() {
 		return Collections.unmodifiableSet(this.entryMethods);
 	}
-
 
 	public Set<String> getUsedLibClassesCompileOnly() {
 		return this.getUsedLibClasses();
@@ -235,13 +228,13 @@ public class ClassCollapserCallGraphAnalysis {
 		return this.getUsedLibMethods();
 	}
 
-
 	public Set<String> getLibClassesCompileOnly() {
 		return this.getLibClasses();
 	}
 
-	
 	public Set<MethodData> getLibMethodsCompileOnly() {
 		return this.getLibMethods();
 	}
+
+	public Set<String> getTestClasses() {return this.testClasses;}
 }

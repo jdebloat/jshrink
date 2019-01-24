@@ -9,7 +9,7 @@ import soot.G;
 import java.io.*;
 import java.util.*;
 
-public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyser {
+public class ClassCollapserMavenSingleProjectAnalyzer {
 
     private String project_path;
 
@@ -37,7 +37,7 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
     private final Set<String> testClasses;
 
     public ClassCollapserMavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
-                                      Optional<File> tamiFlex) {
+                                                    Optional<File> tamiFlex) {
         project_path = pathToMavenProject;
 
         libClasses = new HashSet<String>();
@@ -96,7 +96,6 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
         }
     }
 
-    @Override
     public void setup(){
         File root_dir = new File(project_path);
 
@@ -233,7 +232,6 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
         return directoryContains(dir, file.getParentFile());
     }
 
-    @Override
     public void run() {
         File root_dir = new File(project_path);
 
@@ -493,72 +491,58 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
         this.usedAppMethods.addAll(used_lib_methods_copy);
     }
 
-    @Override
     public Set<String> getLibClasses() {
         return Collections.unmodifiableSet(this.libClasses);
     }
 
-    @Override
     public Set<MethodData> getLibMethods() {
         return Collections.unmodifiableSet(this.libMethods);
     }
 
-    @Override
     public Set<String> getLibClassesCompileOnly() {
         return Collections.unmodifiableSet(this.libClassesCompileOnly);
     }
 
-    @Override
     public Set<MethodData> getLibMethodsCompileOnly() {
         return Collections.unmodifiableSet(this.libMethodsCompileOnly);
     }
 
-    @Override
     public Set<String> getAppClasses() {
         return Collections.unmodifiableSet(this.appClasses);
     }
 
-    @Override
     public Set<MethodData> getAppMethods() {
         return Collections.unmodifiableSet(this.appMethods);
     }
 
-    @Override
     public Set<String> getUsedLibClasses() {
         return Collections.unmodifiableSet(this.usedLibClasses);
     }
 
-    @Override
     public Set<String> getUsedLibClassesCompileOnly() {
         return Collections.unmodifiableSet(this.usedLibClassesCompileOnly);
     }
 
-    @Override
     public Set<MethodData> getUsedLibMethods() {
         return Collections.unmodifiableSet(this.usedLibMethods);
     }
 
-    @Override
     public Set<MethodData> getUsedLibMethodsCompileOnly() {
         return Collections.unmodifiableSet(this.usedLibMethodsCompileOnly);
     }
 
-    @Override
     public Set<String> getUsedAppClasses() {
         return Collections.unmodifiableSet(this.usedAppClasses);
     }
 
-    @Override
     public Set<MethodData> getUsedAppMethods() {
         return Collections.unmodifiableSet(this.usedAppMethods);
     }
 
-    @Override
     public List<File> getAppClasspaths() {
         return Collections.unmodifiableList(getClassPath(this.app_class_paths));
     }
 
-    @Override
     public List<File> getLibClasspaths() {
 		/*
 		TODO: This is a bit of a mess --- really don't like this classpath/classpath_compile_only thing. It's a mess.
@@ -579,7 +563,6 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
         return Collections.unmodifiableList(toReturn);
     }
 
-    @Override
     public List<File> getTestClasspaths() {
         return Collections.unmodifiableList(getClassPath(this.app_test_paths));
     }
@@ -597,7 +580,6 @@ public class ClassCollapserMavenSingleProjectAnalyzer implements IProjectAnalyse
         return toReturn;
     }
 
-    @Override
     public Set<MethodData> getEntryPoints(){
         return this.entryPoints;
     }
