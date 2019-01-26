@@ -1,5 +1,6 @@
 package edu.ucla.cs.onr.methodwiper;
 
+import edu.ucla.cs.onr.util.SootUtils;
 import soot.*;
 import soot.jimple.*;
 import soot.util.NumberedString;
@@ -168,31 +169,6 @@ public class MethodWiper {
 		return stringWriter.getBuffer().length();
 	}
 
-	private static boolean validClass(SootClass sootClass){
-		/*
-		This is a cheap trick. Soot doesn't support every single bytecode structure in Java bytecode, and will throw an
-		error if trying to convert SootClass it does not understand to a JasminClass. Lambda expressions are a common
-		example of this, though I have observed some more obscure cases. I therefore convert the SootClass to the
-		JasminClass here. If there is an error thrown, I return false (i.e., we cannot remove this method).
-		 */
-		try {
-			for(SootMethod m: sootClass.getMethods()){
-				if(m.isConcrete()) {
-					m.retrieveActiveBody();
-				}
-			}
-
-			StringWriter stringWriter = new StringWriter();
-			PrintWriter writerOut = new PrintWriter(stringWriter);
-			JasminClass jasminClass = new JasminClass(sootClass);
-
-		}catch (Exception e){
-			return false;
-		}
-
-		return true;
-	}
-
 	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
 
 		if(sootMethod.isAbstract() || sootMethod.isNative()){
@@ -201,7 +177,7 @@ public class MethodWiper {
 
 		SootClass sootClass = sootMethod.getDeclaringClass();
 
-		if(!validClass(sootClass)){
+		if(!SootUtils.modifiableSootClass(sootClass)){
 			return false;
 		}
 
@@ -257,7 +233,7 @@ public class MethodWiper {
 		SootClass sootClass = sootMethod.getDeclaringClass();
 		int index =sootClass.getMethods().indexOf(sootMethod);
 		sootClass.getMethods().remove(sootMethod);
-		if(!validClass(sootClass)){
+		if(!SootUtils.modifiableSootClass(sootClass)){
 			//If not valid, re-add the method
 			sootClass.getMethods().add(index, sootMethod);
 			return false;

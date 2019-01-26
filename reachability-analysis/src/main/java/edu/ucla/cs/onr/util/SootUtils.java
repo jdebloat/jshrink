@@ -1,10 +1,13 @@
 package edu.ucla.cs.onr.util;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 
 import edu.ucla.cs.onr.reachability.MethodData;
 import soot.*;
+import soot.jimple.JasminClass;
 import soot.jimple.toolkits.callgraph.CallGraph;
 import soot.jimple.toolkits.callgraph.Targets;
 import soot.options.Options;
@@ -283,5 +286,31 @@ public class SootUtils {
 			//	visitMethodNonRecur(method, cg, usedClass, visited);
 			}
 		}
+	}
+
+	public static boolean modifiableSootClass(SootClass sootClass){
+		/*
+		This is a cheap trick. Soot doesn't support every single bytecode structure in Java bytecode, and will throw an
+		error if trying to convert SootClass it does not understand to a JasminClass. Lambda expressions are a common
+		example of this, though I have observed some more obscure cases. I therefore convert the SootClass to the
+		JasminClass here. If there is an error thrown, I return false (i.e., it should not be modified, we can't change
+		this class).
+		 */
+		try {
+			for(SootMethod m: sootClass.getMethods()){
+				if(m.isConcrete()) {
+					m.retrieveActiveBody();
+				}
+			}
+
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter writerOut = new PrintWriter(stringWriter);
+			JasminClass jasminClass = new JasminClass(sootClass);
+
+		}catch (Exception e){
+			return false;
+		}
+
+		return true;
 	}
 }
