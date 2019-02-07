@@ -97,6 +97,24 @@ public class MethodDataTest {
 	}
 
 	@Test
+	public void methodDataSignatureInit() throws IOException {
+		String signature =
+				"<com.example.Class1: void <init>(java.util.String, com.example.Class2, int)>";
+		MethodData methodData = new MethodData(signature);
+
+		assertFalse(methodData.getAnnotation().isPresent());
+		assertEquals("<init>", methodData.getName());
+		assertEquals("com.example.Class1", methodData.getClassName());
+		assertEquals("void", methodData.getReturnType());
+		assertEquals(3, methodData.getArgs().length);
+		assertEquals("java.util.String", methodData.getArgs()[0]);
+		assertEquals("com.example.Class2", methodData.getArgs()[1]);
+		assertEquals("int", methodData.getArgs()[2]);
+		assertFalse(methodData.isPublic());
+		assertFalse(methodData.isStatic());
+	}
+
+	@Test
 	public void testJUnit3Test() throws FileNotFoundException, IOException {
 		String testClassPath = "src/test/resources/RepeatedTestTest.class";
 		ClassReader cr = new ClassReader(new FileInputStream(testClassPath));

@@ -71,7 +71,7 @@ public class MethodData {
 		boolean publicMethod = methodString.toLowerCase().contains("public");
 		boolean staticMethod = methodString.toLowerCase().contains("static");
 
-		Pattern pattern = Pattern.compile("([a-zA-Z][a-zA-Z0-9_]*)(\\(.*\\))");
+		Pattern pattern = Pattern.compile("<?([a-zA-Z][a-zA-Z0-9_]*>?)(\\(.*\\))");
 		Matcher matcher = pattern.matcher(methodString);
 
 		if(!matcher.find()){
