@@ -88,6 +88,7 @@ public class MethodInlinerTest {
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
 		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
 
+		//TODO: This test is flaky. I don't know what's going on.
 		assertTrue(inlineData.getInlineLocations().containsKey(
 				"<StandardStuff$NestedClass: void nestedClassMethod()>"));
 		assertTrue(inlineData.getInlineLocations().containsKey(

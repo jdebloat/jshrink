@@ -1028,6 +1028,7 @@ public class ApplicationTest {
 
 		InlineData methodsInlined = Application.inlineData;
 
+		//TODO: This test is flaky. I don't know what's going on.
 		assertTrue(methodsInlined.getInlineLocations().containsKey(
 				"<StandardStuff$NestedClass: void nestedClassMethod()>"));
 		assertTrue(methodsInlined.getInlineLocations().containsKey(
