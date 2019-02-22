@@ -31,6 +31,7 @@ public class ApplicationCommandLineParser {
 	private final boolean removeClasses;
 	private final boolean spark;
 	private final boolean inlineMethods;
+	private final boolean classCollapse;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -160,6 +161,7 @@ public class ApplicationCommandLineParser {
 		this.removeClasses = commandLine.hasOption("o");
 		this.spark = commandLine.hasOption("k");
 		this.inlineMethods = commandLine.hasOption("I");
+		this.classCollapse = commandLine.hasOption("C");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -349,6 +351,13 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option classCollapserOption = Option.builder("C")
+				.desc("Collapse classes where appropriate")
+				.longOpt("class-collapser")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -369,6 +378,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(removeMethodsOption);
 		toReturn.addOption(helpOption);
 		toReturn.addOption(inlineMethodsOption);
+		toReturn.addOption(classCollapserOption);
 
 		return toReturn;
 	}
@@ -459,5 +469,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean inlineMethods(){
 		return this.inlineMethods;
+	}
+
+	public boolean collapseClasses(){
+		return this.classCollapse;
 	}
 }

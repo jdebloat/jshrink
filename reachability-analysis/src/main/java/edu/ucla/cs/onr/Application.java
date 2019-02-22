@@ -5,6 +5,8 @@ import java.util.*;
 import java.util.jar.JarFile;
 
 import com.google.common.collect.Sets;
+import edu.ucla.cs.onr.classcollapser.ClassCollapser;
+import edu.ucla.cs.onr.classcollapser.ClassCollapserAnalysis;
 import edu.ucla.cs.onr.methodinliner.InlineData;
 import edu.ucla.cs.onr.methodinliner.MethodInliner;
 import edu.ucla.cs.onr.reachability.*;
@@ -190,7 +192,7 @@ public class Application {
 								SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(
 										projectAnalyser.getUsedAppMethods()))
 								: SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(
-										projectAnalyser.getUsedLibMethodsCompileOnly());
+								projectAnalyser.getUsedLibMethodsCompileOnly());
 				inlineData = MethodInliner.inlineMethods(callGraph, classPathsOfConcern);
 				classesToRewrite.addAll(inlineData.getClassesModified());
 				if(Application.isVerboseMode()){
@@ -202,12 +204,42 @@ public class Application {
 				}
 			}
 
+			//Collapse classes
+			if(commandLineParser.collapseClasses()){
+				Set<String> classes = new HashSet<String>();
+				Set<String> usedClasses = new HashSet<String>();
+				Set<MethodData> usedMethods = new HashSet<MethodData>();
+				if(commandLineParser.isPruneAppInstance()) {
+					classes.addAll(projectAnalyser.getAppClasses());
+					usedClasses.addAll(projectAnalyser.getUsedAppClasses());
+					usedMethods.addAll(projectAnalyser.getUsedAppMethods().keySet());
+				}
+				classes.addAll(projectAnalyser.getLibClasses());
+				classes.addAll(projectAnalyser.getUsedLibClasses());
+				usedMethods.addAll(projectAnalyser.getUsedLibMethods().keySet());
+
+				ClassCollapserAnalysis classCollapserAnalysis
+						= new ClassCollapserAnalysis(classes, usedClasses,usedMethods);
+				classCollapserAnalysis.run();
+
+				ClassCollapser classCollapser = new ClassCollapser();
+				classCollapser.run(classCollapserAnalysis);
+
+				classesToRewrite.addAll(classCollapser.getClassesToRewrite());
+				classesToRemove.addAll(classCollapser.getClassesToRemove());
+				removedMethods.addAll(classCollapser.getRemovedMethods());
+				for(SootClass sootClass : classCollapser.getClassesToRemove()){
+					removedClasses.add(sootClass.getName());
+				}
+			}
+
 
 
 			//Note the unused Library methods
 			for(MethodData methodData : projectAnalyser.getLibMethodsCompileOnly()){
 				if(!classesToIgnore.contains(methodData.getClassName())
-				&& !projectAnalyser.getUsedLibMethodsCompileOnly().keySet().contains(methodData)){
+					&& !projectAnalyser.getUsedLibMethodsCompileOnly().keySet().contains(methodData)
+					&& !classesToRemove.contains(Scene.v().getSootClass(methodData.getClassName()))){
 					methodsToRemove.add(methodData);
 				}
 			}
@@ -216,7 +248,8 @@ public class Application {
 			if (commandLineParser.isPruneAppInstance()) {
 				for(MethodData methodData : projectAnalyser.getAppMethods()){
 					if(!classesToIgnore.contains(methodData.getClassName())
-					&& !projectAnalyser.getUsedAppMethods().keySet().contains(methodData)){
+						&& !projectAnalyser.getUsedAppMethods().keySet().contains(methodData)
+						&& !classesToRemove.contains(Scene.v().getSootClass(methodData.getClassName()))){
 						methodsToRemove.add(methodData);
 					}
 				}

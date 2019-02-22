@@ -1,9 +1,6 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-
+import edu.ucla.cs.onr.reachability.MethodData;
 import edu.ucla.cs.onr.util.ClassFileUtils;
 import edu.ucla.cs.onr.util.SootUtils;
 import org.junit.After;
@@ -13,16 +10,15 @@ import soot.jimple.InvokeStmt;
 import soot.options.Options;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
+import static org.junit.Assert.*;
+
 public class ClassCollapserTest {
-    private static SootClass getSootClassFromResources(String pathName, String className){
-//		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
-//		File classFile = new File(classLoader.getResource(className + ".class").getFile());
-        // the code above throws an exception about unfound resources
-        // below is a temporary patch
-        //TODO: Fix this --- cannot get load resources working across eclipse version. (Copied from MethodWiperTest)
-        File classFile = new File(pathName + className + ".class");
+
+    private static SootClass getSootClassFromResources(File path, String className){
+        File classFile = new File(path.getAbsolutePath() + File.separator + className + ".class");
 
         final String workingClasspath=classFile.getParentFile().getAbsolutePath();
         Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);
@@ -36,19 +32,54 @@ public class ClassCollapserTest {
         SootClass sClass = Scene.v().loadClassAndSupport(className);
         Scene.v().loadNecessaryClasses();
 
-
         return sClass;
     }
 
     @After
-    public void before(){
+    public void after(){
         G.reset();
     }
 
     @Test
+    public void classClassifierTest() throws IOException {
+        File overridePath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser/override/original").getFile());
+        SootClass A = getSootClassFromResources(overridePath,"A");
+        SootClass B = getSootClassFromResources(overridePath,"B");
+
+        Set<String> appClasses = new HashSet<String>();
+        appClasses.add(A.getName());
+        appClasses.add(B.getName());
+
+        Set<String> usedAppClasses = new HashSet<String>();
+        usedAppClasses.add(B.getName());
+
+        Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
+        for (SootMethod m : B.getMethods()) {
+            usedAppMethodData.add(new MethodData(m.getSignature()));
+        }
+
+        ClassCollapserAnalysis classCollapserAnalysis
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData);
+        classCollapserAnalysis.run();
+
+        ClassCollapser classCollapser = new ClassCollapser();
+        classCollapser.run(classCollapserAnalysis);
+
+        assertTrue(classCollapser.getClassesToRemove().contains(B));
+        assertEquals(1,classCollapser.getClassesToRemove().size());
+        assertTrue(classCollapser.getClassesToRewrite().contains(A));
+        assertEquals(1, classCollapser.getClassesToRewrite().size());
+    }
+
+    @Test
     public void mergeTwoClassesTest_override() {
-        SootClass A = getSootClassFromResources("src/test/resources/classcollapser/override/original/","A");
-        SootClass B = getSootClassFromResources("src/test/resources/classcollapser/override/original/","B");
+        File overridePath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser/override/original").getFile());
+        SootClass A = getSootClassFromResources(overridePath,"A");
+        SootClass B = getSootClassFromResources(overridePath,"B");
 
         assertEquals(2, A.getMethods().size());
         assertEquals(2, B.getMethodCount());
@@ -69,20 +100,15 @@ public class ClassCollapserTest {
                 assertEquals("\"class B\"", ((InvokeStmt)u).getInvokeExpr().getArg(0).toString());
             }
         }
-
-//        Set<File> classPathsOfConcern = new HashSet<File>();
-//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
-//        try {
-//            ClassFileUtils.writeClass(A, classPathsOfConcern);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
     }
 
     @Test
     public void mergeTwoClassesTest_field() {
-        SootClass A = getSootClassFromResources("src/test/resources/classcollapser/field/original/","A");
-        SootClass B = getSootClassFromResources("src/test/resources/classcollapser/field/original/","B");
+        File fieldPath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser/field/original").getFile());
+        SootClass A = getSootClassFromResources(fieldPath,"A");
+        SootClass B = getSootClassFromResources(fieldPath,"B");
 
         assertEquals(1, A.getFieldCount());
         assertEquals(1, B.getFieldCount());
@@ -96,9 +122,12 @@ public class ClassCollapserTest {
 
     @Test
     public void changeClassNameTest_override() {
-        SootClass A = getSootClassFromResources("src/test/resources/classcollapser/override/original/","A");
-        SootClass B = getSootClassFromResources("src/test/resources/classcollapser/override/original/","B");
-        SootClass main = getSootClassFromResources("src/test/resources/classcollapser/override/original/", "Main");
+        File overridePath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser/override/original").getFile());
+        SootClass A = getSootClassFromResources(overridePath,"A");
+        SootClass B = getSootClassFromResources(overridePath,"B");
+        SootClass main = getSootClassFromResources(overridePath, "Main");
 
         ClassCollapser.changeClassNamesInClass(main, B, A);
         for (SootMethod m: main.getMethods()) {
@@ -107,14 +136,55 @@ public class ClassCollapserTest {
                 assertNotEquals("B", l.getType().toString());
             }
         }
-//
-//        Set<File> classPathsOfConcern = new HashSet<File>();
-//        classPathsOfConcern.add(new File("src/test/resources/classcollapser/override/original/"));
-//        try {
-//            ClassFileUtils.writeClass(main, classPathsOfConcern);
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
     }
 
+    @Test
+    public void classClassifierTest_simpleCollapseExample() throws IOException{
+        File overridePath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser/simple-collapse-example/target/classes").getFile());
+        SootClass A = getSootClassFromResources(overridePath,"A");
+        SootClass B = getSootClassFromResources(overridePath,"B");
+        SootClass C = getSootClassFromResources(overridePath,"C");
+        SootClass Main = getSootClassFromResources(overridePath,"Main");
+
+        Set<String> appClasses = new HashSet<String>();
+        appClasses.add(A.getName());
+        appClasses.add(B.getName());
+        appClasses.add(C.getName());
+        appClasses.add(Main.getName());
+
+        Set<String> usedAppClasses = new HashSet<String>();
+        usedAppClasses.add(B.getName());
+        usedAppClasses.add(Main.getName());
+
+        Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
+        for (SootMethod m : B.getMethods()) {
+            usedAppMethodData.add(new MethodData(m.getSignature()));
+        }
+
+        ClassCollapserAnalysis classCollapserAnalysis
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData);
+        classCollapserAnalysis.run();
+
+        ClassCollapser classCollapser = new ClassCollapser();
+        classCollapser.run(classCollapserAnalysis);
+
+        assertEquals(1,classCollapser.getClassesToRemove().size());
+        assertTrue(classCollapser.getClassesToRemove().contains(B));
+        //I guess this isn't the responsibility of the ClassCollapser
+        // assertTrue(classCollapser.getClassesToRemove().contains(C));
+
+        assertEquals(2, classCollapser.getClassesToRewrite().size());
+        assertTrue(classCollapser.getClassesToRewrite().contains(A));
+        assertTrue(classCollapser.getClassesToRewrite().contains(Main));
+
+        assertNotNull(A.getMethodByName("getClassType"));
+        assertNotNull(A.getMethodByName("saySomething"));
+        assertNotNull(A.getMethodByName("uniqueToA"));
+        assertNotNull(A.getMethodByName("uniqueToB"));
+
+        SootMethod saySomething = A.getMethodByName("saySomething");
+        assertTrue(saySomething.retrieveActiveBody().toString().contains("\"I am class B\""));
+    }
 }

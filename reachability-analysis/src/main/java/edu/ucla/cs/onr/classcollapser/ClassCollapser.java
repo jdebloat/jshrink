@@ -1,34 +1,88 @@
 package edu.ucla.cs.onr.classcollapser;
 
-import edu.ucla.cs.onr.reachability.CallGraphAnalysis;
-import edu.ucla.cs.onr.reachability.EntryPointProcessor;
 import edu.ucla.cs.onr.reachability.MethodData;
-import edu.ucla.cs.onr.util.MethodBodyUtils;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.toolkits.invoke.SiteInliner;
-import soot.util.EmptyChain;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
-public class ClassCollapser implements IClassCollapser {
+public class ClassCollapser {
 
-	@Override
-	public void collapseClasses(List<File> libClassPath,
-                                List<File> appClassPath,
-                                Queue<ArrayList<String>> collapseList,
-                                Map<String, String> nameChangeList) {
-		
-	}
+    private final Set<SootClass> classesToRewrite;
+    private final Set<SootClass> classesToRemove;
+    private final Set<MethodData> removedMethods;
+
+
+    public ClassCollapser() {
+        this.classesToRemove = new HashSet<SootClass>();
+        this.classesToRewrite = new HashSet<SootClass>();
+        this.removedMethods = new HashSet<MethodData>();
+    }
+
+    public void run(ClassCollapserAnalysis classCollapserAnalysis){
+        HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
+
+        for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
+            String fromName = collapse.get(0);
+            String toName = collapse.get(1);
+            if (!nameToSootClass.containsKey(fromName)) {
+                nameToSootClass.put(fromName, Scene.v().loadClassAndSupport(fromName));
+            }
+            if (!nameToSootClass.containsKey(toName)) {
+                nameToSootClass.put(toName, Scene.v().loadClassAndSupport(toName));
+            }
+            SootClass from = nameToSootClass.get(fromName);
+            SootClass to = nameToSootClass.get(toName);
+
+            this.removedMethods.addAll(
+                    ClassCollapser.mergeTwoClasses(from, to,
+                            ((ClassCollapserAnalysis) classCollapserAnalysis).getProcessedUsedMethods()));
+
+            this.classesToRewrite.add(to);
+            this.classesToRemove.add(from);
+            for(SootMethod method : from.getMethods()){
+                try {
+                    this.removedMethods.add(new MethodData(method.getSignature()));
+                }catch(IOException e){
+                    e.printStackTrace();
+                    System.exit(1);
+                }
+            }
+        }
+
+        Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
+        for(String fromName: nameChangeList.keySet()) {
+            String toName = nameChangeList.get(fromName);
+            if (!nameToSootClass.containsKey(fromName)) {
+                nameToSootClass.put(fromName, Scene.v().loadClassAndSupport(fromName));
+            }
+            if (!nameToSootClass.containsKey(toName)) {
+                nameToSootClass.put(toName, Scene.v().loadClassAndSupport(toName));
+            }
+            SootClass from = nameToSootClass.get(fromName);
+            SootClass to = nameToSootClass.get(toName);
+            for (String className : classCollapserAnalysis.appClasses) {
+                if (!nameToSootClass.containsKey(className)) {
+                    nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
+                    SootClass sootClass = nameToSootClass.get(className);
+                    if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
+                        classesToRewrite.add(sootClass);
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Merges one soot class into another
      * @param from The class that will be merged from, and discarded (the super class)
      * @param to The class that will be merged into, and kept (the sub class)
+     * @return The set of methods that have been removed
      */
-    public static void mergeTwoClasses(SootClass from, SootClass to, Map<String, Set<String>> usedMethods) {
-        System.out.println(from.getMethodCount() + " " + to.getMethodCount());
+    /*package*/ static Set<MethodData> mergeTwoClasses(SootClass from, SootClass to, Map<String, Set<String>> usedMethods) {
+        Set<MethodData> toReturn = new HashSet<MethodData>();
         HashMap<String, SootField> originalFields = new HashMap<String, SootField>();
         for (SootField field : to.getFields()) {
             originalFields.put(field.getName(), field);
@@ -67,6 +121,12 @@ public class ClassCollapser implements IClassCollapser {
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));
+                    try {
+                        toReturn.add(new MethodData(method.getSignature()));
+                    }catch(IOException e){
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
                 }
                 to.getMethods().add(method);
             } else {
@@ -75,11 +135,18 @@ public class ClassCollapser implements IClassCollapser {
                 } else {
                     if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
                         to.getMethods().remove(originalMethods.get(method.getSubSignature()));
+                        try {
+                            toReturn.add(new MethodData(method.getSignature()));
+                        }catch(IOException e){
+                            e.printStackTrace();
+                            System.exit(1);
+                        }
                         to.getMethods().add(method);
                     }
                 }
             }
         }
+        return toReturn;
     }
 
     /**
@@ -87,9 +154,8 @@ public class ClassCollapser implements IClassCollapser {
      * @param c The class in which we are modifying the bodies
      * @param changeFrom The original name of the class to be changed
      * @param changeTo The new name of the class to be changed
-     */
-    @Deprecated
-    public static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
+    **/
+    /*package*/ static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
         assert c != changeFrom && c != changeTo;
         boolean changed = false;
         if (c.hasSuperclass() && c.getSuperclass().getName().equals(changeFrom.getName())) {
@@ -110,12 +176,12 @@ public class ClassCollapser implements IClassCollapser {
         for (SootMethod m: c.getMethods()) {
             changed = changed || changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
         }
-        System.out.printf("change name in %s, from %s to %s, result %d\n", c.getName(), changeFrom.getName(), changeTo.getName(), changed ? 1:0);
+
         return changed;
     }
 
+
     //Supporting method for changeClassNameInClass
-    @Deprecated
     private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo, boolean isAbstract) {
         boolean changed = false;
         if (m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
@@ -185,5 +251,17 @@ public class ClassCollapser implements IClassCollapser {
             }
         }
         return changed;
+    }
+
+    public Set<SootClass> getClassesToRewrite(){
+        return this.classesToRewrite;
+    }
+
+    public Set<SootClass> getClassesToRemove(){
+        return this.classesToRemove;
+    }
+
+    public Set<MethodData> getRemovedMethods(){
+        return this.removedMethods;
     }
 }

@@ -11,8 +11,8 @@ import soot.util.EmptyChain;
 
 import java.util.*;
 
-public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
-    private Set<String> appClasses;
+public class ClassCollapserAnalysis {
+    public Set<String> appClasses;
     private Set<String> usedAppClasses;
     public Map<String, Set<String>> usedAppMethods;
     private Set<String> processableLeaves;
@@ -143,35 +143,17 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
     }
 
     private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
-        System.out.printf("collapsable: from %s, to %s\n", from, to);
         if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
-            System.out.println("false annoymousinner");
             return false;
         }
         if (fromClass.isEnum() || toClass.isEnum()) {
-            System.out.println("false enum");
             return false;
         }
         if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || (!(fromClass.getFields() instanceof EmptyChain) && toClass.getFields() instanceof EmptyChain)) {
-            System.out.println("false interface");
             return false;
         }
         if (fromClass.isStatic() || toClass.isStatic()) {
-            System.out.println("false static");
             return false;
-        }
-
-        System.out.println("Used methods in " + from + ":");
-        if (usedAppMethods.containsKey(from)) {
-            for (String m: usedAppMethods.get(from)) {
-                System.out.println(m);
-            }
-        }
-        System.out.println("Used methods in " + to + ":");
-        if (usedAppMethods.containsKey(to)) {
-            for (String m: usedAppMethods.get(to)) {
-                System.out.println(m);
-            }
         }
 
         int numUsedChildren = 0;
@@ -195,16 +177,7 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         } else {
             return false;
         }
-        if (usedAppMethods.containsKey(from)) {
-            for (String m: usedAppMethods.get(from)) {
-                System.out.println(m);
-            }
-        }
-        if (usedAppMethods.containsKey(to)) {
-            for (String m: usedAppMethods.get(to)) {
-                System.out.println(m);
-            }
-        }
+
         return true;
     }
 
@@ -268,19 +241,19 @@ public class ClassCollapserAnalysis implements IClassCollapserAnalyser {
         }
     }
 
-    public Queue<ArrayList<String>> getCollapseList() {
+    /*package*/ Queue<ArrayList<String>> getCollapseList() {
         return collapseList;
     }
 
-    public Map<String, String> getNameChangeList() {
+    /*package*/ Map<String, String> getNameChangeList() {
         return nameChangeList;
     }
 
-    public Set<String> getRemoveList() {
+    /*package*/ Set<String> getRemoveList() {
         return removeList;
     }
 
-    public Map<String, Set<String>> getProcessedUsedMethods() {
+    /*package*/ Map<String, Set<String>> getProcessedUsedMethods() {
         return usedAppMethods;
     }
 }
