@@ -34,11 +34,12 @@ public class JShrink {
 	private Optional<Set<MethodData>> usedAppMethods = Optional.empty();
 	private Optional<Set<MethodData>> usedLibMethods = Optional.empty();
 	private Optional<IProjectAnalyser> projectAnalyser = Optional.empty();
+	private boolean projectAnalyserRun = false;
 	private Optional<Set<String>> allAppClasses = Optional.empty();
 	private Optional<Set<String>> allLibClasses = Optional.empty();
 	private Optional<Set<String>> usedAppClasses = Optional.empty();
 	private Optional<Set<String>> usedLibClasses = Optional.empty();
-	private Optional<Set<String>> classesToIgnore = Optional.empty();;
+	private Optional<Set<String>> classesToIgnore = Optional.empty();
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
 
@@ -117,7 +118,7 @@ public class JShrink {
 	}
 
 	private IProjectAnalyser getProjectAnalyser(){
-		//Will return setup and already run
+		//Will return setup, not guaranteed to have been run. Use "getProjectAnalyserRun" for this.
 		if(this.projectAnalyser.isPresent()){
 			return this.projectAnalyser.get();
 		}
@@ -128,14 +129,23 @@ public class JShrink {
 				this.entryPointProcessor, this.tamiflex, this.useSpark));
 
 		this.projectAnalyser.get().setup();
-		this.projectAnalyser.get().run();
-
-		G.reset();
-		SootUtils.setup_trimming(this.projectAnalyser.get().getLibClasspaths(),
-			this.projectAnalyser.get().getAppClasspaths(), this.projectAnalyser.get().getTestClasspaths());
-		Scene.v().loadNecessaryClasses();
 
 		return this.projectAnalyser.get();
+	}
+
+	private IProjectAnalyser getProjectAnalyserRun(){
+		IProjectAnalyser projectAnalyser = this.getProjectAnalyser();
+		if(!this.projectAnalyserRun){
+			projectAnalyser.run();
+
+			G.reset();
+			SootUtils.setup_trimming(this.projectAnalyser.get().getLibClasspaths(),
+				this.projectAnalyser.get().getAppClasspaths(), this.projectAnalyser.get().getTestClasspaths());
+			Scene.v().loadNecessaryClasses();
+
+			this.projectAnalyserRun = true;
+		}
+		return projectAnalyser;
 	}
 
 	public Set<MethodData> getAllAppMethods(){
@@ -143,7 +153,7 @@ public class JShrink {
 			return this.allAppMethods.get();
 		}
 
-		this.allAppMethods = Optional.of(this.getProjectAnalyser().getAppMethods());
+		this.allAppMethods = Optional.of(this.getProjectAnalyserRun().getAppMethods());
 		return this.allAppMethods.get();
 	}
 
@@ -152,7 +162,7 @@ public class JShrink {
 			return this.allLibMethods.get();
 		}
 
-		this.allLibMethods = Optional.of(this.getProjectAnalyser().getLibMethodsCompileOnly());
+		this.allLibMethods = Optional.of(this.getProjectAnalyserRun().getLibMethodsCompileOnly());
 		return this.allLibMethods.get();
 	}
 
@@ -161,7 +171,7 @@ public class JShrink {
 			return this.usedAppMethods.get();
 		}
 
-		this.usedAppMethods = Optional.of(this.getProjectAnalyser().getUsedAppMethods().keySet());
+		this.usedAppMethods = Optional.of(this.getProjectAnalyserRun().getUsedAppMethods().keySet());
 		return this.usedAppMethods.get();
 	}
 
@@ -170,7 +180,7 @@ public class JShrink {
 			return this.usedLibMethods.get();
 		}
 
-		this.usedLibMethods = Optional.of(this.getProjectAnalyser().getUsedLibMethodsCompileOnly().keySet());
+		this.usedLibMethods = Optional.of(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet());
 		return this.usedLibMethods.get();
 	}
 
@@ -179,7 +189,7 @@ public class JShrink {
 			return this.allAppClasses.get();
 		}
 
-		this.allAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyser().getAppClasses()));
+		this.allAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getAppClasses()));
 		return this.allAppClasses.get();
 	}
 
@@ -188,7 +198,7 @@ public class JShrink {
 			return this.allLibClasses.get();
 		}
 
-		this.allLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyser().getLibClassesCompileOnly()));
+		this.allLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getLibClassesCompileOnly()));
 		return this.allLibClasses.get();
 	}
 
@@ -197,7 +207,7 @@ public class JShrink {
 			return this.usedAppClasses.get();
 		}
 
-		this.usedAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyser().getUsedAppClasses()));
+		this.usedAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getUsedAppClasses()));
 		return this.usedAppClasses.get();
 	}
 
@@ -206,7 +216,7 @@ public class JShrink {
 			return this.usedLibClasses.get();
 		}
 
-		this.usedLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyser().getUsedLibClassesCompileOnly()));
+		this.usedLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getUsedLibClassesCompileOnly()));
 		return this.usedLibClasses.get();
 	}
 
@@ -251,8 +261,8 @@ public class JShrink {
 		}
 
 		HashMap<MethodData, Set<MethodData>> toAdd = new HashMap<MethodData, Set<MethodData>>();
-		toAdd.putAll(this.getProjectAnalyser().getUsedAppMethods());
-		toAdd.putAll(this.getProjectAnalyser().getUsedLibMethods());
+		toAdd.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
+		toAdd.putAll(this.getProjectAnalyserRun().getUsedLibMethods());
 
 		this.smallCallGraph = Optional.of(toAdd);
 		return this.smallCallGraph.get();
@@ -284,7 +294,7 @@ public class JShrink {
 			return this.classesToIgnore.get();
 		}
 
-		this.classesToIgnore = Optional.of(new HashSet<String>(this.getProjectAnalyser().classesToIgnore()));
+		this.classesToIgnore = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().classesToIgnore()));
 		return this.classesToIgnore.get();
 	}
 
@@ -383,6 +393,7 @@ public class JShrink {
 		this.usedAppMethods = Optional.empty();
 		this.usedLibMethods = Optional.empty();
 		this.projectAnalyser = Optional.empty();
+		this.projectAnalyserRun = false;
 		this.allAppClasses = Optional.empty();
 		this.allLibClasses = Optional.empty();
 		this.usedAppClasses = Optional.empty();
@@ -391,7 +402,46 @@ public class JShrink {
 		this.classesToModify.clear();
 		this.classesToRemove.clear();
 		G.reset();
+	}
 
+	private long getSize(boolean withJarsDecompressed, List<File> classPaths){
+		Set<File> decompressedJars = new HashSet<File>();
+		long toReturn = 0;
+		try {
+			if(withJarsDecompressed){
+				decompressedJars =
+					new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+			}
+
+			for(File file : classPaths){
+				toReturn+=ClassFileUtils.getSize(file);
+			}
+
+			ClassFileUtils.compressJars(decompressedJars);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return toReturn;
+	}
+
+	public long getLibSize(boolean withJarsDecompressed){
+		if(withJarsDecompressed){
+			return getSize(true,
+				this.getProjectAnalyser().getLibClasspaths());
+		} else {
+			return getSize(false, this.getProjectAnalyser().getLibClasspaths());
+		}
+	}
+
+	public long getAppSize(boolean withJarsDecompressed){
+		if(withJarsDecompressed){
+			return getSize(true,
+				this.getProjectAnalyser().getAppClasspaths());
+		} else {
+			return getSize(false, this.getProjectAnalyser().getAppClasspaths());
+		}
 	}
 
 	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){

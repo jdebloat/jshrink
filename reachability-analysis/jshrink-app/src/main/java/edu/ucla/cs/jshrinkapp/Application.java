@@ -4,7 +4,6 @@ import java.io.*;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.JShrink;
-import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapser;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
@@ -99,6 +98,11 @@ public class Application {
 
 		assert (jShrink != null);
 
+		if(commandLineParser.isVerbose()){
+			System.out.println("app_size_before," + jShrink.getAppSize(true));
+			System.out.println("libs_size_before," + jShrink.getLibSize(true));
+		}
+
 		if (commandLineParser.inlineMethods()) {
 			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
 		}
@@ -133,5 +137,11 @@ public class Application {
 		}
 
 		jShrink.updateClassFiles();
+
+
+		if(commandLineParser.isVerbose()){
+			System.out.println("app_size_after," + jShrink.getAppSize(true));
+			System.out.println("libs_size_after," + jShrink.getLibSize(true));
+		}
 	}
 }
