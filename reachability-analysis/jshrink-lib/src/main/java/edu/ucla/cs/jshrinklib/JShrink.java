@@ -56,8 +56,6 @@ public class JShrink {
 
 	//TODO: Yet to implement functionality to remove classes that are completely unused.
 
-	//TODO: Add some kind of logging information.
-
 
 
 	public static JShrink createInstance(File projectDir,

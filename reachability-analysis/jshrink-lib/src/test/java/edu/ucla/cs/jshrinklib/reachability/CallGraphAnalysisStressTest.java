@@ -48,7 +48,7 @@ public class CallGraphAnalysisStressTest {
         String cp_log = root_path + 
         		File.separator + project_folder + File.separator + "onr_classpath_new.log";       
 		lib_class_paths = new ArrayList<File>();
-		// TODO: currently we assume the maven project does not have any submodules
+		// We assume the maven project does not have any submodules
 		String firstClassPaths = MavenUtils.getClasspathsFromFile(new File(cp_log)).values().iterator().next();
         String[] paths = firstClassPaths.split(File.pathSeparator);
 		for(String path: paths){

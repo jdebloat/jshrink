@@ -19,12 +19,8 @@ import org.junit.Test;
 
 public class MethodWiperTest {
 	private static SootClass getSootClassFromResources(String className){
-//		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
-//		File classFile = new File(classLoader.getResource(className + ".class").getFile());
-		// the code above throws an exception about unfound resources
-		// below is a temporary patch
-		//TODO: Fix this --- cannot get load resources working across eclipse version.
-		File classFile = new File("src/test/resources/methodwiper/" + className + ".class");
+		File classFile = new File(MethodWiperTest.class
+			.getClassLoader().getResource("methodwiper" + File.separator + className + ".class").getFile());
 
 		final String workingClasspath=classFile.getParentFile().getAbsolutePath();
 		Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);

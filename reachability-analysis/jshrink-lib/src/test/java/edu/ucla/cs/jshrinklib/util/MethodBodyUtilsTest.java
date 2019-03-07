@@ -16,12 +16,8 @@ import static org.junit.Assert.assertFalse;
 
 public class MethodBodyUtilsTest {
     private static SootClass getSootClassFromResources(String pathName, String className){
-//		ClassLoader classLoader = MethodWiperTest.class.getClassLoader();
-//		File classFile = new File(classLoader.getResource(className + ".class").getFile());
-        // the code above throws an exception about unfound resources
-        // below is a temporary patch
-        //TODO: Fix this --- cannot get load resources working across eclipse version. (Copied from MethodWiperTest)
-        File classFile = new File(pathName + className + ".class");
+        File classFile = new File(
+            MethodBodyUtils.class.getClassLoader().getResource(pathName + className + ".class").getFile());
 
         final String workingClasspath=classFile.getParentFile().getAbsolutePath();
         Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);
@@ -47,8 +43,10 @@ public class MethodBodyUtilsTest {
 
     @Test
     public void isEmptyConstructorTest_noConstructor() {
-        SootClass A = getSootClassFromResources("src/test/resources/methodbodyutils/no_constructor/", "A");
-        SootClass B = getSootClassFromResources("src/test/resources/methodbodyutils/no_constructor/", "B");
+        SootClass A = getSootClassFromResources("methodbodyutils"
+            + File.separator + "no_constructor" + File.separator, "A");
+        SootClass B = getSootClassFromResources("methodbodyutils"
+            + File.separator + "no_constructor" + File.separator, "B");
 
         assertTrue(MethodBodyUtils.isEmptyConstructor(A.getMethodByName("<init>")));
         assertTrue(MethodBodyUtils.isEmptyConstructor(B.getMethodByName("<init>")));
@@ -56,8 +54,10 @@ public class MethodBodyUtilsTest {
 
     @Test
     public void isEmptyConstructorTest_emptyConstructor() {
-        SootClass A = getSootClassFromResources("src/test/resources/methodbodyutils/empty_constructor/", "A");
-        SootClass B = getSootClassFromResources("src/test/resources/methodbodyutils/empty_constructor/", "B");
+        SootClass A = getSootClassFromResources("methodbodyutils"
+            + File.separator + "empty_constructor" + File.separator, "A");
+        SootClass B = getSootClassFromResources("methodbodyutils"
+            + File.separator + "empty_constructor" + File.separator, "B");
 
         assertTrue(MethodBodyUtils.isEmptyConstructor(A.getMethodByName("<init>")));
         assertTrue(MethodBodyUtils.isEmptyConstructor(B.getMethodByName("<init>")));
@@ -65,7 +65,8 @@ public class MethodBodyUtilsTest {
 
     @Test
     public void isEmptyConstructorTest_constructorWithBody() {
-        SootClass A = getSootClassFromResources("src/test/resources/methodbodyutils/constructor_with_body/", "A");
+        SootClass A = getSootClassFromResources("methodbodyutils"
+            + File.separator + "constructor_with_body" + File.separator, "A");
 
         assertFalse(MethodBodyUtils.isEmptyConstructor(A.getMethodByName("<init>")));
 
@@ -73,8 +74,10 @@ public class MethodBodyUtilsTest {
 
     @Test
     public void isEmptyConstructorTest_parameterMismatch() {
-        SootClass A = getSootClassFromResources("src/test/resources/methodbodyutils/constructor_with_parameter/", "A");
-        SootClass B = getSootClassFromResources("src/test/resources/methodbodyutils/constructor_with_parameter/", "B");
+        SootClass A = getSootClassFromResources("methodbodyutils"
+            + File.separator + "constructor_with_parameter" + File.separator, "A");
+        SootClass B = getSootClassFromResources("methodbodyutils"
+            + File.separator + "constructor_with_parameter" + File.separator, "B");
 
         assertFalse(MethodBodyUtils.isEmptyConstructor(B.getMethodByName("<init>")));
     }

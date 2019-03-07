@@ -29,7 +29,7 @@ public class ASMUtils {
                 } catch (IllegalArgumentException ex) {
                 	continue;
                 } catch (IOException ex){
-	                //TODO: Fix this. Not sure if here is the best way to handle it, but ok for the meantime
+	                //Not sure if here is the best way to handle it, but ok for the meantime
                     System.err.println("An an exception was thrown when reading data from .jar file:");
                     ex.printStackTrace();
                     System.exit(1);
@@ -111,10 +111,6 @@ public class ASMUtils {
 	public static void writeClass(String filePath, ClassWriter writer) {
 		File originalFile = new File(filePath);
 		try {
-			//if (Application.isDebugMode()) { // removed due to refactor. TODO: Still
-			//	File copyLocation = new File(filePath + ClassFileUtils.ORIGINAL_FILE_POST_FIX);
-			//	FileUtils.copyFile(originalFile, copyLocation);
-			//}
 			FileOutputStream outputStream = new FileOutputStream(originalFile);
 			outputStream.write(writer.toByteArray());
 			outputStream.close();

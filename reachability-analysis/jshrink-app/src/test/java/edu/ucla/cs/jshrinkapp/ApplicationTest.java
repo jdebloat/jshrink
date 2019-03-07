@@ -496,8 +496,6 @@ public class ApplicationTest {
 
 	@Test
 	public void mavenTest_mainMethodEntry_withOutTamiFlex(){
-		//Warning: This test takes a while! 6 minutes on my system
-		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
@@ -541,8 +539,6 @@ public class ApplicationTest {
 	@Test 
 //	@Ignore
 	public void mavenTest_mainMethodEntry_withTamiFlex(){
-		//Warning: This test takes a while! 6 minutes on my system
-		//TODO: The big overhead is the deletion of unused methods. Perhaps we should look into this
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
