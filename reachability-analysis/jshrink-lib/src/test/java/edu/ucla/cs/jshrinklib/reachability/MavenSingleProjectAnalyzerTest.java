@@ -3,10 +3,7 @@ package edu.ucla.cs.jshrinklib.reachability;
 import static org.junit.Assert.*;
 
 import edu.ucla.cs.jshrinklib.GitGetter;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import soot.G;
 
@@ -37,7 +34,11 @@ public class MavenSingleProjectAnalyzerTest {
 		return toReturn;
 	}
 
-	@Test
+	/*
+	I'm ignoring most of these these tests as they are just too intense for a quick test.
+	 */
+
+	@Test @Ignore
 	public void testMavenProjectWithNoSubmodulesSparkOnly() {
 		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
@@ -57,7 +58,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(1474, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithNoSubmodulesBothSparkAndTamiFlex() {
 
 		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
@@ -76,7 +77,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(1567, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithOneSubmoduleSparkOnly() {
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = gitGetter.addGitHubProject("google","gson",
@@ -96,7 +97,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(930, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithOneSubmoduleBothSparkAndTamiFlex() {
 
 		// the gson project has many submodules but only one submodule is actually built
@@ -116,7 +117,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(940, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodulesSparkOnly() {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
@@ -137,7 +138,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(195, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodulesBothSparkAndTamiFlex() {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
@@ -157,7 +158,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(195, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodules2SparkOnly() {
 		// the cglib project has five modules
 		// four of them have java class files and only two of them 
@@ -181,7 +182,7 @@ public class MavenSingleProjectAnalyzerTest {
 	/**
 	 * Note that injecting TamiFlex causes many test failures in this project.
 	 */
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodules2SparkAndTamiFlex() {
 		// the cglib project has five modules
 		// four of them have java class files and only two of them 
@@ -202,7 +203,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(903, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodules3SparkOnly() {
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
@@ -221,11 +222,12 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(323, runner.getUsedAppMethods().size());
 	}
 	
-	@Test
+	@Test @Ignore
 	public void testMavenProjectWithMultiSubmodules3BothSparkAndTamiFlex() {
 		
 		// the pf4j project has two submodules and one of them has two subsubmodules
-		String pf4j_project = "/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j";
+		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
+			new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -253,7 +255,7 @@ public class MavenSingleProjectAnalyzerTest {
 		Map<MethodData, Set<MethodData>> usedLibMethods = runner.getUsedLibMethods();
 
 		Optional<Set<MethodData>> anotherMain =
-				get(usedAppMethods, "edu.ucla.cs.jshrinkapp.test.another.Main", "main");
+				get(usedAppMethods, "edu.ucla.cs.onr.test.another.Main", "main");
 		assertTrue(anotherMain.isPresent());
 		assertEquals(0, anotherMain.get().size());
 
@@ -274,13 +276,13 @@ public class MavenSingleProjectAnalyzerTest {
 		assertTrue(contains(standardStuffGetString.get(), "Main", "main"));
 
 		Optional<Set<MethodData>> libraryClassInit =
-				get(usedLibMethods, "edu.ucla.cs.jshrinkapp.test.LibraryClass", "<init>");
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "<init>");
 		assertTrue(libraryClassInit.isPresent());
 		assertEquals(1, libraryClassInit.get().size());
 		assertTrue(contains(libraryClassInit.get(), "Main", "main"));
 
 		Optional<Set<MethodData>> libraryClassgetNumber =
-				get(usedLibMethods, "edu.ucla.cs.jshrinkapp.test.LibraryClass", "getNumber");
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "getNumber");
 		assertTrue(libraryClassgetNumber.isPresent());
 		assertEquals(1, libraryClassgetNumber.get().size());
 		assertTrue(contains(libraryClassgetNumber.get(), "Main", "main"));
@@ -330,7 +332,7 @@ public class MavenSingleProjectAnalyzerTest {
 	 * org/jctools/queues/blocking/TemplateBlocking.java to resolve this NPE
 	 * Tried to catch it outside of Soot but couldn't
 	 */
-	@Test
+	@Test @Ignore
 	public void testNPEInJCTools() {
 		String jctools_project = gitGetter.addGitHubProject("JCTools","JCTools",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools")).getAbsolutePath();
@@ -341,7 +343,7 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.run();
 	}
 
-	@Test
+	@Test @Ignore
 	public void testClassResolution() {
 		String project = gitGetter.addGitHubProject("davidmoten","rxjava-extras",
 				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras"))

@@ -197,7 +197,7 @@ public class TamiFlexTest {
 		assertTrue(result);
 	}
 	
-	@Test
+	@Test @Ignore //This just takes too long...
 	public void testRunMavenTest2() throws IOException, InterruptedException {
 		String project_path = "src/test/resources/square_okhttp";
 		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
