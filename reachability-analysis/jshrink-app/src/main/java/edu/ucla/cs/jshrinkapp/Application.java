@@ -58,6 +58,7 @@ public class Application {
 
 		assert (commandLineParser != null);
 
+		//TODO: Classes in which all methods are removed, and have no fields that are accessed, should be removed.
 
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(commandLineParser.includeMainEntryPoint(),
 			commandLineParser.includePublicEntryPoints(),
