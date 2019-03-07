@@ -1,0 +1,389 @@
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[47529] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$3 execute
+INFO: MockWebServer[57533] connection from localhost/127.0.0.1 failed: java.net.SocketException: Broken pipe (Write failed)
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[47529] received request: GET / HTTP/1.1 and responded: HTTP/1.1 401 Client Error protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[47529] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:40043/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:53119/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:33113/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:57529/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:40583/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:33827/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:41843/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:60329/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.internal.platform.Platform log
+WARNING: A connection to http://localhost:34075/ was leaked. Did you forget to close a response body? To see where this was allocated, set the OkHttpClient logger level to FINE: Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[47529] received request: GET / HTTP/1.1 and responded: HTTP/1.1 301 Redirection protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[47529] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[47529] done accepting connections: Socket closed
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[47341] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[47341] done accepting connections: Socket closed
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[46999] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46999] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[46999] done accepting connections: Socket closed
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[47657] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[47657] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[47657] done accepting connections: Socket closed
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[54793] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[54793] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 Sweet protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[54793] done accepting connections: Socket closed
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[46385] starting to accept connections
+Feb 08, 2019 12:42:03 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46385] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46385] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46385] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46385] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[46385] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[45273] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[45273] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[45273] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[46343] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46343] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[46343] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[52317] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[52317] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[45163] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[45163] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[45163] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[46303] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46303] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[46303] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[46303] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[56905] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[56905] received request: GET / HTTP/1.1 and responded: HTTP/1.1 302 Redirection protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[56905] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[56905] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[34313] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.internal.platform.Platform log
+INFO: Http2Connection.Listener failure for localhost
+java.io.IOException: closed
+	at okhttp3.internal.http2.Http2Writer.data(Http2Writer.java:170)
+	at okhttp3.internal.http2.Http2Connection.writeData(Http2Connection.java:293)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.close(Http2Stream.java:553)
+	at okio.RealBufferedSink.close(RealBufferedSink.java:248)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.writeResponse(MockWebServer.java:975)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.onStream(MockWebServer.java:884)
+	at okhttp3.internal.http2.Http2Connection$ReaderRunnable$1.execute(Http2Connection.java:671)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[34313] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[34313] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[48503] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[48503] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[48503] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[44489] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[44489] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[44489] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[49053] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[49053] done accepting connections: Socket closed
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[43863] starting to accept connections
+Feb 08, 2019 12:42:04 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[43863] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[43863] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[43863] done accepting connections: Socket closed
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[34963] starting to accept connections
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[34963] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[34963] received request: GET / HTTP/1.1 and responded: HTTP/1.1 304 Redirection protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[34963] done accepting connections: Socket closed
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[45563] starting to accept connections
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[45563] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[45563] done accepting connections: Socket closed
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[49479] starting to accept connections
+Feb 08, 2019 12:42:05 PM okhttp3.internal.platform.Platform log
+INFO: Http2Connection.Listener failure for localhost
+okhttp3.internal.http2.StreamResetException: stream was reset: CANCEL
+	at okhttp3.internal.http2.Http2Stream.checkOutNotClosed(Http2Stream.java:578)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.emitFrame(Http2Stream.java:512)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.flush(Http2Stream.java:531)
+	at okio.RealBufferedSink.flush(RealBufferedSink.java:226)
+	at okhttp3.mockwebserver.MockWebServer.throttledTransfer(MockWebServer.java:768)
+	at okhttp3.mockwebserver.MockWebServer.access$2100(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.writeResponse(MockWebServer.java:974)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.onStream(MockWebServer.java:884)
+	at okhttp3.internal.http2.Http2Connection$ReaderRunnable$1.execute(Http2Connection.java:671)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[49479] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[49479] done accepting connections: Socket closed
+Feb 08, 2019 12:42:05 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[55455] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[55455] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[55455] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[60311] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[60311] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 Sweet protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[60311] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[49805] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[49805] received request: POST /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[49805] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[40929] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[40929] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[40929] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[58149] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[58149] received request: DELETE / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[58149] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[33745] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[33745] received request: GET /r1 HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[33745] done accepting connections: Socket closed
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[35759] starting to accept connections
+Feb 08, 2019 12:42:06 PM okhttp3.internal.platform.Platform log
+INFO: Http2Connection.Listener failure for localhost
+okhttp3.internal.http2.StreamResetException: stream was reset: CANCEL
+	at okhttp3.internal.http2.Http2Stream.checkOutNotClosed(Http2Stream.java:578)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.emitFrame(Http2Stream.java:512)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.flush(Http2Stream.java:531)
+	at okio.RealBufferedSink.flush(RealBufferedSink.java:226)
+	at okhttp3.mockwebserver.MockWebServer.throttledTransfer(MockWebServer.java:768)
+	at okhttp3.mockwebserver.MockWebServer.access$2100(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.writeResponse(MockWebServer.java:974)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.onStream(MockWebServer.java:884)
+	at okhttp3.internal.http2.Http2Connection$ReaderRunnable$1.execute(Http2Connection.java:671)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Feb 08, 2019 12:42:06 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[35759] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[35759] done accepting connections: Socket closed
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[51685] starting to accept connections
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[51685] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[51685] done accepting connections: Socket closed
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[60935] starting to accept connections
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[60935] received request: GET /r1 HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[60935] received request: GET /r1 HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[60935] done accepting connections: Socket closed
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[44047] starting to accept connections
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[44047] received request: DELETE / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[44047] done accepting connections: Socket closed
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[33569] starting to accept connections
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[33569] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[33569] done accepting connections: Socket closed
+Feb 08, 2019 12:42:07 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[42255] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[42255] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[37545] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[37545] received request: GET /foo HTTP/1.1 and responded: HTTP/1.1 200 Sweet protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[37545] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[50113] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[50113] received request: POST /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[50113] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[35623] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[35623] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[35623] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[35623] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[33093] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[33093] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[33093] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[49545] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[49545] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[49545] done accepting connections: Socket closed
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[59121] starting to accept connections
+Feb 08, 2019 12:42:08 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[59121] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[59121] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[59121] done accepting connections: Socket closed
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[44671] starting to accept connections
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[44671] received request: GET / HTTP/1.1 and responded: HTTP/1.1 401 Client Error protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[44671] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[44671] done accepting connections: Socket closed
+Feb 08, 2019 12:42:09 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[51199] starting to accept connections
+Feb 08, 2019 12:42:10 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[51199] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:10 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[51199] done accepting connections: Socket closed
+Feb 08, 2019 12:42:10 PM okhttp3.internal.platform.Platform log
+INFO: Http2Connection.Listener failure for localhost
+java.io.IOException: closed
+	at okhttp3.internal.http2.Http2Writer.synReply(Http2Writer.java:132)
+	at okhttp3.internal.http2.Http2Connection.writeSynReply(Http2Connection.java:275)
+	at okhttp3.internal.http2.Http2Stream.sendResponseHeaders(Http2Stream.java:183)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.writeResponse(MockWebServer.java:969)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.onStream(MockWebServer.java:884)
+	at okhttp3.internal.http2.Http2Connection$ReaderRunnable$1.execute(Http2Connection.java:671)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Feb 08, 2019 12:42:10 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[42161] starting to accept connections
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[42161] received request: GET / HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[42161] done accepting connections: Socket closed
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[57169] starting to accept connections
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$Http2SocketHandler onStream
+INFO: MockWebServer[57169] received request: POST /foo HTTP/1.1 and responded: HTTP/1.1 200 OK protocol is h2_prior_knowledge
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[57169] done accepting connections: Socket closed
+Feb 08, 2019 12:42:13 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[58243] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: recoverFromConnectionNoNewStreamsOnFollowUp[h2](okhttp3.internal.http2.HttpOverHttp2Test)
+Feb 08, 2019 12:42:14 PM okhttp3.internal.platform.Platform log
+INFO: Http2Connection.Listener failure for localhost
+java.io.IOException: closed
+	at okhttp3.internal.http2.Http2Writer.data(Http2Writer.java:170)
+	at okhttp3.internal.http2.Http2Connection.writeData(Http2Connection.java:293)
+	at okhttp3.internal.http2.Http2Stream$FramingSink.close(Http2Stream.java:553)
+	at okio.RealBufferedSink.close(RealBufferedSink.java:248)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.writeResponse(MockWebServer.java:975)
+	at okhttp3.mockwebserver.MockWebServer$Http2SocketHandler.onStream(MockWebServer.java:884)
+	at okhttp3.internal.http2.Http2Connection$ReaderRunnable$1.execute(Http2Connection.java:671)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+

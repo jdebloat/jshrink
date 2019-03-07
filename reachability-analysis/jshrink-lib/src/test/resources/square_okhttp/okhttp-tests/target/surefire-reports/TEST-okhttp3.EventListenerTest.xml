@@ -1,0 +1,603 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="okhttp3.EventListenerTest" time="162.708" tests="44" errors="17" skipped="2" failures="0">
+  <properties>
+    <property name="sun.desktop" value="gnome"/>
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/test-classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/classes:/home/bobbyrbruce/.m2/repository/com/squareup/okio/okio/1.14.0/okio-1.14.0.jar:/home/bobbyrbruce/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp/target/classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-testing-support/target/classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-urlconnection/target/classes:/home/bobbyrbruce/.m2/repository/org/conscrypt/conscrypt-openjdk-uber/1.0.1/conscrypt-openjdk-uber-1.0.1.jar:/home/bobbyrbruce/.m2/repository/junit/junit/4.12/junit-4.12.jar:/home/bobbyrbruce/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/mockwebserver/target/classes:/home/bobbyrbruce/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.50/bcprov-jdk15on-1.50.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-logging-interceptor/target/classes:"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Linux"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-oracle/jre/lib/amd64"/>
+    <property name="sun.java.command" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/surefire/surefirebooter2111212522864433588.jar /home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/surefire 2019-02-08T12-31-27_325-jvmRun1 surefire1733901840925417087tmp surefire_38667528273579975105tmp"/>
+    <property name="surefire.test.class.path" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/test-classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/classes:/home/bobbyrbruce/.m2/repository/com/squareup/okio/okio/1.14.0/okio-1.14.0.jar:/home/bobbyrbruce/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp/target/classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-testing-support/target/classes:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-urlconnection/target/classes:/home/bobbyrbruce/.m2/repository/org/conscrypt/conscrypt-openjdk-uber/1.0.1/conscrypt-openjdk-uber-1.0.1.jar:/home/bobbyrbruce/.m2/repository/junit/junit/4.12/junit-4.12.jar:/home/bobbyrbruce/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/mockwebserver/target/classes:/home/bobbyrbruce/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.50/bcprov-jdk15on-1.50.jar:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-logging-interceptor/target/classes:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/home/bobbyrbruce"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/usr/lib/jvm/java-8-oracle/jre"/>
+    <property name="basedir" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="surefire.real.class.path" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests/target/surefire/surefirebooter2111212522864433588.jar"/>
+    <property name="sun.boot.class.path" value="/home/bobbyrbruce/.m2/repository/org/mortbay/jetty/alpn/alpn-boot/8.1.0.v20141016/alpn-boot-8.1.0.v20141016.jar:/usr/lib/jvm/java-8-oracle/jre/lib/resources.jar:/usr/lib/jvm/java-8-oracle/jre/lib/rt.jar:/usr/lib/jvm/java-8-oracle/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jsse.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jce.jar:/usr/lib/jvm/java-8-oracle/jre/lib/charsets.jar:/usr/lib/jvm/java-8-oracle/jre/lib/jfr.jar:/usr/lib/jvm/java-8-oracle/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_201-b09"/>
+    <property name="user.name" value="bobbyrbruce"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="4.15.0-43-generic"/>
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-oracle/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="/home/bobbyrbruce/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="1.8.0_201"/>
+    <property name="user.dir" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/square_okhttp/okhttp-tests"/>
+    <property name="okhttp.platform" value="jdk-with-jetty-boot"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib64:/lib64:/lib:/usr/lib"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="25.201-b09"/>
+    <property name="java.ext.dirs" value="/usr/lib/jvm/java-8-oracle/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="failedSecureConnect" classname="okhttp3.EventListenerTest" time="0.052">
+    <error message="state" type="java.lang.NoSuchFieldError">java.lang.NoSuchFieldError: state
+	at okhttp3.EventListenerTest.failedSecureConnect(EventListenerTest.java:700)
+</error>
+    <system-err><![CDATA[Installing aggressive uncaught exception handler
+Feb 08, 2019 12:32:51 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[41669] starting to accept connections
+Feb 08, 2019 12:32:51 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[41669] done accepting connections: Socket closed
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:138)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer.processHandshakeFailure(MockWebServer.java:568)
+	at okhttp3.mockwebserver.MockWebServer.access$1000(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:428)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: failedSecureConnect(okhttp3.EventListenerTest)
+]]></system-err>
+  </testcase>
+  <testcase name="successfulCallEventSequence" classname="okhttp3.EventListenerTest" time="0.014"/>
+  <testcase name="emptyResponseBody" classname="okhttp3.EventListenerTest" time="0">
+    <skipped message="the CallEnd event is omitted"/>
+  </testcase>
+  <testcase name="successfulChunkedH2CallEventSequence" classname="okhttp3.EventListenerTest" time="10.014">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.assertSuccessfulEventOrder(EventListenerTest.java:227)
+	at okhttp3.EventListenerTest.successfulChunkedH2CallEventSequence(EventListenerTest.java:380)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:32:51 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[58921] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: successfulChunkedH2CallEventSequence(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:01 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[58921] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="successfulCallEventSequenceForEnqueue" classname="okhttp3.EventListenerTest" time="0.017"/>
+  <testcase name="successfulHttpProxyConnect" classname="okhttp3.EventListenerTest" time="0.014"/>
+  <testcase name="secondCallEventSequence" classname="okhttp3.EventListenerTest" time="10.02">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.secondCallEventSequence(EventListenerTest.java:250)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:01 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[41889] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: secondCallEventSequence(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:11 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[41889] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="multipleDnsLookupsForSingleCall" classname="okhttp3.EventListenerTest" time="0.008"/>
+  <testcase name="responseBodyFailHttp2OverHttps" classname="okhttp3.EventListenerTest" time="10.02">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.responseBodyFail(EventListenerTest.java:897)
+	at okhttp3.EventListenerTest.responseBodyFailHttp2OverHttps(EventListenerTest.java:880)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:11 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[37651] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: responseBodyFailHttp2OverHttps(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:21 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[37651] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="failedConnect" classname="okhttp3.EventListenerTest" time="0.011">
+    <error message="state" type="java.lang.NoSuchFieldError">java.lang.NoSuchFieldError: state
+	at okhttp3.EventListenerTest.failedConnect(EventListenerTest.java:538)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:21 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[38527] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:138)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer.processHandshakeFailure(MockWebServer.java:568)
+	at okhttp3.mockwebserver.MockWebServer.access$1000(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:428)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: failedConnect(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:21 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[38527] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="responseBodyFailHttp1OverHttps" classname="okhttp3.EventListenerTest" time="10.016">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.responseBodyFail(EventListenerTest.java:897)
+	at okhttp3.EventListenerTest.responseBodyFailHttp1OverHttps(EventListenerTest.java:874)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:21 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[34255] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: responseBodyFailHttp1OverHttps(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:31 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[34255] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="noDnsLookupOnPooledConnection" classname="okhttp3.EventListenerTest" time="0.008"/>
+  <testcase name="successfulEmptyH2CallEventSequence" classname="okhttp3.EventListenerTest" time="10.01">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.assertSuccessfulEventOrder(EventListenerTest.java:227)
+	at okhttp3.EventListenerTest.successfulEmptyH2CallEventSequence(EventListenerTest.java:344)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:31 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[35995] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: successfulEmptyH2CallEventSequence(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:41 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[35995] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="requestBodySuccessHttp2OverHttps" classname="okhttp3.EventListenerTest" time="10.02">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.requestBodySuccess(EventListenerTest.java:1073)
+	at okhttp3.EventListenerTest.requestBodySuccessHttp2OverHttps(EventListenerTest.java:1015)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:41 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[49165] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: requestBodySuccessHttp2OverHttps(okhttp3.EventListenerTest)
+Feb 08, 2019 12:33:51 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[49165] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="requestBodySuccessStreaming" classname="okhttp3.EventListenerTest" time="0.014"/>
+  <testcase name="successfulSocksProxyConnect" classname="okhttp3.EventListenerTest" time="0.01"/>
+  <testcase name="multipleConnectsForSingleCall" classname="okhttp3.EventListenerTest" time="0.006">
+    <error message="state" type="java.lang.NoSuchFieldError">java.lang.NoSuchFieldError: state
+	at okhttp3.EventListenerTest.multipleConnectsForSingleCall(EventListenerTest.java:571)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:52 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[34909] starting to accept connections
+Feb 08, 2019 12:33:52 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[34909] done accepting connections: Socket closed
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:138)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer.processHandshakeFailure(MockWebServer.java:568)
+	at okhttp3.mockwebserver.MockWebServer.access$1000(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:428)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: multipleConnectsForSingleCall(okhttp3.EventListenerTest)
+]]></system-err>
+  </testcase>
+  <testcase name="requestBodySuccessHttp1OverHttps" classname="okhttp3.EventListenerTest" time="10.005">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.requestBodySuccess(EventListenerTest.java:1073)
+	at okhttp3.EventListenerTest.requestBodySuccessHttp1OverHttps(EventListenerTest.java:1008)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:33:52 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[50363] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: requestBodySuccessHttp1OverHttps(okhttp3.EventListenerTest)
+Feb 08, 2019 12:34:02 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[50363] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="multipleSecureConnectsForSingleCall" classname="okhttp3.EventListenerTest" time="0.007">
+    <error message="state" type="java.lang.NoSuchFieldError">java.lang.NoSuchFieldError: state
+	at okhttp3.EventListenerTest.multipleSecureConnectsForSingleCall(EventListenerTest.java:751)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:34:02 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[44141] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ClientHandshaker.processMessage(ClientHandshaker.java:138)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer.processHandshakeFailure(MockWebServer.java:568)
+	at okhttp3.mockwebserver.MockWebServer.access$1000(MockWebServer.java:101)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:428)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: multipleSecureConnectsForSingleCall(okhttp3.EventListenerTest)
+Feb 08, 2019 12:34:02 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[44141] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="successfulChunkedHttpsCallEventSequence" classname="okhttp3.EventListenerTest" time="10.008">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.assertSuccessfulEventOrder(EventListenerTest.java:227)
+	at okhttp3.EventListenerTest.successfulChunkedHttpsCallEventSequence(EventListenerTest.java:368)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:34:02 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[42635] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: successfulChunkedHttpsCallEventSequence(okhttp3.EventListenerTest)
+Feb 08, 2019 12:34:12 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[42635] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="pooledConnectionFound" classname="okhttp3.EventListenerTest" time="0.008"/>
+  <testcase name="failedDnsLookup" classname="okhttp3.EventListenerTest" time="0.001"/>
+  <testcase name="canceledCallEventSequence" classname="okhttp3.EventListenerTest" time="0.001"/>
+  <testcase name="successfulConnectionFound" classname="okhttp3.EventListenerTest" time="0.008"/>
+  <testcase name="failedDribbledCallEventSequence" classname="okhttp3.EventListenerTest" time="0.209"/>
+  <testcase name="requestBodyFailHttp" classname="okhttp3.EventListenerTest" time="0.012"/>
+  <testcase name="responseBodyFailHttp" classname="okhttp3.EventListenerTest" time="0.006"/>
+  <testcase name="requestBodySuccessHttp" classname="okhttp3.EventListenerTest" time="0.002"/>
+  <testcase name="failedCallEventSequence" classname="okhttp3.EventListenerTest" time="2.003"/>
+  <testcase name="successfulDnsLookup" classname="okhttp3.EventListenerTest" time="0.006"/>
+  <testcase name="successfulEmptyHttpsCallEventSequence" classname="okhttp3.EventListenerTest" time="10.008">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.assertSuccessfulEventOrder(EventListenerTest.java:227)
+	at okhttp3.EventListenerTest.successfulEmptyHttpsCallEventSequence(EventListenerTest.java:356)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:34:14 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[59443] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: successfulEmptyHttpsCallEventSequence(okhttp3.EventListenerTest)
+Feb 08, 2019 12:34:24 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[59443] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="emptyDnsLookup" classname="okhttp3.EventListenerTest" time="0.005"/>
+  <testcase name="noSecureConnectsOnPooledConnection" classname="okhttp3.EventListenerTest" time="20.015">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.noSecureConnectsOnPooledConnection(EventListenerTest.java:775)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:34:24 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[43921] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: noSecureConnectsOnPooledConnection(okhttp3.EventListenerTest)
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: noSecureConnectsOnPooledConnection(okhttp3.EventListenerTest)
+Feb 08, 2019 12:34:44 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[43921] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="requestBodyFailHttp2OverHttps" classname="okhttp3.EventListenerTest" time="10.008"/>
+  <testcase name="requestBodyFailHttp1OverHttps" classname="okhttp3.EventListenerTest" time="10.015"/>
+  <testcase name="secureConnectWithTunnel" classname="okhttp3.EventListenerTest" time="10.009">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.secureConnectWithTunnel(EventListenerTest.java:726)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:35:04 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[48593] starting to accept connections
+Feb 08, 2019 12:35:04 PM okhttp3.mockwebserver.MockWebServer$3 processOneRequest
+INFO: MockWebServer[48593] received request: CONNECT localhost:48593 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: secureConnectWithTunnel(okhttp3.EventListenerTest)
+Feb 08, 2019 12:35:14 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[48593] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="successfulSecureConnect" classname="okhttp3.EventListenerTest" time="10.008">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.successfulSecureConnect(EventListenerTest.java:679)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:35:14 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[33729] starting to accept connections
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: successfulSecureConnect(okhttp3.EventListenerTest)
+Feb 08, 2019 12:35:24 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[33729] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="authenticatingTunnelProxyConnect" classname="okhttp3.EventListenerTest" time="10.016">
+    <error message="Read timed out" type="java.net.SocketTimeoutException">java.net.SocketTimeoutException: Read timed out
+	at okhttp3.EventListenerTest.authenticatingTunnelProxyConnect(EventListenerTest.java:659)
+</error>
+    <system-err><![CDATA[Feb 08, 2019 12:35:24 PM okhttp3.mockwebserver.MockWebServer$2 execute
+INFO: MockWebServer[53319] starting to accept connections
+Feb 08, 2019 12:35:24 PM okhttp3.mockwebserver.MockWebServer$3 processOneRequest
+INFO: MockWebServer[53319] received request: CONNECT localhost:53319 HTTP/1.1 and responded: HTTP/1.1 407 Client Error
+Feb 08, 2019 12:35:24 PM okhttp3.mockwebserver.MockWebServer$3 execute
+SEVERE: MockWebServer[53319] connection from localhost/127.0.0.1 crashed
+java.lang.IllegalStateException: Tunnel without any CONNECT!
+	at okhttp3.mockwebserver.MockWebServer$3.createTunnel(MockWebServer.java:500)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:424)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Feb 08, 2019 12:35:24 PM okhttp3.mockwebserver.MockWebServer$3 processOneRequest
+INFO: MockWebServer[53319] received request: CONNECT localhost:53319 HTTP/1.1 and responded: HTTP/1.1 200 OK
+Uncaught exception in OkHttp thread "MockWebServer"
+java.lang.NoSuchFieldError: state
+	at sun.security.ssl.ServerHandshaker.processMessage(ServerHandshaker.java:203)
+	at sun.security.ssl.Handshaker.processLoop(Handshaker.java:1037)
+	at sun.security.ssl.Handshaker.process_record(Handshaker.java:965)
+	at sun.security.ssl.SSLSocketImpl.readRecord(SSLSocketImpl.java:1064)
+	at sun.security.ssl.SSLSocketImpl.performInitialHandshake(SSLSocketImpl.java:1367)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1395)
+	at sun.security.ssl.SSLSocketImpl.startHandshake(SSLSocketImpl.java:1379)
+	at okhttp3.mockwebserver.MockWebServer$3.processConnection(MockWebServer.java:441)
+	at okhttp3.mockwebserver.MockWebServer$3.execute(MockWebServer.java:408)
+	at okhttp3.internal.NamedRunnable.run(NamedRunnable.java:32)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+
+Last test to start was: authenticatingTunnelProxyConnect(okhttp3.EventListenerTest)
+Feb 08, 2019 12:35:34 PM okhttp3.mockwebserver.MockWebServer$2 acceptConnections
+INFO: MockWebServer[53319] done accepting connections: Socket closed
+]]></system-err>
+  </testcase>
+  <testcase name="responseBodyClosedClosedWithoutReadingAllData" classname="okhttp3.EventListenerTest" time="0">
+    <skipped message="this reports CallFailed not CallEnd"/>
+  </testcase>
+  <testcase name="successfulConnect" classname="okhttp3.EventListenerTest" time="0.004"/>
+  <testcase name="noConnectionFoundOnFollowUp" classname="okhttp3.EventListenerTest" time="0.046"/>
+  <testcase name="successfulCallEventSequenceWithListener" classname="okhttp3.EventListenerTest" time="0.01"/>
+  <testcase name="requestBodySuccessEmpty" classname="okhttp3.EventListenerTest" time="0.006"/>
+  <testcase name="multipleConnectionsFoundForSingleCall" classname="okhttp3.EventListenerTest" time="0.02"/>
+</testsuite>

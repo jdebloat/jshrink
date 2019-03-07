@@ -1,0 +1,17 @@
+okhttp3/internal/huc/OkHttpURLConnection.class
+okhttp3/internal/huc/OkHttpsURLConnection.class
+okhttp3/internal/huc/OutputStreamRequestBody$1.class
+okhttp3/internal/URLFilter.class
+okhttp3/internal/huc/StreamedRequestBody.class
+okhttp3/internal/huc/OkHttpURLConnection$UnexpectedException.class
+okhttp3/internal/huc/OkHttpURLConnection$NetworkInterceptor.class
+okhttp3/JavaNetAuthenticator.class
+okhttp3/internal/JavaNetHeaders.class
+okhttp3/internal/JavaNetHeaders$1.class
+okhttp3/OkUrlFactory.class
+okhttp3/OkUrlFactory$1.class
+okhttp3/JavaNetCookieJar.class
+okhttp3/internal/huc/BufferedRequestBody.class
+okhttp3/internal/huc/OutputStreamRequestBody.class
+okhttp3/internal/huc/DelegatingHttpsURLConnection.class
+okhttp3/internal/huc/OkHttpURLConnection$UnexpectedException$1.class

@@ -1,5 +1,0 @@
-public interface  edu.ucla.cs.onr.testprograms.classcollapser.overrideinterface.original.A extends java.lang.Object
-{
-
-    public abstract void foo();
-}

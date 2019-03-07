@@ -1,0 +1,14 @@
+-------------------------------------------------------------------------------
+Test set: okhttp3.internal.ws.WebSocketHttpTest
+-------------------------------------------------------------------------------
+Tests run: 37, Failures: 2, Errors: 0, Skipped: 1, Time elapsed: 7.416 s <<< FAILURE! - in okhttp3.internal.ws.WebSocketHttpTest
+wssScheme(okhttp3.internal.ws.WebSocketHttpTest)  Time elapsed: 0.506 s  <<< FAILURE!
+java.lang.AssertionError: Expected Open but was Failure[java.net.SocketTimeoutException: Read timed out]
+	at okhttp3.internal.ws.WebSocketHttpTest.websocketScheme(WebSocketHttpTest.java:694)
+	at okhttp3.internal.ws.WebSocketHttpTest.wssScheme(WebSocketHttpTest.java:488)
+
+httpsScheme(okhttp3.internal.ws.WebSocketHttpTest)  Time elapsed: 0.505 s  <<< FAILURE!
+java.lang.AssertionError: Expected Open but was Failure[java.net.SocketTimeoutException: Read timed out]
+	at okhttp3.internal.ws.WebSocketHttpTest.websocketScheme(WebSocketHttpTest.java:694)
+	at okhttp3.internal.ws.WebSocketHttpTest.httpsScheme(WebSocketHttpTest.java:498)
+

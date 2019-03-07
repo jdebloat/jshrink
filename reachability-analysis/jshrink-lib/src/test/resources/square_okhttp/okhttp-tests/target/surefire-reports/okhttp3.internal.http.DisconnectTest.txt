@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: okhttp3.internal.http.DisconnectTest
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.903 s - in okhttp3.internal.http.DisconnectTest
