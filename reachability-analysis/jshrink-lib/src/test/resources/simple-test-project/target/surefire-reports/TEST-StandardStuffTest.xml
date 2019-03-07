@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="3" failures="0" name="StandardStuffTest" time="0.002" errors="0" skipped="0">
+<testsuite tests="3" failures="0" name="StandardStuffTest" time="0.003" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-oracle/jre/lib/amd64"/>
     <property name="java.vm.version" value="25.201-b09"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
-    <property name="maven.multiModuleProjectDirectory" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/simple-test-project"/>
+    <property name="maven.multiModuleProjectDirectory" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/jshrink-lib/src/test/resources/simple-test-project"/>
     <property name="java.vendor.url" value="http://java.oracle.com/"/>
     <property name="path.separator" value=":"/>
     <property name="guice.disable.misplaced.annotation.check" value="true"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="sun.os.patch.level" value="unknown"/>
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
-    <property name="user.dir" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/src/test/resources/simple-test-project"/>
+    <property name="user.dir" value="/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/jshrink-lib/src/test/resources/simple-test-project"/>
     <property name="java.runtime.version" value="1.8.0_201-b09"/>
     <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
     <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-oracle/jre/lib/endorsed"/>
@@ -32,7 +32,7 @@
     <property name="java.specification.name" value="Java Platform API Specification"/>
     <property name="java.class.version" value="52.0"/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
-    <property name="os.version" value="4.15.0-43-generic"/>
+    <property name="os.version" value="4.15.0-45-generic"/>
     <property name="library.jansi.path" value="/usr/share/maven/lib/jansi-native"/>
     <property name="user.home" value="/home/bobbyrbruce"/>
     <property name="user.timezone" value="America/Los_Angeles"/>
@@ -64,5 +64,5 @@
   </properties>
   <testcase classname="StandardStuffTest" name="getStringTest" time="0.002"/>
   <testcase classname="StandardStuffTest" name="publicAndTestedButUntouchedTest" time="0"/>
-  <testcase classname="StandardStuffTest" name="standardStuffSubTest" time="0"/>
+  <testcase classname="StandardStuffTest" name="standardStuffSubTest" time="0.001"/>
 </testsuite>

@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: org.apache.commons.lang3.time.FastDatePrinterTimeZonesTest
--------------------------------------------------------------------------------
-Tests run: 627, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.411 s - in org.apache.commons.lang3.time.FastDatePrinterTimeZonesTest

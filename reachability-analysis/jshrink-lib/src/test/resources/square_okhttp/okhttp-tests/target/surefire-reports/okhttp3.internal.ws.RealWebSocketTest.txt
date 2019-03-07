@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: okhttp3.internal.ws.RealWebSocketTest
--------------------------------------------------------------------------------
-Tests run: 23, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 4.034 s - in okhttp3.internal.ws.RealWebSocketTest

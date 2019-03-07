@@ -1,8 +1,0 @@
--------------------------------------------------------------------------------
-Test set: okhttp3.logging.HttpLoggingInterceptorTest
--------------------------------------------------------------------------------
-Tests run: 26, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 10.141 s <<< FAILURE! - in okhttp3.logging.HttpLoggingInterceptorTest
-http2(okhttp3.logging.HttpLoggingInterceptorTest)  Time elapsed: 10.031 s  <<< ERROR!
-java.net.SocketTimeoutException: Read timed out
-	at okhttp3.logging.HttpLoggingInterceptorTest.http2(HttpLoggingInterceptorTest.java:732)
-
