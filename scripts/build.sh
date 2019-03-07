@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#I [Bobby] created this script to generate a CSV of which projects are compilable
+#Note: I have to run this script several times as some failing projects make it fail
+#E.g., : `./build.sh >build_output.dat; ./build.sh >>build_output.dat; ./build.sh >>build_output.dat`
+
 PWD=`pwd`
 # the list of GitHub repositories built by maven
 project_list=${PWD}"/sample-maven-projects.csv"
@@ -29,16 +33,10 @@ do
 
 	if [ -d "${project_dir}/${project}" ]; then
 		if [ ! -f "${project_dir}/${project}/onr_build.log" ];then
-			printf "Begin to build $line\n"
+			#printf "Begin to build $line\n"
 			`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
 			exit_status=$?
-			if [[ ${exit_status} != 0 ]]; then
-				printf "Failed to build project ${line}\n\n"
-			else
-				printf "Finish building $line\n\n"
-			fi
-		else
-			printf "$line has already been processed. Please see its onr_build.log file\n\n"
+			printf "${project_dir}/${project},${exit_status}\n"
 		fi
 	else
 		printf "The project folder of $line does not exits.\n\n"
