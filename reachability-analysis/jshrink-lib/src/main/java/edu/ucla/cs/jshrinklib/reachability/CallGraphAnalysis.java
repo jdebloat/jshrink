@@ -284,4 +284,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	public Set<CallGraph> getCallGraphs(){
 		return this.callgraphs;
 	}
+
+	@Override
+	public TestOutput getTestOutput(){
+		assert(false); //This has not been implemented yet.
+		return null;
+	}
+
 }

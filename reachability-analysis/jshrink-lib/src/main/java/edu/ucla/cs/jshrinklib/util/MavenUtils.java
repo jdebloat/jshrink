@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import edu.ucla.cs.jshrinklib.reachability.TestOutput;
 import org.apache.commons.io.FileUtils;
 
 public class MavenUtils {
@@ -39,6 +42,34 @@ public class MavenUtils {
 		}
 
 		return cp_map;
+	}
+
+	public static TestOutput testOutputFromString(String mavenOutput){
+		String test_regex = "Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+)$";
+
+		String[] log_lines = mavenOutput.split(System.lineSeparator());
+
+		Pattern pattern = Pattern.compile(test_regex);
+		int run = -1;
+		int failures = -1;
+		int errors = -1;
+		int skipped = -1;
+		for (String line : log_lines) {
+			if (pattern.matcher(line).matches()) {
+				Matcher matcher = Pattern.compile("\\d+").matcher(line);
+				matcher.find();
+				run = Integer.parseInt(matcher.group());
+				matcher.find();
+				failures = Integer.parseInt(matcher.group());
+				matcher.find();
+				errors = Integer.parseInt(matcher.group());
+				matcher.find();
+				skipped = Integer.parseInt(matcher.group());
+				break;
+			}
+		}
+
+		return new TestOutput(run, failures, errors, skipped);
 	}
 
 	public static HashMap<String, String> getClasspathsFromFile(File log_file) {

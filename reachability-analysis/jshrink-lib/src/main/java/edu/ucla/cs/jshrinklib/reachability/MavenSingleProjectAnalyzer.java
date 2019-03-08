@@ -55,6 +55,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<CallGraph> callgraphs;
 	private final Set<String> classesToIgnore;
 	private final boolean useSpark;
+	private TestOutput testOutput = null;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex,
@@ -153,6 +154,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(maven_log.contains("BUILD FAILURE")) {
 				System.err.println("'mvn install' fails.");
 			}
+
+			this.testOutput = MavenUtils.testOutputFromString(maven_log);
 
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
 			// call graph in the static analysis later 
@@ -645,5 +648,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<String> classesToIgnore(){
 		return this.classesToIgnore;
+	}
+
+	@Override
+	public TestOutput getTestOutput(){
+		return this.testOutput;
 	}
 }

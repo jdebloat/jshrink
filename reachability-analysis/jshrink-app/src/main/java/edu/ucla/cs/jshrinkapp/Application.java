@@ -104,6 +104,13 @@ public class Application {
 			System.out.println("libs_size_before," + jShrink.getLibSize(true));
 		}
 
+		if(commandLineParser.isTestOutput()){
+			System.out.println("tests_run_before," + jShrink.getTestOutput().getRun());
+			System.out.println("tests_errors_before," + jShrink.getTestOutput().getErrors());
+			System.out.println("test_failures_before," + jShrink.getTestOutput().getFailures());
+			System.out.println("test_skipped_before," + jShrink.getTestOutput().getSkipped());
+		}
+
 		if (commandLineParser.inlineMethods()) {
 			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
 		}
@@ -161,6 +168,13 @@ public class Application {
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_size_after," + jShrink.getAppSize(true));
 			System.out.println("libs_size_after," + jShrink.getLibSize(true));
+		}
+
+		if(commandLineParser.isTestOutput()){
+			System.out.println("tests_run_after," + jShrink.getTestOutput().getRun());
+			System.out.println("tests_errors_after," + jShrink.getTestOutput().getErrors());
+			System.out.println("test_failures_after," + jShrink.getTestOutput().getFailures());
+			System.out.println("test_skipped_after," + jShrink.getTestOutput().getSkipped());
 		}
 	}
 }

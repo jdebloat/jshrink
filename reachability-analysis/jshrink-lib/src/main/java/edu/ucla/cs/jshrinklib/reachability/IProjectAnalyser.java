@@ -11,7 +11,7 @@ public interface IProjectAnalyser {
 
     /*
     Setup is needed to populate the classpaths (getAppClasspaths, getLibClasspaths, getTestClasspaths), which we need
-    before running the callgraph analysis.
+    before running the callgraph analysis. Also, getTestOutput.
      */
     public void setup();
     public void run();
@@ -33,4 +33,5 @@ public interface IProjectAnalyser {
     public Set<MethodData> getEntryPoints();
     public Set<CallGraph> getCallGraphs();
     public Set<String> classesToIgnore();
+    public TestOutput getTestOutput();
 }

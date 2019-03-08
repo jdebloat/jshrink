@@ -6,10 +6,7 @@ import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.methodinliner.MethodInliner;
 import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
-import edu.ucla.cs.jshrinklib.reachability.EntryPointProcessor;
-import edu.ucla.cs.jshrinklib.reachability.IProjectAnalyser;
-import edu.ucla.cs.jshrinklib.reachability.MavenSingleProjectAnalyzer;
-import edu.ucla.cs.jshrinklib.reachability.MethodData;
+import edu.ucla.cs.jshrinklib.reachability.*;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.G;
@@ -40,6 +37,7 @@ public class JShrink {
 	private Optional<Set<String>> usedAppClasses = Optional.empty();
 	private Optional<Set<String>> usedLibClasses = Optional.empty();
 	private Optional<Set<String>> classesToIgnore = Optional.empty();
+	private Optional<TestOutput> testOutput = Optional.empty();
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
 
@@ -399,6 +397,7 @@ public class JShrink {
 		this.classesToIgnore = Optional.empty();
 		this.classesToModify.clear();
 		this.classesToRemove.clear();
+		this.testOutput = Optional.empty();
 		G.reset();
 	}
 
@@ -442,6 +441,15 @@ public class JShrink {
 		}
 	}
 
+	public TestOutput getTestOutput(){
+		if(this.testOutput.isPresent()){
+			return this.testOutput.get();
+		}
+
+		this.testOutput = Optional.of(this.getProjectAnalyser().getTestOutput());
+		return this.testOutput.get();
+	}
+
 	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
 		for (SootClass sootClass : classesToRewrite) {
 			try {
@@ -453,6 +461,7 @@ public class JShrink {
 			}
 		}
 	}
+
 
 	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){

@@ -236,6 +236,14 @@ public class JShrinkTest {
 	}
 
 	@Test
+	public void getTestDataTest(){
+		assertEquals(3, this.jShrink.getTestOutput().getRun());
+		assertEquals(0, this.jShrink.getTestOutput().getErrors());
+		assertEquals(0, this.jShrink.getTestOutput().getFailures());
+		assertEquals(0, this.jShrink.getTestOutput().getSkipped());
+	}
+
+	@Test
 	public void getUsedLibClassesTest(){
 		assertTrue(this.jShrink.getUsedLibClasses().contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertEquals(1, this.jShrink.getUsedLibClasses().size());

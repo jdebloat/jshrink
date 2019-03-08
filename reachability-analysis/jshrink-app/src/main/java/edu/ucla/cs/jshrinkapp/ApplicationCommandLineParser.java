@@ -31,6 +31,7 @@ public class ApplicationCommandLineParser {
 	private final boolean inlineMethods;
 	private final boolean classCollapse;
 	private final boolean verbose;
+	private final boolean testOutput;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -159,6 +160,7 @@ public class ApplicationCommandLineParser {
 		this.inlineMethods = commandLine.hasOption("I");
 		this.classCollapse = commandLine.hasOption("C");
 		this.verbose = commandLine.hasOption("v");
+		this.testOutput = commandLine.hasOption("T");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -348,6 +350,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option testOutputOption = Option.builder("T")
+			.desc("Output test information")
+			.longOpt("test-output")
+			.hasArg(false)
+			.required(false)
+			.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -368,6 +377,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(inlineMethodsOption);
 		toReturn.addOption(classCollapserOption);
 		toReturn.addOption(verboseOption);
+		toReturn.addOption(testOutputOption);
 
 		return toReturn;
 	}
@@ -458,5 +468,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean isVerbose(){
 		return this.verbose;
+	}
+
+	public boolean isTestOutput(){
+		return this.testOutput;
 	}
 }
