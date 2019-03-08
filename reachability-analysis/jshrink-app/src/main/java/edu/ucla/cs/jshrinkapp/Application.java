@@ -112,29 +112,47 @@ public class Application {
 			classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true);
 		}
 
-
-		Set<MethodData> methodsToRemove = new HashSet<MethodData>();
-		methodsToRemove.addAll(jShrink.getAllLibMethods());
-		methodsToRemove.removeAll(jShrink.getUsedLibMethods());
+		Set<MethodData> appMethodsToRemove = new HashSet<MethodData>();
+		Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
+		libMethodsToRemove.addAll(jShrink.getAllLibMethods());
+		libMethodsToRemove.removeAll(jShrink.getUsedLibMethods());
 		if (commandLineParser.isPruneAppInstance()) {
-			methodsToRemove.addAll(jShrink.getAllAppMethods());
-			methodsToRemove.removeAll(jShrink.getUsedAppMethods());
+			appMethodsToRemove.addAll(jShrink.getAllAppMethods());
+			appMethodsToRemove.removeAll(jShrink.getUsedAppMethods());
 		}
 
+		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
+		Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
 		if (commandLineParser.removeMethods()) {
-			removedMethods.addAll(jShrink.removeMethods(methodsToRemove));
+			appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove));
+			libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove));
 			removedMethod = true;
 		} else if (commandLineParser.includeException()) {
-			removedMethods.addAll(
-				jShrink.wipeMethodAndAddException(methodsToRemove, commandLineParser.getExceptionMessage()));
+			appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(appMethodsToRemove,
+				commandLineParser.getExceptionMessage()));
+			libMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(libMethodsToRemove,
+				commandLineParser.getExceptionMessage()));
 			if(commandLineParser.getExceptionMessage().isPresent()){
 				wipedMethodBodyWithExceptionAndMessage = true;
 			} else {
 				wipedMethodBodyWithExceptionNoMessage = true;
 			}
 		} else {
-			removedMethods.addAll(jShrink.wipeMethods(methodsToRemove));
+			appMethodsRemoved.addAll(jShrink.wipeMethods(appMethodsToRemove));
+			libMethodsRemoved.addAll(jShrink.wipeMethods(libMethodsToRemove));
 			wipedMethodBody = true;
+		}
+
+		removedMethods.addAll(appMethodsRemoved);
+		removedMethods.addAll(libMethodsRemoved);
+
+		if(commandLineParser.isVerbose()){
+			System.out.println("app_num_methods_before," + jShrink.getAllAppMethods().size());
+			System.out.println("lib_num_methods_before," + jShrink.getAllLibMethods().size());
+			System.out.println("app_num_methods_after," +
+				(jShrink.getAllAppMethods().size() - appMethodsRemoved.size()));
+			System.out.println("lib_num_methods_after," +
+				(jShrink.getAllLibMethods().size() - libMethodsRemoved.size()));
 		}
 
 		jShrink.updateClassFiles();
