@@ -45,15 +45,15 @@ public class MavenUtils {
 	}
 
 	public static TestOutput testOutputFromString(String mavenOutput){
-		String test_regex = "Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+)$";
+		String test_regex = ".*Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+)$";
 
 		String[] log_lines = mavenOutput.split(System.lineSeparator());
 
 		Pattern pattern = Pattern.compile(test_regex);
-		int run = -1;
-		int failures = -1;
-		int errors = -1;
-		int skipped = -1;
+		int run = 0;
+		int failures = 0;
+		int errors = 0;
+		int skipped = 0;
 		for (String line : log_lines) {
 			if (pattern.matcher(line).matches()) {
 				Matcher matcher = Pattern.compile("\\d+").matcher(line);
