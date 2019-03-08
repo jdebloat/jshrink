@@ -107,8 +107,8 @@ public class Application {
 		if(commandLineParser.isTestOutput()){
 			System.out.println("tests_run_before," + jShrink.getTestOutput().getRun());
 			System.out.println("tests_errors_before," + jShrink.getTestOutput().getErrors());
-			System.out.println("test_failures_before," + jShrink.getTestOutput().getFailures());
-			System.out.println("test_skipped_before," + jShrink.getTestOutput().getSkipped());
+			System.out.println("tests_failed_before," + jShrink.getTestOutput().getFailures());
+			System.out.println("tests_skipped_before," + jShrink.getTestOutput().getSkipped());
 		}
 
 		if (commandLineParser.inlineMethods()) {
@@ -155,10 +155,10 @@ public class Application {
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_num_methods_before," + jShrink.getAllAppMethods().size());
-			System.out.println("lib_num_methods_before," + jShrink.getAllLibMethods().size());
+			System.out.println("libs_num_methods_before," + jShrink.getAllLibMethods().size());
 			System.out.println("app_num_methods_after," +
 				(jShrink.getAllAppMethods().size() - appMethodsRemoved.size()));
-			System.out.println("lib_num_methods_after," +
+			System.out.println("libs_num_methods_after," +
 				(jShrink.getAllLibMethods().size() - libMethodsRemoved.size()));
 		}
 
@@ -173,8 +173,8 @@ public class Application {
 		if(commandLineParser.isTestOutput()){
 			System.out.println("tests_run_after," + jShrink.getTestOutput().getRun());
 			System.out.println("tests_errors_after," + jShrink.getTestOutput().getErrors());
-			System.out.println("test_failures_after," + jShrink.getTestOutput().getFailures());
-			System.out.println("test_skipped_after," + jShrink.getTestOutput().getSkipped());
+			System.out.println("tests_failed_after," + jShrink.getTestOutput().getFailures());
+			System.out.println("tests_skipped_after," + jShrink.getTestOutput().getSkipped());
 		}
 	}
 }
