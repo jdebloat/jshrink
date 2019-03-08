@@ -155,10 +155,10 @@ public class Application {
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_num_methods_before," + jShrink.getAllAppMethods().size());
-			System.out.println("lib_num_methods_before," + jShrink.getAllLibMethods().size());
+			System.out.println("libs_num_methods_before," + jShrink.getAllLibMethods().size());
 			System.out.println("app_num_methods_after," +
 				(jShrink.getAllAppMethods().size() - appMethodsRemoved.size()));
-			System.out.println("lib_num_methods_after," +
+			System.out.println("libs_num_methods_after," +
 				(jShrink.getAllLibMethods().size() - libMethodsRemoved.size()));
 		}
 
