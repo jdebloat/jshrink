@@ -233,7 +233,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				lib_class_paths.put(artifact_id, new ArrayList<File>());
 				for(String path: cps){
 					File pathFile = new File(path);
-					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)) {
+					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)
+						//I only consider .class and .jar files as valid libraries
+						&& (pathFile.getAbsolutePath().endsWith(".class")
+						|| pathFile.getAbsolutePath().endsWith(".jar"))) {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}

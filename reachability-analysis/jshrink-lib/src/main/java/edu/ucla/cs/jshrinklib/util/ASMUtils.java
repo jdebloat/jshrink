@@ -67,19 +67,24 @@ public class ASMUtils {
     }
 
     public static void readClass(File dir, Set<String> classes, Set<MethodData> methods){
-    	if(dir.isDirectory()){
-    		readClassFromDirectory(dir,classes,methods);
-	    } else if (dir.getName().endsWith(".jar")) {
-    		JarFile j = null;
-    		try {
-    			j = new JarFile(dir);
-    			readClassFromJarFile(j,classes,methods);
-		    } catch (IOException e){
-    			e.printStackTrace();
+    	try {
+		    if (dir.isDirectory()) {
+			    readClassFromDirectory(dir, classes, methods);
+		    } else if (dir.getName().endsWith(".jar")) {
+			    JarFile j = null;
+			    try {
+				    j = new JarFile(dir);
+				    readClassFromJarFile(j, classes, methods);
+			    } catch (IOException e) {
+				    e.printStackTrace();
+			    }
+		    } else {
+			    throw new IOException("Cannot read classes from '" + dir.getAbsolutePath() +
+				    "'. It is neither a directory or a jar.");
 		    }
-	    } else {
-	    	System.err.println("Cannot read classes from '" + dir.getAbsolutePath() +
-	    			"'. It is neither a directory or a jar.");
+	    }catch(IOException e){
+    		e.printStackTrace();
+    		System.exit(1);
 	    }
     }
 
