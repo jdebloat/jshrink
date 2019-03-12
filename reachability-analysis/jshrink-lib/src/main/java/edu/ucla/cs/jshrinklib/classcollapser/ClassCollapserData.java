@@ -14,7 +14,7 @@ public class ClassCollapserData {
 	public ClassCollapserData(Set<MethodData> removedMethods,
 	                          Set<String> classesToRemove, Set<String> classesToRewrite){
 		this.removedMethods = new HashSet<MethodData>(removedMethods);
-		this.classesToRemove = new HashSet<String>(classesToRewrite);
+		this.classesToRemove = new HashSet<String>(classesToRemove);
 		this.classesToRewrite = new HashSet<String>(classesToRewrite);
 	}
 

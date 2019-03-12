@@ -179,8 +179,6 @@ public class ClassCollapserTest {
 
         assertEquals(1,classCollapserData.getClassesToRemove().size());
         assertTrue(classCollapserData.getClassesToRemove().contains(B.getName()));
-        //I guess this isn't the responsibility of the ClassCollapser
-        // assertTrue(classCollapser.getClassesToRemove().contains(C));
 
         assertEquals(2, classCollapserData.getClassesToRewrite().size());
         assertTrue(classCollapserData.getClassesToRewrite().contains(A.getName()));
