@@ -236,8 +236,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				File targetDir =
 						new File(dir.getAbsolutePath() + File.separator + "target");
 				if(!srcDir.exists() || !targetDir.exists()) {
-					System.err.println("There are no src or target directories in "
-							+ dir.getAbsolutePath());
+					//This is sometimes the case, I don't think it's anything to worry about.
 					continue;
 				}
 
