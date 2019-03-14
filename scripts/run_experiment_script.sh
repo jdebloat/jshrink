@@ -34,7 +34,7 @@ cat ${WORK_LIST} |  while read item; do
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	timeout 9000 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+	timeout 21600 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -56,6 +56,8 @@ cat ${WORK_LIST} |  while read item; do
 		app_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="app_num_methods_after"){print $2}')
 		lib_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="libs_num_method_after"){print $2}')
 		echo ${item},1,1,1,,1,${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_error_before},${test_failed_before},${test_skipped_before},${test_run_after},${test_error_after},${test_failed_after},${test_skipped_after} >>${SIZE_FILE}
+	elif [[ ${exit_status} == 124 ]];then
+		echo "TIMEOUT!"
 	else
 		echo "Could not properly process "${item}
 		echo "Output the following: "

@@ -34,7 +34,7 @@ do
 	if [ -d "${project_dir}/${project}" ]; then
 		if [ ! -f "${project_dir}/${project}/onr_build.log" ];then
 			#printf "Begin to build $line\n"
-			`mvn compile -f "${project_dir}/${project}/pom.xml" &> ${project_dir}/${project}/onr_build.log` 
+			`mvn install -f "${project_dir}/${project}/pom.xml" --quiet --batch-mode -DskipTests=true &> ${project_dir}/${project}/onr_build.log` 
 			exit_status=$?
 			printf "${project_dir}/${project},${exit_status}\n"
 		fi
