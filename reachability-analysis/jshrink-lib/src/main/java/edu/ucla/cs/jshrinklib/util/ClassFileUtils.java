@@ -1,10 +1,13 @@
 package edu.ucla.cs.jshrinklib.util;
 
+import edu.ucla.cs.jshrinklib.reachability.ASMClassVisitor;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 import net.lingala.zip4j.model.ZipParameters;
 import net.lingala.zip4j.progress.ProgressMonitor;
 import org.apache.commons.io.FileUtils;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.Opcodes;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.jimple.JasminClass;
@@ -12,6 +15,7 @@ import soot.util.JasminOutputStream;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 public class ClassFileUtils {
@@ -36,6 +40,7 @@ public class ClassFileUtils {
 		return length;
 	}
 
+	//SPECIAL NOTE!!!! : This assumes all jars in the classpaths are decompressed!
 	public static Optional<File> getClassFile(SootClass sootClass, Collection<File> paths) {
 		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
 
@@ -46,6 +51,40 @@ public class ClassFileUtils {
 			}
 		}
 		return Optional.empty();
+	}
+
+	public static boolean classInPath(String qualifiedClassName, Collection<File> paths){
+		String classFile = qualifiedClassName.replaceAll("\\.", File.separator) + ".class";
+
+		for(File path : paths){
+			if(path.isDirectory()){
+				if((new File(path.getAbsolutePath()
+					+ File.separator + classFile).exists())){
+					return true;
+				}
+			} else if(path.getAbsolutePath().endsWith(classFile)){
+				return true;
+			} else { //... check to see if it's a jar file
+				JarFile jarFile = null;
+				try{
+					jarFile = new JarFile(path);
+				}catch(IOException e){
+					continue;
+				}
+				assert(jarFile != null);
+
+				final Enumeration<JarEntry> entries = jarFile.entries();
+				while (entries.hasMoreElements()) {
+					final JarEntry entry = entries.nextElement();
+					String entryName = entry.getName();
+					if(entryName.equals(classFile)){
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public static void decompressJar(File jarFile) throws IOException{
@@ -122,6 +161,10 @@ public class ClassFileUtils {
 		}
 	}
 
+	/*
+	Note: The following two methods require the jars to be decompressed to function correctly
+	(assuming jars are contained within the classpaths).
+	*/
 	public static void removeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
 		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
 
