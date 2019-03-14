@@ -159,53 +159,6 @@ public class ClassFileUtils {
 		streamOut.close();
 	}
 
-	public static void rectifyChanges(Collection<File> classpaths) throws IOException{
-		for(File f : classpaths) {
-			if (f.isFile()) {
-				JarFile jarFile =null;
-				try {
-					jarFile = new JarFile(f); //Throws IOException if not a jar file
-				} catch (IOException e) { //I.e., it's not a Jar file
-					rectifyClassChanges(f);
-				}
-
-				if(jarFile != null) {
-					rectifyJarChanges(f);
-				}
-			} else if(f.isDirectory()){
-				Collection<File> tempCollection = new ArrayList<File>();
-				for(File fileWithin : f.listFiles()){
-					tempCollection.add(fileWithin);
-				}
-				rectifyChanges(tempCollection);
-			}
-		}
-	}
-
-	private static void rectifyJarChanges(File jarFile) throws IOException{
-
-		ClassFileUtils.decompressJar(jarFile);
-
-		//Rectify any changes within the temporary directory
-		Collection<File> jarFileCollection = new ArrayList<File>();
-		jarFileCollection.add(jarFile);
-
-		rectifyChanges(jarFileCollection);
-
-		ClassFileUtils.compressJar(jarFile);
-	}
-
-	private static void rectifyClassChanges(File file) throws IOException{
-		assert(file.isFile() && !file.isDirectory());
-		if(file.getAbsolutePath().endsWith(ORIGINAL_FILE_POST_FIX)){
-			File original = new File(file.getAbsolutePath().substring(0, file.getAbsolutePath().length() - ORIGINAL_FILE_POST_FIX.length()));
-			if(original.exists()){
-				original.delete();
-			}
-			FileUtils.moveFile(file, original);
-		}
-	}
-
 	public static Set<File> extractJars(List<File> classPaths) throws IOException{
 		Set<File> decompressedJars = new HashSet<File>();
 		for(File file : new HashSet<File>(classPaths)){
