@@ -118,6 +118,23 @@ public class ApplicationTest {
 		return false;
 	}
 
+	/*
+	@Test
+	public void test(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project /home/bobbyrbruce/Desktop/nifty ");
+		arguments.append("--main-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--verbose ");
+		arguments.append("--use-spark ");
+
+
+		Application.main(arguments.toString().split("\\s+"));
+	}
+	*/
+
 	@Test
 	public void mainTest_targetMainEntryPoint(){
 		StringBuilder arguments = new StringBuilder();

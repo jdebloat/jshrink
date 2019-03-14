@@ -130,18 +130,17 @@ public class JShrink {
 	}
 
 	private IProjectAnalyser getProjectAnalyserRun(){
-		IProjectAnalyser projectAnalyser = this.getProjectAnalyser();
 		if(!this.projectAnalyserRun){
-			projectAnalyser.run();
+			this.getProjectAnalyser().run();
 
 			G.reset();
-			SootUtils.setup_trimming(this.projectAnalyser.get().getLibClasspaths(),
-				this.projectAnalyser.get().getAppClasspaths(), this.projectAnalyser.get().getTestClasspaths());
+			SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
+				this.getProjectAnalyser().getAppClasspaths(), this.getProjectAnalyser().getTestClasspaths());
 			Scene.v().loadNecessaryClasses();
 
 			this.projectAnalyserRun = true;
 		}
-		return projectAnalyser;
+		return this.getProjectAnalyser();
 	}
 
 	public Set<MethodData> getAllAppMethods(){

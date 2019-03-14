@@ -137,22 +137,42 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			// Ensure the project is compiled.
 			// Prepare the command and its arguments in a String array in case there is a space or special 
 			// character in the pom file path or lib dir path.
-			String[] cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "install", 
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
+			String[] cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "install",
+				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode",
+				"-DskipTests=true"};
 			Process process1 = Runtime.getRuntime().exec(cmd);
 			process1.waitFor();
 			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 			
 			String line;
+			while((line=reader.readLine()) != null) { }
+			reader.close();
+
+			int exitValue = process1.exitValue();
+			
+			if(exitValue != 0) {
+				throw new IOException("Build failed!");
+			}
+
+
+			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "test",
+				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
+			process1 = Runtime.getRuntime().exec(cmd);
+			process1.waitFor();
+
+			reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+
 			String maven_log = "";
 			while((line=reader.readLine()) != null) {
 				maven_log += line + System.lineSeparator();
 			}
 			reader.close();
-			
-			if(maven_log.contains("BUILD FAILURE")) {
-				System.err.println("'mvn install' fails.");
+
+			exitValue = process1.exitValue();
+
+			if(exitValue != 0) {
+				throw new IOException("Testing crashed!");
 			}
 
 			this.testOutput = MavenUtils.testOutputFromString(maven_log);
@@ -169,9 +189,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				classpathInfo += line + System.lineSeparator();
 			}
 			reader.close();
+
+			exitValue = process1.exitValue();
 			
-			if(classpathInfo.contains("BUILD FAILURE")) {
-				System.err.println("'mvn dependency:build-classpath' fails.");
+			if(exitValue != 0) {
+				throw new IOException("Cannot get dependency information!");
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
@@ -185,12 +207,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				classpathInfo_compile_only += line + System.lineSeparator();
 			}
 			reader.close();
-			
-			if(classpathInfo_compile_only.contains("BUILD FAILURE")) {
-				System.err.println("'mvn dependency:build-classpath -DincludeScope=compile' fails.");
+
+			exitValue = process1.exitValue();
+
+			if(exitValue != 0) {
+				throw new IOException("Cannot get dependency information for compile scope!");
 			}
 		}catch(IOException | InterruptedException e){
 			e.printStackTrace();
+			//TODO: is it really good to handle this here? Should we maybe throw the error further up?
 			System.exit(1);
 		}
 
@@ -211,8 +236,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				File targetDir =
 						new File(dir.getAbsolutePath() + File.separator + "target");
 				if(!srcDir.exists() || !targetDir.exists()) {
-					System.err.println("There are no src or target directories in "
-							+ dir.getAbsolutePath());
+					//This is sometimes the case, I don't think it's anything to worry about.
 					continue;
 				}
 
@@ -233,7 +257,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				lib_class_paths.put(artifact_id, new ArrayList<File>());
 				for(String path: cps){
 					File pathFile = new File(path);
-					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)) {
+					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)
+						//I only consider .class and .jar files as valid libraries
+						&& (pathFile.getAbsolutePath().endsWith(".class")
+						|| pathFile.getAbsolutePath().endsWith(".jar"))) {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}

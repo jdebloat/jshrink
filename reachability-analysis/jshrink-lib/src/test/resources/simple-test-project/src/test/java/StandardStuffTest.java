@@ -3,6 +3,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 
 public class StandardStuffTest {
@@ -22,5 +23,10 @@ public class StandardStuffTest {
 	public void standardStuffSubTest(){
 		StandardStuffSub s = new StandardStuffSub();
 		throw new RuntimeException();
+	}
+
+	@Test
+	public void failureTest(){
+		assertTrue(false);
 	}
 }
