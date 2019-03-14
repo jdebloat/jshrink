@@ -34,7 +34,7 @@ cat ${WORK_LIST} |  while read item; do
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	timeout 9000 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+	timeout 21600 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
