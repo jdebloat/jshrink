@@ -28,4 +28,20 @@ public class TestOutput {
 	public int getSkipped(){
 		return this.skipped;
 	}
+
+	@Override
+	public boolean equals(Object o){
+		if(o instanceof TestOutput){
+			TestOutput testOutput = (TestOutput) o;
+			return testOutput.run == this.run && testOutput.failures == this.failures
+				&& testOutput.errors == this.errors && testOutput.skipped == this.skipped;
+		}
+
+		return false;
+	}
+
+	@Override
+	public int hashCode(){
+		return this.run + (this.failures * 31) + (this.errors * 31 * 31) + (this.errors * 31 * 31 * 31);
+	}
 }

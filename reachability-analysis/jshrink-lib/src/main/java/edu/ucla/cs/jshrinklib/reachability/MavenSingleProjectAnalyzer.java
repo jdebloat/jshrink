@@ -56,6 +56,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<String> classesToIgnore;
 	private final boolean useSpark;
 	private TestOutput testOutput = null;
+	private SETUP_STATUS setupStatus;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex,
@@ -152,9 +153,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			int exitValue = process1.exitValue();
 			
 			if(exitValue != 0) {
-				throw new IOException("Build failed!");
+				//throw new IOException("Build failed!");
+				this.setupStatus = SETUP_STATUS.BUILD_FAILED;
+				return;
 			}
-
 
 			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "test",
 				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
@@ -172,7 +174,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process1.exitValue();
 
 			if(exitValue != 0) {
-				throw new IOException("Testing crashed!");
+				this.setupStatus = SETUP_STATUS.TESTING_CRASH;
+				return;
 			}
 
 			this.testOutput = MavenUtils.testOutputFromString(maven_log);
@@ -193,7 +196,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process1.exitValue();
 			
 			if(exitValue != 0) {
-				throw new IOException("Cannot get dependency information!");
+				//throw new IOException("Cannot get dependency information!");
+				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY;
+				return;
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
@@ -211,7 +216,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process1.exitValue();
 
 			if(exitValue != 0) {
-				throw new IOException("Cannot get dependency information for compile scope!");
+				//throw new IOException("Cannot get dependency information for compile scope!");
+				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY_COMPILE_SCOPE;
+				return;
 			}
 		}catch(IOException | InterruptedException e){
 			e.printStackTrace();
@@ -266,6 +273,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				}
 			}
 		}
+		this.setupStatus = SETUP_STATUS.SUCCESS;
 	}
 
 	private static void addToMap(Map<MethodData, Set<MethodData>> map, MethodData key, Collection<MethodData> elements){
@@ -680,5 +688,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public TestOutput getTestOutput(){
 		return this.testOutput;
+	}
+
+	@Override
+	public SETUP_STATUS getSetupStatus(){
+		return this.setupStatus;
 	}
 }

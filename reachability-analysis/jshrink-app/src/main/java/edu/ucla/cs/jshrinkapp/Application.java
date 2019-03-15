@@ -30,6 +30,9 @@ public class Application {
 	/*package*/ static boolean wipedMethodBodyWithExceptionNoMessage = false;
 	/*package*/ static boolean wipedMethodBodyWithExceptionAndMessage = false;
 
+	/*package*/ static TestOutput testOutputBefore = null;
+	/*package*/ static TestOutput testOutputAfter = null;
+
 	public static void main(String[] args) {
 
 		//Re-initialise this each time Application is run (for testing)
@@ -41,6 +44,8 @@ public class Application {
 		wipedMethodBody = false;
 		wipedMethodBodyWithExceptionNoMessage = false;
 		wipedMethodBodyWithExceptionAndMessage = false;
+		testOutputBefore = null;
+		testOutputAfter = null;
 
 		//I just put this in to stop an error
 		PropertyConfigurator.configure(
@@ -104,11 +109,19 @@ public class Application {
 			System.out.println("libs_size_before," + jShrink.getLibSize(true));
 		}
 
+		Optional<TestOutput> testOutput = jShrink.getTestOutput();
+
+		if(!testOutput.isPresent()){
+			System.err.println("Cannot build/run tests for the target application.");
+			System.exit(1);
+		}
+
+		testOutputBefore = jShrink.getTestOutput().get();
 		if(commandLineParser.isTestOutput()){
-			System.out.println("tests_run_before," + jShrink.getTestOutput().getRun());
-			System.out.println("tests_errors_before," + jShrink.getTestOutput().getErrors());
-			System.out.println("tests_failed_before," + jShrink.getTestOutput().getFailures());
-			System.out.println("tests_skipped_before," + jShrink.getTestOutput().getSkipped());
+			System.out.println("tests_run_before," + testOutputBefore.getRun());
+			System.out.println("tests_errors_before," + testOutputBefore.getErrors());
+			System.out.println("tests_failed_before," + testOutputBefore.getFailures());
+			System.out.println("tests_skipped_before," + testOutputBefore.getSkipped());
 		}
 
 		if (commandLineParser.inlineMethods()) {
@@ -170,11 +183,18 @@ public class Application {
 			System.out.println("libs_size_after," + jShrink.getLibSize(true));
 		}
 
+
+		testOutput = jShrink.getTestOutput();
+		if(!testOutput.isPresent()){
+			testOutputAfter = new TestOutput(-1,-1,-1,-1);
+		} else {
+			testOutputAfter = testOutput.get();
+		}
 		if(commandLineParser.isTestOutput()){
-			System.out.println("tests_run_after," + jShrink.getTestOutput().getRun());
-			System.out.println("tests_errors_after," + jShrink.getTestOutput().getErrors());
-			System.out.println("tests_failed_after," + jShrink.getTestOutput().getFailures());
-			System.out.println("tests_skipped_after," + jShrink.getTestOutput().getSkipped());
+			System.out.println("tests_run_after," + testOutputAfter.getRun());
+			System.out.println("tests_errors_after," + testOutputAfter.getErrors());
+			System.out.println("tests_failed_after," + testOutputAfter.getFailures());
+			System.out.println("tests_skipped_after," + testOutputAfter.getSkipped());
 		}
 	}
 }

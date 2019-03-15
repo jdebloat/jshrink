@@ -34,4 +34,5 @@ public interface IProjectAnalyser {
     public Set<CallGraph> getCallGraphs();
     public Set<String> classesToIgnore();
     public TestOutput getTestOutput();
+    public SETUP_STATUS getSetupStatus();
 }

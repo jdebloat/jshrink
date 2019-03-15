@@ -291,4 +291,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return null;
 	}
 
+	@Override
+	public SETUP_STATUS getSetupStatus(){
+		return SETUP_STATUS.SUCCESS;
+	}
 }

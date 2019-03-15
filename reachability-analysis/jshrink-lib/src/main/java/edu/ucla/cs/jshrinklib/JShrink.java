@@ -24,20 +24,8 @@ public class JShrink {
 	private EntryPointProcessor entryPointProcessor;
 	private Optional<File> tamiflex;
 	private boolean useSpark;
-	private Optional<Set<CallGraph>> callGraphs = Optional.empty();
-	private Optional<Map<MethodData,Set<MethodData>>> smallCallGraph = Optional.empty();
-	private Optional<Set<MethodData>> allAppMethods = Optional.empty();
-	private Optional<Set<MethodData>> allLibMethods = Optional.empty();
-	private Optional<Set<MethodData>> usedAppMethods = Optional.empty();
-	private Optional<Set<MethodData>> usedLibMethods = Optional.empty();
 	private Optional<IProjectAnalyser> projectAnalyser = Optional.empty();
 	private boolean projectAnalyserRun = false;
-	private Optional<Set<String>> allAppClasses = Optional.empty();
-	private Optional<Set<String>> allLibClasses = Optional.empty();
-	private Optional<Set<String>> usedAppClasses = Optional.empty();
-	private Optional<Set<String>> usedLibClasses = Optional.empty();
-	private Optional<Set<String>> classesToIgnore = Optional.empty();
-	private Optional<TestOutput> testOutput = Optional.empty();
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
 
@@ -105,12 +93,7 @@ public class JShrink {
 	}
 
 	public Set<CallGraph> getCallGraphs(){
-		if(callGraphs.isPresent()){
-			return this.callGraphs.get();
-		}
-
-		this.callGraphs = Optional.of(this.getProjectAnalyser().getCallGraphs());
-		return this.callGraphs.get();
+		return this.getProjectAnalyserRun().getCallGraphs();
 	}
 
 	private IProjectAnalyser getProjectAnalyser(){
@@ -144,75 +127,35 @@ public class JShrink {
 	}
 
 	public Set<MethodData> getAllAppMethods(){
-		if(this.allAppMethods.isPresent()){
-			return this.allAppMethods.get();
-		}
-
-		this.allAppMethods = Optional.of(this.getProjectAnalyserRun().getAppMethods());
-		return this.allAppMethods.get();
+		return this.getProjectAnalyserRun().getAppMethods();
 	}
 
 	public Set<MethodData> getAllLibMethods(){
-		if(this.allLibMethods.isPresent()){
-			return this.allLibMethods.get();
-		}
-
-		this.allLibMethods = Optional.of(this.getProjectAnalyserRun().getLibMethodsCompileOnly());
-		return this.allLibMethods.get();
+		return this.getProjectAnalyserRun().getLibMethodsCompileOnly();
 	}
 
 	public Set<MethodData> getUsedAppMethods(){
-		if(this.usedAppMethods.isPresent()){
-			return this.usedAppMethods.get();
-		}
-
-		this.usedAppMethods = Optional.of(this.getProjectAnalyserRun().getUsedAppMethods().keySet());
-		return this.usedAppMethods.get();
+		return this.getProjectAnalyserRun().getUsedAppMethods().keySet();
 	}
 
 	public Set<MethodData> getUsedLibMethods(){
-		if(this.usedLibMethods.isPresent()){
-			return this.usedLibMethods.get();
-		}
-
-		this.usedLibMethods = Optional.of(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet());
-		return this.usedLibMethods.get();
+		return this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet();
 	}
 
 	public Set<String> getAllAppClasses(){
-		if(this.allAppClasses.isPresent()){
-			return this.allAppClasses.get();
-		}
-
-		this.allAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getAppClasses()));
-		return this.allAppClasses.get();
+		return this.getProjectAnalyserRun().getAppClasses();
 	}
 
 	public Set<String> getAllLibClasses(){
-		if(this.allLibClasses.isPresent()){
-			return this.allLibClasses.get();
-		}
-
-		this.allLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getLibClassesCompileOnly()));
-		return this.allLibClasses.get();
+		return this.getProjectAnalyserRun().getLibClassesCompileOnly();
 	}
 
 	public Set<String> getUsedAppClasses(){
-		if(this.usedAppClasses.isPresent()){
-			return this.usedAppClasses.get();
-		}
-
-		this.usedAppClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getUsedAppClasses()));
-		return this.usedAppClasses.get();
+		return this.getProjectAnalyserRun().getUsedAppClasses();
 	}
 
 	public Set<String> getUsedLibClasses(){
-		if(this.usedLibClasses.isPresent()){
-			return this.usedLibClasses.get();
-		}
-
-		this.usedLibClasses = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().getUsedLibClassesCompileOnly()));
-		return this.usedLibClasses.get();
+		return this.getProjectAnalyserRun().getUsedLibClassesCompileOnly();
 	}
 
 	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses){
@@ -251,16 +194,11 @@ public class JShrink {
 	}
 
 	public Map<MethodData, Set<MethodData>> getSimplifiedCallGraph(){
-		if(this.smallCallGraph.isPresent()){
-			return this.smallCallGraph.get();
-		}
+		HashMap<MethodData, Set<MethodData>> toReturn = new HashMap<MethodData, Set<MethodData>>();
+		toReturn.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
+		toReturn.putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
 
-		HashMap<MethodData, Set<MethodData>> toAdd = new HashMap<MethodData, Set<MethodData>>();
-		toAdd.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
-		toAdd.putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
-
-		this.smallCallGraph = Optional.of(toAdd);
-		return this.smallCallGraph.get();
+		return toReturn;
 	}
 
 	public InlineData inlineMethods(boolean inlineAppClassMethods, boolean inlineLibClassMethods){
@@ -290,12 +228,7 @@ public class JShrink {
 	}
 
 	public Set<String> getClassesToIgnore(){
-		if(this.classesToIgnore.isPresent()){
-			return this.classesToIgnore.get();
-		}
-
-		this.classesToIgnore = Optional.of(new HashSet<String>(this.getProjectAnalyserRun().classesToIgnore()));
-		return this.classesToIgnore.get();
+		return this.getProjectAnalyserRun().classesToIgnore();
 	}
 
 	public Set<MethodData> removeMethods(Set<MethodData> toRemove){
@@ -386,22 +319,10 @@ public class JShrink {
 	}
 
 	private void reset(){
-		this.callGraphs = Optional.empty();
-		this.smallCallGraph = Optional.empty();
-		this.allAppMethods = Optional.empty();
-		this.allLibMethods = Optional.empty();
-		this.usedAppMethods = Optional.empty();
-		this.usedLibMethods = Optional.empty();
 		this.projectAnalyser = Optional.empty();
 		this.projectAnalyserRun = false;
-		this.allAppClasses = Optional.empty();
-		this.allLibClasses = Optional.empty();
-		this.usedAppClasses = Optional.empty();
-		this.usedLibClasses = Optional.empty();
-		this.classesToIgnore = Optional.empty();
 		this.classesToModify.clear();
 		this.classesToRemove.clear();
-		this.testOutput = Optional.empty();
 		G.reset();
 	}
 
@@ -445,13 +366,18 @@ public class JShrink {
 		}
 	}
 
-	public TestOutput getTestOutput(){
-		if(this.testOutput.isPresent()){
-			return this.testOutput.get();
+	private SETUP_STATUS getSetupStatus(){
+		return this.getProjectAnalyser().getSetupStatus();
+	}
+
+	//return Optional.empty if the tool failed to build and/or the testing crashed
+	public Optional<TestOutput> getTestOutput(){
+		if(this.getSetupStatus().equals(SETUP_STATUS.BUILD_FAILED)
+			|| this.getSetupStatus().equals(SETUP_STATUS.TESTING_CRASH)){
+			return Optional.empty();
 		}
 
-		this.testOutput = Optional.of(this.getProjectAnalyser().getTestOutput());
-		return this.testOutput.get();
+		return Optional.of(this.getProjectAnalyser().getTestOutput());
 	}
 
 	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){

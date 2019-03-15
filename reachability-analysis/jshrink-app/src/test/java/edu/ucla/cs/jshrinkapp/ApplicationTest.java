@@ -3,6 +3,8 @@ package edu.ucla.cs.jshrinkapp;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
+import edu.ucla.cs.jshrinklib.reachability.TestOutput;
+import edu.ucla.cs.jshrinklib.util.MavenUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -736,50 +738,7 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-	public String getJunitTestOutput(){
-		File pomFile = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "pom.xml");
-		File libsDir = new File(this.getJunitProjectDir().getAbsolutePath() + File.separator + "libs");
-		String test_regex = "Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+)$";
-
-		String maven_log = "";
-		try {
-			String[] cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
-			Process process1 = Runtime.getRuntime().exec(cmd);
-			//process1.waitFor();
-
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-
-			String line;
-
-			while ((line = reader.readLine()) != null) {
-				maven_log += line + System.lineSeparator();
-			}
-			reader.close();
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
-
-		String testLog="";
-
-		String[] log_lines = maven_log.split(System.lineSeparator());
-
-		Pattern pattern = Pattern.compile(test_regex);
-		for (String line : log_lines) {
-			if (line.contains("Tests run: ")) {
-				Matcher matcher = pattern.matcher(line);
-				while (matcher.find()) {
-					testLog += matcher.group() + System.lineSeparator();
-
-				}
-			}
-		}
-
-		return testLog;
-	}
-
-	@Test
+	@Test @Ignore
 	public void junit_test(){
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
@@ -789,18 +748,21 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		//arguments.append("--inline "); Had to disable because it's causing errors.
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+	//	arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		//arguments.append("--inline ");
+		//arguments.append("--class-collapser ");
 
-		String before = getJunitTestOutput();
 		Application.main(arguments.toString().split("\\s+"));
-		String after =getJunitTestOutput();
 
-		assertEquals(before,after);
-
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
-	@Test
+	@Test @Ignore
 	public void lambdaMethodTest(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
