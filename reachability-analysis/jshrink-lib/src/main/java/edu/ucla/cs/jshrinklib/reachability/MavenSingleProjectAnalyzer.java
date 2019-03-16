@@ -57,6 +57,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean useSpark;
 	private TestOutput testOutput = null;
 	private SETUP_STATUS setupStatus;
+	private boolean compileProject = true;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex,
@@ -86,6 +87,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.callgraphs = new HashSet<CallGraph>();
 		this.classesToIgnore = new HashSet<String>();
 		this.useSpark = useSpark;
+	}
+
+	public void setCompileProject(boolean compileProject) {
+		this.compileProject = compileProject;
 	}
 
 	public void cleanup(){
@@ -135,31 +140,39 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			 File pomFile = new File(root_dir + File.separator + "pom.xml");
 			 File libsDir = new File(root_dir + File.separator + "libs");
 
-			// Ensure the project is compiled.
-			// Prepare the command and its arguments in a String array in case there is a space or special 
-			// character in the pom file path or lib dir path.
-			String[] cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "install",
-				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode",
-				"-DskipTests=true"};
-			Process process1 = Runtime.getRuntime().exec(cmd);
-			process1.waitFor();
-			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
-			
-			String line;
-			while((line=reader.readLine()) != null) { }
-			reader.close();
+			 String[] cmd;
+			 Process process1;
+			 BufferedReader reader;
+			 String line;
+			 int exitValue;
+			 if(this.compileProject) {
+				 // Ensure the project is compiled.
+				 // Prepare the command and its arguments in a String array in case there is a space or special
+				 // character in the pom file path or lib dir path.
+				 cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "install",
+					 "-Dmaven.repo.local=" + libsDir.getAbsolutePath(),
+					 "--quiet",
+					 "--batch-mode",
+					 "-DskipTests=true"};
+				 process1 = Runtime.getRuntime().exec(cmd);
+				 process1.waitFor();
 
-			int exitValue = process1.exitValue();
-			
-			if(exitValue != 0) {
-				//throw new IOException("Build failed!");
-				this.setupStatus = SETUP_STATUS.BUILD_FAILED;
-				return;
-			}
+				 reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 
-			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "test",
-				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--quiet", "--batch-mode", "-fn"};
+				 while ((line = reader.readLine()) != null) {}
+				 reader.close();
+
+				 exitValue = process1.exitValue();
+
+				 if (exitValue != 0) {
+					 //throw new IOException("Build failed!");
+					 this.setupStatus = SETUP_STATUS.BUILD_FAILED;
+					 return;
+				 }
+			 }
+
+			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
+				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
 			process1 = Runtime.getRuntime().exec(cmd);
 			process1.waitFor();
 

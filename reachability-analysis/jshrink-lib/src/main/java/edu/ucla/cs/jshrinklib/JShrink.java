@@ -29,6 +29,12 @@ public class JShrink {
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
 
+	/*
+	Regardless of whether "reset()" is run, the project, if compiled, remains so. We do not want to recompile, thus
+	we keep note of the compilation status of the project.
+	 */
+	private boolean alreadyCompiled = false;
+
 	private static Optional<JShrink> instance = Optional.empty();
 
 	/*
@@ -80,6 +86,7 @@ public class JShrink {
 			instance.get().entryPointProcessor = entryPointProcessor;
 			instance.get().tamiflex = tamiflex;
 			instance.get().useSpark = useSpark;
+			instance.get().alreadyCompiled = false;
 			return instance.get();
 		}
 		throw new IOException("Instance of JShrink does not exist. Please use \"createInstance\".");
@@ -107,7 +114,10 @@ public class JShrink {
 			new MavenSingleProjectAnalyzer(this.projectDir.getAbsolutePath(),
 				this.entryPointProcessor, this.tamiflex, this.useSpark));
 
+		((MavenSingleProjectAnalyzer) this.projectAnalyser.get()).setCompileProject(!alreadyCompiled);
+
 		this.projectAnalyser.get().setup();
+		this.alreadyCompiled = true;
 
 		return this.projectAnalyser.get();
 	}
@@ -115,6 +125,7 @@ public class JShrink {
 	private IProjectAnalyser getProjectAnalyserRun(){
 		if(!this.projectAnalyserRun){
 			this.getProjectAnalyser().run();
+
 
 			G.reset();
 			SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
