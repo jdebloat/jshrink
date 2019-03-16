@@ -5,6 +5,7 @@ import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import soot.G;
@@ -863,22 +864,27 @@ public class ApplicationTest {
 
 		InlineData methodsInlined = Application.inlineData;
 
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<StandardStuff$NestedClass: void nestedClassMethod()>"));
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<StandardStuff: java.lang.String getString()>"));
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>"));
+		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
+			"<StandardStuff$NestedClass: void nestedClassMethodCallee()>"));
+		assertEquals(1,methodsInlined.getInlineLocations()
+			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>").size());
+		Assert.assertTrue(methodsInlined.getInlineLocations()
+			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")
+			.contains("<StandardStuff$NestedClass: void nestedClassMethod()>"));
 
-		// InlinerSafetyManager does not seem these eligible to line
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<StandardStuff: void doNothing()>"));
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<StandardStuff$NestedClass: void nestedClassMethodCallee()>"));
+		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
+			"<StandardStuff: java.lang.String getString()>"));
+		assertEquals(1, methodsInlined.getInlineLocations()
+			.get("<StandardStuff: java.lang.String getString()>").size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get("<StandardStuff: java.lang.String getString()>")
+			.contains("<Main: void main(java.lang.String[])>"));
 
-
-		assertTrue(methodsInlined.getInlineLocations().containsKey(
-				"<StandardStuff: java.lang.String getStringStatic()>"));
+		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
+			"<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>"));
+		assertEquals(1, methodsInlined.getInlineLocations()
+			.get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>").size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>")
+			.contains("<Main: void main(java.lang.String[])>"));
 
 		assertTrue(jarIntact());
 	}

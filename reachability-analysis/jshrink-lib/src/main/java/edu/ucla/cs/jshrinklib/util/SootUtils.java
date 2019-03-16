@@ -64,7 +64,7 @@ public class SootUtils {
 			Map<MethodData, Set<MethodData>> map){
 		Map<SootMethod, Set<SootMethod>> toReturn = new HashMap<SootMethod, Set<SootMethod>>();
 		for(Map.Entry<MethodData, Set<MethodData>> entry : map.entrySet()){
-			SootClass keySootClass = Scene.v().getSootClass(entry.getKey().getClassName());
+			SootClass keySootClass = Scene.v().loadClassAndSupport(entry.getKey().getClassName());
 
 			/*
 			For some reason, I occasionally got a "java.lang.RuntimeException: not declared <method> in class <class>"

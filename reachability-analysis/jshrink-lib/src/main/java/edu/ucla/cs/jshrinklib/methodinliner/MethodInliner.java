@@ -13,7 +13,7 @@ import java.io.File;
 import java.util.*;
 
 public class MethodInliner {
-
+	private final static boolean debug = false;
 
 	/**
 	 * This method will inline any methods called from a single location (the callee method is subsequently removed)
@@ -28,11 +28,22 @@ public class MethodInliner {
 		InlineData toReturn = new InlineData();
 		Set<SootMethod> methodsRemoved = new HashSet<SootMethod>();
 
+
+
 		boolean callgraphChanged = false;
 
+		Comparator<SootMethod> comparator = new Comparator<SootMethod>() {
+			@Override
+			public int compare(SootMethod o1, SootMethod o2) {
+				return o1.getSignature().compareTo(o2.getSignature());
+			}
+		};
+
 		do{
+			SortedMap<SootMethod, Set<SootMethod>> sortedCallgraph = new TreeMap<SootMethod, Set<SootMethod>>(comparator);
+			sortedCallgraph.putAll(callgraph);
 			callgraphChanged = false;
-			for (Map.Entry<SootMethod, Set<SootMethod>> entry : callgraph.entrySet()) {
+			for (Map.Entry<SootMethod, Set<SootMethod>> entry : sortedCallgraph.entrySet()) {
 
 				//We are only interested inlining methods if there is only one line site
 				if (entry.getValue().size() != 1) {
@@ -42,9 +53,17 @@ public class MethodInliner {
 				SootMethod caller = entry.getValue().iterator().next();
 				SootMethod callee = entry.getKey();
 
+				if(debug){
+					System.out.println();
+					System.out.println("Attempting to inline " + callee.getSignature() + " at " + caller + ".");
+				}
+
 				//Both the caller and callee classes must be within the current classpaths.
-				if (!ClassFileUtils.getClassFile(callee.getDeclaringClass(), classpaths).isPresent()
-					|| !ClassFileUtils.getClassFile(caller.getDeclaringClass(), classpaths).isPresent()) {
+				if (!ClassFileUtils.classInPath(callee.getDeclaringClass().getName(), classpaths)
+					|| !ClassFileUtils.classInPath(caller.getDeclaringClass().getName(), classpaths)) {
+					if(debug){
+						System.out.println("FAILED: Caller or Callee not within the current classpath");
+					}
 					continue;
 				}
 
@@ -52,6 +71,9 @@ public class MethodInliner {
 				//The caller and the callee must be contained in a SootClasses that are ultimately modifiable.
 				if (!SootUtils.modifiableSootClass(caller.getDeclaringClass())
 					|| !SootUtils.modifiableSootClass(callee.getDeclaringClass())) {
+					if(debug){
+						System.out.println("FAILED: Caller or Callee not within modifiable SootClass.");
+					}
 					continue;
 				}
 
@@ -61,12 +83,18 @@ public class MethodInliner {
 			 */
 				if (callee.isConstructor()) {
 					if (!(caller.getDeclaringClass().equals(callee.getDeclaringClass()) && caller.isConstructor())) {
+						if(debug){
+							System.out.println("FAILED: Callee is a constructor.");
+						}
 						continue;
 					}
 				}
 
 				//We ignore access methods (created by the compiler for inner classes).
 				if (callee.getName().startsWith("access$") || caller.getName().startsWith("access$")) {
+					if(debug) {
+						System.out.println("Caller or Callee is access$ methood");
+					}
 					continue;
 				}
 
@@ -85,6 +113,9 @@ public class MethodInliner {
 
 				// There must be exactly 1 inline site in the caller method.
 				if (toInline.size() != 1) {
+					if(debug){
+						System.out.println("FAILED: More than 1 inline site.");
+					}
 					continue;
 				}
 
@@ -93,6 +124,9 @@ public class MethodInliner {
 					caller.retrieveActiveBody();
 				} catch (Exception e) {
 					//This is a catch all --- if the methods can't be retrieved, we can't inline them.
+					if(debug){
+						System.out.println("FAILED: Cannot retrieve active body for caller or callee.");
+					}
 					continue;
 				}
 
@@ -104,6 +138,9 @@ public class MethodInliner {
 			option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
 			*/
 				if (!InlinerSafetyManager.ensureInlinability(callee, site, caller, "unsafe")) {
+					if(debug){
+						System.out.println("FAILED: InlineSafetyManager.ensureInlinability returned false.");
+					}
 					continue;
 				}
 
@@ -128,6 +165,10 @@ public class MethodInliner {
 				SootClass calleeSootClass = callee.getDeclaringClass();
 				calleeSootClass.getMethods().remove(callee);
 				methodsRemoved.add(callee);
+
+				if(debug){
+					System.out.println("SUCCESS!");
+				}
 			}
 		}while(callgraphChanged);
 

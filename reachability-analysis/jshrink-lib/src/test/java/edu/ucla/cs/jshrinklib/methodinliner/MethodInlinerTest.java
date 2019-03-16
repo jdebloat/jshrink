@@ -115,6 +115,33 @@ public class MethodInlinerTest {
 	}
 
 	@Test
+	public void inlineMethodsTest_withoutDecompressedJars() throws IOException{
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
+
+		assertTrue(inlineData.getInlineLocations().containsKey(
+			"<StandardStuff$NestedClass: void nestedClassMethodCallee()>"));
+		assertEquals(1,inlineData.getInlineLocations()
+			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>").size());
+		assertTrue(inlineData.getInlineLocations()
+			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")
+			.contains("<StandardStuff$NestedClass: void nestedClassMethod()>"));
+
+		assertTrue(inlineData.getInlineLocations().containsKey(
+			"<StandardStuff: java.lang.String getString()>"));
+		assertEquals(1, inlineData.getInlineLocations()
+			.get("<StandardStuff: java.lang.String getString()>").size());
+		assertTrue(inlineData.getInlineLocations().get("<StandardStuff: java.lang.String getString()>")
+			.contains("<Main: void main(java.lang.String[])>"));
+
+		assertTrue(inlineData.getInlineLocations().containsKey(
+			"<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>"));
+		assertEquals(1, inlineData.getInlineLocations()
+			.get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>").size());
+		assertTrue(inlineData.getInlineLocations().get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>")
+			.contains("<Main: void main(java.lang.String[])>"));
+	}
+
+	@Test
 	public void inlineMethodsTest_withClassRewrite() throws IOException{
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
 		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
@@ -149,5 +176,4 @@ public class MethodInlinerTest {
 			Scene.v().loadClassAndSupport("edu.ucla.cs.onr.test.LibraryClass"), getClasspaths());
 		ClassFileUtils.compressJars(decompressedJars);
 	}
-
 }
