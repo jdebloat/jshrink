@@ -48,6 +48,16 @@ public class JShrink {
 
 	//TODO: Yet to implement functionality to remove classes that are completely unused.
 
+	/*
+	TODO: We do not assume interaction between remove methods/method inlining/call-graph collapsing.
+	E.g., it could be the case that a method is inlined, and we can therefore remove that method to save space. I would
+	assume we need to rebuild the callgraph to do so.
+
+	Perhaps we need to implement an "updateCallGraph" feature. At present we need to simply run "updateClassFiles()"
+	after inlining/call-graph collapsing to observe these affects. Is there a way to update the call graph in a more
+	 efficient way? We don't need to reload the classes to SootClasses, for example.
+	 */
+
 
 
 	public static JShrink createInstance(File projectDir,
