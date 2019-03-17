@@ -8,4 +8,5 @@ cat ${work_list} | while read project; do
 	cd "${project_dir}/${project}"
 	mvn clean
 	git checkout -f .
+	rm -rf libs
 done
