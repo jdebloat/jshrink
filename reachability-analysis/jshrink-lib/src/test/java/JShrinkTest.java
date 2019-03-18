@@ -3,7 +3,9 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.reachability.EntryPointProcessor;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 
 import java.io.File;
 import java.io.IOException;
@@ -264,6 +266,7 @@ public class JShrinkTest {
 	@Test
 	public void makeSootPassTest(){
 		this.jShrink.makeSootPass(); //Simply ensuring this doesn't crash for now.
+		reboot();
 	}
 
 	@Test
