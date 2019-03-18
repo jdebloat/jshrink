@@ -106,6 +106,8 @@ public class Application {
 
 		assert (jShrink != null);
 
+		jShrink.makeSootPass();
+
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_size_before," + jShrink.getAppSize(true));
 			System.out.println("libs_size_before," + jShrink.getLibSize(true));

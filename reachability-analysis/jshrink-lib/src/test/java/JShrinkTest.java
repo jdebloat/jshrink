@@ -262,6 +262,11 @@ public class JShrinkTest {
 	}
 
 	@Test
+	public void makeSootPassTest(){
+		this.jShrink.makeSootPass(); //Simply ensuring this doesn't crash for now.
+	}
+
+	@Test
 	public void removeMethodsTest(){
 		Set<MethodData> toRemove = new HashSet<MethodData>();
 		toRemove.addAll(this.jShrink.getAllAppMethods());

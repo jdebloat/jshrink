@@ -401,6 +401,35 @@ public class JShrink {
 		return Optional.of(this.getProjectAnalyser().getTestOutput());
 	}
 
+	/*
+	This method does a Soot pass. Soot can make classes smaller even without any transformations. Thus, this allows
+	us to do a pass at the beginning of the run to optimise all the code with soot before doing so with transformations
+	(to obtain a good ground truth).
+
+	This must be run before any transformations as it may cause problems later.
+	 */
+	public void makeSootPass(){
+		Set<File> classPaths = getClassPaths();
+		Set<SootClass> classesToRewrite = new HashSet<SootClass>();
+		for(String className : this.getProjectAnalyserRun().getAppClasses()){
+			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			classesToRewrite.add(sootClass);
+		}
+		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
+			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			classesToRewrite.add(sootClass);
+		}
+		try {
+			Set<File> decompressedJars =
+				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+			modifyClasses(classesToRewrite, classPaths);
+			ClassFileUtils.compressJars(decompressedJars);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
 	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
 		for (SootClass sootClass : classesToRewrite) {
 			try {
