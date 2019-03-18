@@ -9,6 +9,7 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.reachability.*;
 
+import fj.data.IO;
 import org.apache.log4j.PropertyConfigurator;
 
 public class Application {
@@ -141,7 +142,24 @@ public class Application {
 		//Run the method inliner.
 		if (commandLineParser.inlineMethods()) {
 			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
-			//Note: Inlining does not remove methods, but it does change the call graph.
+
+			//Remove all the methods that have been inlined
+			for(String methodInlined : inlineData.getInlineLocations().keySet()){
+				try {
+					MethodData toRemove = new MethodData(methodInlined);
+					if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(toRemove))).isEmpty()) {
+						if (allAppMethodsBefore.contains(toRemove)) {
+							appMethodsRemoved.add(toRemove);
+						} else if (allLibMethodsBefore.contains(toRemove)) {
+							libMethodsRemoved.add(toRemove);
+						}
+					}
+				}catch(IOException e){
+					e.printStackTrace();
+					System.exit(1);
+				}
+			}
+
 			jShrink.updateClassFiles();
 		}
 
