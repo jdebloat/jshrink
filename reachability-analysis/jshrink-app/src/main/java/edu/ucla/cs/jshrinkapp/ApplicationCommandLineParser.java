@@ -32,6 +32,7 @@ public class ApplicationCommandLineParser {
 	private final boolean classCollapse;
 	private final boolean verbose;
 	private final boolean testOutput;
+	private final boolean skipMethodRemoval;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -161,6 +162,7 @@ public class ApplicationCommandLineParser {
 		this.classCollapse = commandLine.hasOption("C");
 		this.verbose = commandLine.hasOption("v");
 		this.testOutput = commandLine.hasOption("T");
+		this.skipMethodRemoval = commandLine.hasOption("S");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -357,6 +359,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option skipMethodWiping = Option.builder("S")
+			.desc("Skip the method removal of unused methods")
+			.longOpt("skip-method-removal")
+			.hasArg(false)
+			.required(false)
+			.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -378,6 +387,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(classCollapserOption);
 		toReturn.addOption(verboseOption);
 		toReturn.addOption(testOutputOption);
+		toReturn.addOption(skipMethodWiping);
 
 		return toReturn;
 	}
@@ -472,5 +482,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean isTestOutput(){
 		return this.testOutput;
+	}
+
+	public boolean isSkipMethodRemoval(){
+		return this.skipMethodRemoval;
 	}
 }
