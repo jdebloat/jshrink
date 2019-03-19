@@ -2,6 +2,7 @@ package edu.ucla.cs.jshrinkapp;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import edu.ucla.cs.jshrinklib.JShrink;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
@@ -36,6 +37,7 @@ public class Application {
 
 	public static void main(String[] args) {
 
+		long startTime = System.nanoTime();
 		//Re-initialise this each time Application is run (for testing).
 		removedMethods.clear();
 		removedClasses.clear();
@@ -241,5 +243,10 @@ public class Application {
 
 		removedMethods.addAll(appMethodsRemoved);
 		removedMethods.addAll(libMethodsRemoved);
+
+		long endTime = System.nanoTime();
+		if(commandLineParser.isVerbose()){
+			System.out.println("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)));
+		}
 	}
 }
