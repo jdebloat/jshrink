@@ -194,6 +194,8 @@ public class JShrinkTest {
 		assertTrue(isPresent(this.jShrink.getUsedAppMethods(),
 			"StandardStuff", "getStringStatic"));
 		assertTrue(isPresent(this.jShrink.getUsedAppMethods(),
+			"StandardStuff", "doNothing"));
+		assertTrue(isPresent(this.jShrink.getUsedAppMethods(),
 			"StandardStuff$1", "<init>"));
 		assertTrue(isPresent(this.jShrink.getUsedAppMethods(),
 			"StandardStuff$1", "compare"));
