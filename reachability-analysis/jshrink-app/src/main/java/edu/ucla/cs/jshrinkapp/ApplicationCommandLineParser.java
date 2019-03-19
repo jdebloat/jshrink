@@ -295,7 +295,7 @@ public class ApplicationCommandLineParser {
 				.build();
 
 		Option removeClassesOption = Option.builder("o")
-				.desc("Remove unused classes")
+				.desc("Remove unused classes (only worked with \"remove-methods\" flag)")
 				.longOpt("remove-classes")
 				.hasArg(false)
 				.required(false)

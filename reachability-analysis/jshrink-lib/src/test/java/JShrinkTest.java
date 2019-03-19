@@ -274,7 +274,7 @@ public class JShrinkTest {
 		Set<MethodData> toRemove = new HashSet<MethodData>();
 		toRemove.addAll(this.jShrink.getAllAppMethods());
 		toRemove.removeAll(this.jShrink.getUsedAppMethods());
-		Set<MethodData> methodsRemoved = this.jShrink.removeMethods(toRemove);
+		Set<MethodData> methodsRemoved = this.jShrink.removeMethods(toRemove,true);
 		this.jShrink.updateClassFiles();
 
 		assertFalse(methodsRemoved.isEmpty());

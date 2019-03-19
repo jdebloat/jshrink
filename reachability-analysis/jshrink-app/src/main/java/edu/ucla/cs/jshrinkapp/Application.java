@@ -78,11 +78,6 @@ public class Application {
 			System.exit(1);
 		}
 
-		if(commandLineParser.removeClasses()){
-			System.err.println("Sorry, we do not support the \"remove classes\" functionality for now!");
-			System.exit(1);
-		}
-
 		if(!commandLineParser.getClassesToIgnore().isEmpty()){
 			System.err.println("Sorry, we do not support the \"classes to ignore\" functionality for now!");
 			System.exit(1);
@@ -149,7 +144,8 @@ public class Application {
 			for(String methodInlined : inlineData.getInlineLocations().keySet()){
 				try {
 					MethodData toRemove = new MethodData(methodInlined);
-					if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(toRemove))).isEmpty()) {
+					if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(toRemove))
+						,commandLineParser.removeClasses()).isEmpty()) {
 						if (allAppMethodsBefore.contains(toRemove)) {
 							appMethodsRemoved.add(toRemove);
 						} else if (allLibMethodsBefore.contains(toRemove)) {
@@ -162,6 +158,7 @@ public class Application {
 				}
 			}
 
+			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
 		}
 
@@ -175,6 +172,7 @@ public class Application {
 			appMethodsRemoved.retainAll(allAppMethodsBefore);
 			libMethodsRemoved.retainAll(allLibMethodsBefore);
 
+			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
 		}
 
@@ -191,8 +189,8 @@ public class Application {
 
 
 			if (commandLineParser.removeMethods()) {
-				appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove));
-				libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove));
+				appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove, commandLineParser.removeClasses()));
+				libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove, commandLineParser.removeClasses()));
 				removedMethod = true;
 			} else if (commandLineParser.includeException()) {
 				appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(appMethodsToRemove,
@@ -209,6 +207,8 @@ public class Application {
 				libMethodsRemoved.addAll(jShrink.wipeMethods(libMethodsToRemove));
 				wipedMethodBody = true;
 			}
+
+			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
 		}
 

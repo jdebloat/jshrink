@@ -3,8 +3,6 @@ package edu.ucla.cs.jshrinkapp;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
-import edu.ucla.cs.jshrinklib.reachability.TestOutput;
-import edu.ucla.cs.jshrinklib.util.MavenUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -12,14 +10,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import soot.G;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
@@ -144,6 +138,8 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -152,8 +148,8 @@ public class ApplicationTest {
 		Set<String> classesRemoved = Application.removedClasses;
 
 
-		assertFalse(Application.removedMethod);
-		assertTrue(Application.wipedMethodBody);
+		assertTrue(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
@@ -185,9 +181,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("StandardStuffSub"));
-		//assertEquals(2, classesRemoved.size());
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(2, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -199,6 +195,8 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--use-spark ");
+		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -206,8 +204,8 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(Application.removedMethod);
-		assertTrue(Application.wipedMethodBody);
+		assertTrue(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
@@ -239,9 +237,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("StandardStuffSub"));
-		//assertEquals(2, classesRemoved.size());
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(2, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -253,6 +251,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -295,9 +294,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertEquals(2, classesRemoved.size());
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertEquals(2, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -347,8 +346,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertEquals(1, classRemoved.size());
+		assertEquals(0, classRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -401,8 +399,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertFalse(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertEquals(0, classRemoved.size());
+		assertEquals(0, classRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -460,8 +457,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertFalse(classRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertEquals(0, classRemoved.size());
+		assertEquals(0, classRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -473,6 +469,8 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -507,9 +505,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertEquals(2, classesRemoved.size());
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertEquals(2, classesRemoved.size());
 
         assertTrue(jarIntact());
 	}
@@ -520,6 +518,8 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -548,10 +548,10 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		//assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertFalse(classesRemoved.contains("StandardStuff"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
 
 		assertTrue(jarIntact());
 	}
@@ -565,6 +565,8 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -594,10 +596,10 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		//assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertFalse(classesRemoved.contains("StandardStuff"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
 
 		assertTrue(jarIntact());
 	}
@@ -609,6 +611,8 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--ignore-classes edu.ucla.cs.onr.test.LibraryClass edu.ucla.cs.onr.test.UnusedClass ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 		try {
 			Method method = ApplicationTest.class.getMethod("ignoreClassTest");
@@ -645,8 +649,8 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("StandardStuffSub"));
-		//assertEquals(1, classesRemoved.size());
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(1, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -659,6 +663,8 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -686,11 +692,11 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		//assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertFalse(classesRemoved.contains("ReflectionStuff"));
-		//assertFalse(classesRemoved.contains("StandardStuff"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
+		assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
+		assertFalse(classesRemoved.contains("ReflectionStuff"));
+		assertFalse(classesRemoved.contains("StandardStuff"));
 
 		assertTrue(jarIntact());
 	}
@@ -729,11 +735,7 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass2"));
-		//assertFalse(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
-		//assertTrue(classesRemoved.contains("ReflectionStuff"));
-		//assertFalse(classesRemoved.contains("StandardStuff"));
+		assertEquals(0, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}
@@ -932,9 +934,9 @@ public class ApplicationTest {
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
-		//assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
-		//assertTrue(classesRemoved.contains("StandardStuffSub"));
-		//assertEquals(2, classesRemoved.size());
+		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
+		assertTrue(classesRemoved.contains("StandardStuffSub"));
+		assertEquals(2, classesRemoved.size());
 
 		assertTrue(jarIntact());
 	}

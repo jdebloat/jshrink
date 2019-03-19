@@ -9,10 +9,7 @@ import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
 import edu.ucla.cs.jshrinklib.reachability.*;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
-import soot.G;
-import soot.Scene;
-import soot.SootClass;
-import soot.SootMethod;
+import soot.*;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
 import java.io.File;
@@ -45,8 +42,6 @@ public class JShrink {
 	//TODO: Expand for projects that are not just Maven (see above).
 
 	//TODO: Yet to implement the functionality to ignore certain classes for modification.
-
-	//TODO: Yet to implement functionality to remove classes that are completely unused.
 
 	/*
 	TODO: We do not assume interaction between remove methods/method inlining/call-graph collapsing.
@@ -252,18 +247,59 @@ public class JShrink {
 		return this.getProjectAnalyserRun().classesToIgnore();
 	}
 
-	public Set<MethodData> removeMethods(Set<MethodData> toRemove){
+	public Set<MethodData> removeMethods(Set<MethodData> toRemove, boolean removeUnusedClasses){
 		Set<MethodData> removedMethods = new HashSet<MethodData>();
-		for(MethodData methodData : toRemove){
-			SootClass sootClass = Scene.v().loadClassAndSupport(methodData.getClassName());
-			if(!sootClass.isEnum() && sootClass.declaresMethod(methodData.getSubSignature())) {
-				SootMethod sootMethod = sootClass.getMethod(methodData.getSubSignature());
-				if(MethodWiper.removeMethod(sootMethod)) {
-					removedMethods.add(methodData);
-					this.classesToModify.add(sootClass);
+
+		if(removeUnusedClasses) {
+			Set<SootClass> sootClassesAffected = new HashSet<SootClass>();
+			for (MethodData methodData : toRemove) {
+				sootClassesAffected.add(Scene.v().loadClassAndSupport(methodData.getClassName()));
+			}
+
+			for (SootClass sootClass : sootClassesAffected) {
+				boolean removeClass = true;
+				for (SootField sootField : sootClass.getFields()) {
+					if (sootField.isStatic() && !sootField.isPrivate()) {
+						removeClass = false;
+						break;
+					}
+				}
+				if (!removeClass) {
+					continue;
+				}
+
+				for (SootMethod sootMethod : sootClass.getMethods()) {
+					MethodData methodData = SootUtils.sootMethodToMethodData(sootMethod);
+					if (!toRemove.contains(methodData)) {
+						removeClass = false;
+						break;
+					}
+				}
+
+				if (removeClass) {
+					this.classesToRemove.add(sootClass);
+					for (SootMethod sootMethod : sootClass.getMethods()) {
+						MethodData methodData = SootUtils.sootMethodToMethodData(sootMethod);
+						removedMethods.add(methodData);
+					}
 				}
 			}
 		}
+
+		//Remove the classes and not the classes affected.
+		for(MethodData methodData : toRemove){
+			if(!removedMethods.contains(methodData)) {
+				SootClass sootClass = Scene.v().loadClassAndSupport(methodData.getClassName());
+				if (!sootClass.isEnum() && sootClass.declaresMethod(methodData.getSubSignature())) {
+					SootMethod sootMethod = sootClass.getMethod(methodData.getSubSignature());
+					if (MethodWiper.removeMethod(sootMethod)) {
+						removedMethods.add(methodData);
+						this.classesToModify.add(sootClass);
+					}
+				}
+			}
+		}
+
 		return removedMethods;
 	}
 
@@ -428,6 +464,26 @@ public class JShrink {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	/*
+	I basically just use these (the following two methods) for debugging purposes. They keep track of classes that will
+	be modified and deleted upon execution of "updateClassFiles()".
+	 */
+	public Set<String> classesToModified(){
+		Set<String> toReturn = new HashSet<String>();
+		for(SootClass sootClass : this.classesToModify){
+			toReturn.add(sootClass.getName());
+		}
+		return Collections.unmodifiableSet(toReturn);
+	}
+
+	public Set<String> classesToRemove(){
+		Set<String> toReturn = new HashSet<String>();
+		for(SootClass sootClass : this.classesToRemove){
+			toReturn.add(sootClass.getName());
+		}
+		return Collections.unmodifiableSet(toReturn);
 	}
 
 	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
