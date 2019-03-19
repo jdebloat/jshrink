@@ -740,7 +740,7 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-	@Test @Ignore
+	@Test
 	public void junit_test(){
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
@@ -752,10 +752,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--verbose ");
 		arguments.append("-T ");
-	//	arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		//arguments.append("--inline ");
-		//arguments.append("--class-collapser ");
-
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		Application.main(arguments.toString().split("\\s+"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
