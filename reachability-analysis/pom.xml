@@ -9,6 +9,7 @@
 	<modules>
 		<module>jshrink-app</module>
 		<module>jshrink-lib</module>
+		<module>soot</module>
 	</modules>
 
 </project>
