@@ -6,6 +6,7 @@ PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/lib/jvm/java-8-oracle/bin/java"
+TAMIFLEX="${PWD}/poa-2.0.3.jar"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -35,7 +36,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 3 hour timeout
-	timeout 10800 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${PWD}/poa-2.0.3.jar --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+	timeout 10800 ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
