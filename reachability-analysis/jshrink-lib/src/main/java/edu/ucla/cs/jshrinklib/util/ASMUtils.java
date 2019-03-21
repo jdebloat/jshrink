@@ -7,6 +7,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import edu.ucla.cs.jshrinklib.reachability.ASMClassVisitor;
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -17,7 +18,7 @@ import org.objectweb.asm.Type;
 public class ASMUtils {
 
 	public static void readClassFromJarFile(JarFile jarFile, Set<String> classes,
-    		Set<MethodData> methods) {
+    		Set<MethodData> methods, Set<FieldData> fields) {
         final Enumeration<JarEntry> entries = jarFile.entries();
         while (entries.hasMoreElements()) {
         	final JarEntry entry = entries.nextElement();
@@ -25,7 +26,7 @@ public class ASMUtils {
             if (entry.getName().endsWith(".class") && !entry.getName().equals("module-info")) {
             	try {
                 	ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
-                	cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+                	cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields), ClassReader.SKIP_DEBUG);
                 } catch (IllegalArgumentException ex) {
                 	continue;
                 } catch (IOException ex){
@@ -39,7 +40,7 @@ public class ASMUtils {
     }
     
     public static void readClassFromDirectory(File dirPath, Set<String> classes,
-    		Set<MethodData> methods) {
+    		Set<MethodData> methods, Set<FieldData> fields) {
     	
     	if(!dirPath.exists()) {
     		// fix NPE due to non-existent file
@@ -49,14 +50,14 @@ public class ASMUtils {
     	
     	for(File f : dirPath.listFiles()) {
     		if(f.isDirectory()) {
-    			readClassFromDirectory(f, classes, methods);
+    			readClassFromDirectory(f, classes, methods, fields);
     		} else {
     			String fName = f.getName();
     			if(fName.endsWith(".class")) {
     				try {
     					FileInputStream fis = new FileInputStream(f);
 						ClassReader cr = new ClassReader(fis);
-						cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods), ClassReader.SKIP_DEBUG);
+						cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields), ClassReader.SKIP_DEBUG);
 						fis.close();
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -66,15 +67,15 @@ public class ASMUtils {
     	}
     }
 
-    public static void readClass(File dir, Set<String> classes, Set<MethodData> methods){
+    public static void readClass(File dir, Set<String> classes, Set<MethodData> methods, Set<FieldData> fields){
     	try {
 		    if (dir.isDirectory()) {
-			    readClassFromDirectory(dir, classes, methods);
+			    readClassFromDirectory(dir, classes, methods, fields);
 		    } else if (dir.getName().endsWith(".jar")) {
 			    JarFile j = null;
 			    try {
 				    j = new JarFile(dir);
-				    readClassFromJarFile(j, classes, methods);
+				    readClassFromJarFile(j, classes, methods, fields);
 			    } catch (IOException e) {
 				    e.printStackTrace();
 			    }

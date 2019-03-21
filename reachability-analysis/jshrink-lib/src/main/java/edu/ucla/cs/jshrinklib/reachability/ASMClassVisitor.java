@@ -7,18 +7,28 @@ import java.util.regex.Pattern;
 
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Type;
 
 public class ASMClassVisitor extends ClassVisitor{
 	private String currentClass;
 	private Set<String> classes;
 	private Set<MethodData> methods;
+	private Set<FieldData> fields;
 	private boolean isJUnit3Test;
-	
-	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods) {
+
+	/**
+	 *
+	 * @param api
+	 * @param classes
+	 * @param methods
+	 * @param fields set this to null if you do not want to collect field data
+	 */
+	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods, Set<FieldData> fields) {
 		super(api);
 		this.classes = classes;
-		this.methods = methods; 
+		this.methods = methods;
+		this.fields = fields;
 		isJUnit3Test = false;
 	}
 	
@@ -66,5 +76,20 @@ public class ASMClassVisitor extends ClassVisitor{
 		methods.add(methodData);
 
 		return new ASMMethodAnnotationScanner(this.api, methodData);
+	}
+
+	@Override
+	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+		if(fields == null) {
+			// no need to collect any field data
+			return null;
+		}
+
+		// note that if it is a generic type, e.g., Map<String>, we can only get the generic type (Map) without the type parameters (String)
+		String type = Type.getType(desc).getClassName();
+		FieldData fd = new FieldData(name, currentClass, (access & 8) != 0, type);
+		fields.add(fd);
+
+		return null;
 	}
 }

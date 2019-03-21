@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 
 import org.apache.commons.io.FileUtils;
@@ -30,7 +31,7 @@ public class EntryPointUtil {
 	public static Set<MethodData> getTestMethodsAsEntryPoints(File test_log, File test_classes) {
 		HashSet<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClass(test_classes, testClasses, testMethods);
+		ASMUtils.readClass(test_classes, testClasses, testMethods, null);
 		
 		Set<String> executedTests = getTestMethodsAsEntryPoints(test_log);
 		

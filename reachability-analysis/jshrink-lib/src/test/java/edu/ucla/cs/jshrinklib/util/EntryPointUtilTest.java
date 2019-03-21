@@ -6,6 +6,7 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -20,7 +21,7 @@ public class EntryPointUtilTest {
 					+ File.separator + "target" + File.separator + "classes").getFile());
 		Set<String> classes = new HashSet<String>();
 		Set<MethodData> methods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods);
+		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods, null);
 		Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(methods);
 		assertEquals(4, mainMethods.size());
 	}
@@ -66,7 +67,7 @@ public class EntryPointUtilTest {
 		// get test cases based on annotations
 		Set<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods);
+		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods, null);
 		Set<MethodData> testsByAnnotations = EntryPointUtil.getTestMethodsAsEntryPoints(testMethods);
 		
 		

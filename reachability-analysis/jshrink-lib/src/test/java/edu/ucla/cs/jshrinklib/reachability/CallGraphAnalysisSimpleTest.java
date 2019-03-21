@@ -290,10 +290,10 @@ public class CallGraphAnalysisSimpleTest {
 				new File(classLoader.getResource("simple-test-project"
 					+ File.separator + "libs" + File.separator + "standard-stuff-library.jar").getFile()));
 		List<File> appClassPath = new ArrayList<File>();
-		appClassPath.add(new File(classLoader.getResource("simple-test-project2"
+		appClassPath.add(new File(classLoader.getResource("simple-test-project"
 			+ File.separator + "target" + File.separator + "classes").getFile()));
 		List<File> appTestPath = new ArrayList<File>();
-		appTestPath.add(new File(classLoader.getResource("simple-test-project2"
+		appTestPath.add(new File(classLoader.getResource("simple-test-project"
 			+ File.separator + "target" + File.separator + "test-classes").getFile()));
 		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 				new EntryPointProcessor(true, false, false,
@@ -342,13 +342,13 @@ public class CallGraphAnalysisSimpleTest {
 		assertTrue(contains(getStringStatic.get(), "StandardStuff", "getString"));
 
 		Optional<Set<MethodData>> libraryClassInit =
-				get(usedLibMethods, "edu.ucla.cs.jshrinkapp.test.LibraryClass", "<init>");
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "<init>");
 		assertTrue(libraryClassInit.isPresent());
 		assertEquals(1,libraryClassInit.get().size());
 		assertTrue(contains(libraryClassInit.get(), "Main", "main"));
 
 		Optional<Set<MethodData>> getNumber =
-				get(usedLibMethods, "edu.ucla.cs.jshrinkapp.test.LibraryClass", "getNumber");
+				get(usedLibMethods, "edu.ucla.cs.onr.test.LibraryClass", "getNumber");
 		assertTrue(getNumber.isPresent());
 		assertEquals(1, getNumber.get().size());
 		assertTrue(contains(getNumber.get(), "Main", "main"));

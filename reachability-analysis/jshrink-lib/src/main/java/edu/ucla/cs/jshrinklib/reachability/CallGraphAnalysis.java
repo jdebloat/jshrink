@@ -21,13 +21,15 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<String> libClasses;
 	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
+	private final Set<FieldData> libFields;
 	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
+	private final Set<FieldData> appFields;
 	private final Set<String> usedLibClasses;
-	private final Map<MethodData,Set<MethodData>> usedLibMethods;
+	private final Map<MethodData,Set<MethodData>> usedLibMethods; // callee -> a set of callers
 	private final Set<String> usedAppClasses;
-	private final Map<MethodData,Set<MethodData>> usedAppMethods;
+	private final Map<MethodData,Set<MethodData>> usedAppMethods; // callee -> a set of callers
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final EntryPointProcessor entryPointProcessor;
@@ -47,9 +49,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		libClasses = new HashSet<String>();
 		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
+		libFields = new HashSet<FieldData>();
 		methodToLib = new HashMap<MethodData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
+		appFields = new HashSet<FieldData>();
 		usedLibClasses = new HashSet<String>();
 		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
 		usedAppClasses = new HashSet<String>();
@@ -70,7 +74,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public void run() {
         // 1. use ASM to find all classes and methods
-        this.findAllClassesAndMethods();
+        this.findAllClassesAndMethodsAndFields();
         // 2. get entry points
         this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
 		// 3. construct the call graph and compute the reachable classes and methods
@@ -86,7 +90,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	 */
 	public void run(Set<MethodData> entryPoints) {
 		// 1. use ASM to find all classes and methods
-        this.findAllClassesAndMethods();
+        this.findAllClassesAndMethodsAndFields();
         
 		// clear just in case this method is misused---should not call this method twice or call this
 		// after calling the overriden run method
@@ -102,13 +106,15 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.runCallGraphAnalysis();
 	}
 
-	private void findAllClassesAndMethods() {
+	private void findAllClassesAndMethodsAndFields() {
 		for (File lib : this.libJarPath) {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
-			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib);
+			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib);
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
+			this.libFields.addAll(fields_in_this_lib);
 			
 			String lib_path = lib.getAbsolutePath();
 			for(String class_name : classes_in_this_lib) {
@@ -120,11 +126,12 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		}
 
 		for (File appPath : appClassPath) {
-			ASMUtils.readClass(appPath, appClasses, appMethods);
+			ASMUtils.readClass(appPath, appClasses, appMethods, appFields);
 		}
 
 		for (File testPath : this.appTestPath){
-			ASMUtils.readClass(testPath,testClasses,testMethods);
+			// no need to collect field data for test cases
+			ASMUtils.readClass(testPath,testClasses,testMethods,null);
 		}
 	}
 
