@@ -48,9 +48,7 @@ public class LineNumberAdder extends SceneTransformer {
 
   public void internalTransform(String phaseName, Map opts) {
 
-    // using a snapshot iterator because Application classes may change if LambdaMetaFactory translates invokedynamic to new
-    // classes; no need to visit new classes
-    Iterator it = Scene.v().getApplicationClasses().snapshotIterator();
+    Iterator it = Scene.v().getApplicationClasses().iterator();
     while (it.hasNext()) {
       SootClass sc = (SootClass) it.next();
       // make map of first line to each method

@@ -39,13 +39,8 @@ public interface IInitialResolver {
     public final Set<Type> typesToHierarchy, typesToSignature;
 
     public Dependencies() {
-      typesToHierarchy = new HashSet<>();
-      typesToSignature = new HashSet<>();
-    }
-
-    public Dependencies(Set<Type> typesToHierarchy, Set<Type> typesToSignature) {
-      this.typesToHierarchy = typesToHierarchy == null ? new HashSet<>() : typesToHierarchy;
-      this.typesToSignature = typesToSignature == null ? new HashSet<>() : typesToSignature;
+      typesToHierarchy = new HashSet<Type>();
+      typesToSignature = new HashSet<Type>();
     }
   }
 

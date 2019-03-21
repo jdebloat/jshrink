@@ -21,8 +21,9 @@ package soot.toolkits.scalar;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import java.util.BitSet;
-import java.util.Iterator;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -71,7 +72,7 @@ public class UnusedLocalEliminator extends BodyTransformer {
       i++;
     }
 
-    BitSet usedLocals = new BitSet(n);
+    boolean[] usedLocals = new boolean[n];
 
     // Traverse statements noting all the uses and defs
     for (Unit s : body.getUnits()) {
@@ -80,7 +81,7 @@ public class UnusedLocalEliminator extends BodyTransformer {
         if (v instanceof Local) {
           Local l = (Local) v;
           assert locals.contains(l);
-          usedLocals.set(l.getNumber());
+          usedLocals[l.getNumber()] = true;
         }
       }
       for (ValueBox vb : s.getDefBoxes()) {
@@ -88,22 +89,22 @@ public class UnusedLocalEliminator extends BodyTransformer {
         if (v instanceof Local) {
           Local l = (Local) v;
           assert locals.contains(l);
-          usedLocals.set(l.getNumber());
+          usedLocals[l.getNumber()] = true;
         }
       }
     }
 
     // Remove all locals that are unused.
-    Iterator<Local> localIt = locals.iterator();
-    while (localIt.hasNext()) {
-      final Local local = localIt.next();
-      final int lno = local.getNumber();
-      if (!usedLocals.get(lno)) {
-        localIt.remove();
-      } else {
-        local.setNumber(oldNumbers[lno]);
+    List<Local> keep = new ArrayList<Local>(body.getLocalCount());
+    for (Local local : locals) {
+      int lno = local.getNumber();
+      local.setNumber(oldNumbers[lno]);
+      if (usedLocals[lno]) {
+        keep.add(local);
       }
     }
+    body.getLocals().clear();
+    body.getLocals().addAll(keep);
   }
 
 }
