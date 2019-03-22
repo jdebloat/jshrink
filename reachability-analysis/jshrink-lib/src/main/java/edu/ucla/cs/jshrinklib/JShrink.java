@@ -449,10 +449,16 @@ public class JShrink {
 		Set<SootClass> classesToRewrite = new HashSet<SootClass>();
 		for(String className : this.getProjectAnalyserRun().getAppClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				continue;
+			}
 			classesToRewrite.add(sootClass);
 		}
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				continue;
+			}
 			classesToRewrite.add(sootClass);
 		}
 		try {
