@@ -30,6 +30,9 @@ public class Main {
 		StandardStuff s = new StandardStuff();
 		s.getString();
 
+		String testFieldAccess = s.f1;
+		String testStaticFieldAccess = StandardStuff.f2;
+
 		LibraryClass lc = new LibraryClass();
 		LibraryClass2 l;
 		lc.getNumber();

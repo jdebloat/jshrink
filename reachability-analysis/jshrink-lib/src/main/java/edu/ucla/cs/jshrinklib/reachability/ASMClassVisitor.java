@@ -1,8 +1,6 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.objectweb.asm.ClassVisitor;
@@ -15,6 +13,7 @@ public class ASMClassVisitor extends ClassVisitor{
 	private Set<String> classes;
 	private Set<MethodData> methods;
 	private Set<FieldData> fields;
+	private Map<MethodData, Set<FieldData>> fieldReferences;
 	private boolean isJUnit3Test;
 
 	/**
@@ -23,12 +22,15 @@ public class ASMClassVisitor extends ClassVisitor{
 	 * @param classes
 	 * @param methods
 	 * @param fields set this to null if you do not want to collect field data
+	 * @param fieldReferences set this to null if you do not want to collect field references
 	 */
-	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods, Set<FieldData> fields) {
+	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods, Set<FieldData> fields,
+						   Map<MethodData, Set<FieldData>> fieldReferences) {
 		super(api);
 		this.classes = classes;
 		this.methods = methods;
 		this.fields = fields;
+		this.fieldReferences = fieldReferences;
 		isJUnit3Test = false;
 	}
 	
@@ -74,8 +76,16 @@ public class ASMClassVisitor extends ClassVisitor{
 			methodData.setAsJUnit3Test();
 		}
 		methods.add(methodData);
+		ASMMethodVisitor mv;
+		if(fieldReferences != null) {
+			Set<FieldData> fieldRefs = new HashSet<FieldData>(10);
+			fieldReferences.put(methodData, fieldRefs);
+			mv = new ASMMethodVisitor(this.api, methodData, fieldRefs);
+		} else {
+			mv = new ASMMethodVisitor(this.api, methodData, null);
+		}
 
-		return new ASMMethodAnnotationScanner(this.api, methodData);
+		return mv;
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class EntryPointUtil {
 	public static Set<MethodData> getTestMethodsAsEntryPoints(File test_log, File test_classes) {
 		HashSet<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClass(test_classes, testClasses, testMethods, null);
+		ASMUtils.readClass(test_classes, testClasses, testMethods, null, null);
 		
 		Set<String> executedTests = getTestMethodsAsEntryPoints(test_log);
 		

@@ -9,6 +9,9 @@ public class StandardStuff {
 	private static final String GOODBYE_STRING="Goodbye";
 	private final int integer;
 
+	public String f1 = "field A";
+	public static String f2 = "static field B";
+
 	public StandardStuff(){
 		String temp = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 		this.integer = 6;

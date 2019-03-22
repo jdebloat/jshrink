@@ -21,7 +21,7 @@ public class EntryPointUtilTest {
 					+ File.separator + "target" + File.separator + "classes").getFile());
 		Set<String> classes = new HashSet<String>();
 		Set<MethodData> methods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods, null);
+		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods, null, null);
 		Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(methods);
 		assertEquals(4, mainMethods.size());
 	}
@@ -67,7 +67,7 @@ public class EntryPointUtilTest {
 		// get test cases based on annotations
 		Set<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods, null);
+		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods, null, null);
 		Set<MethodData> testsByAnnotations = EntryPointUtil.getTestMethodsAsEntryPoints(testMethods);
 		
 		
