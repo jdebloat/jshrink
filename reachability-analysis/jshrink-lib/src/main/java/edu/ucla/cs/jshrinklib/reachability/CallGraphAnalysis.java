@@ -21,11 +21,13 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<String> libClasses;
 	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
+	private final Map<MethodData, Set<FieldData>> libFieldReferences;
 	private final Set<FieldData> libFields;
 	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<FieldData> appFields;
+	private final Map<MethodData, Set<FieldData>> appFieldReferences;
 	private final Set<String> usedLibClasses;
 	private final Map<MethodData,Set<MethodData>> usedLibMethods; // callee -> a set of callers
 	private final Set<String> usedAppClasses;
@@ -50,10 +52,12 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
 		libFields = new HashSet<FieldData>();
+		libFieldReferences = new HashMap<MethodData, Set<FieldData>>();
 		methodToLib = new HashMap<MethodData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		appFields = new HashSet<FieldData>();
+		appFieldReferences = new HashMap<MethodData, Set<FieldData>>();
 		usedLibClasses = new HashSet<String>();
 		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
 		usedAppClasses = new HashSet<String>();
@@ -110,12 +114,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		for (File lib : this.libJarPath) {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
-			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
-			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib);
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, libFields, libFieldReferences);
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
-			this.libFields.addAll(fields_in_this_lib);
-			
+
 			String lib_path = lib.getAbsolutePath();
 			for(String class_name : classes_in_this_lib) {
 				classToLib.put(class_name, lib_path);
@@ -126,12 +128,12 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		}
 
 		for (File appPath : appClassPath) {
-			ASMUtils.readClass(appPath, appClasses, appMethods, appFields);
+			ASMUtils.readClass(appPath, appClasses, appMethods, appFields, appFieldReferences);
 		}
 
 		for (File testPath : this.appTestPath){
 			// no need to collect field data for test cases
-			ASMUtils.readClass(testPath,testClasses,testMethods,null);
+			ASMUtils.readClass(testPath,testClasses,testMethods,null, null);
 		}
 	}
 

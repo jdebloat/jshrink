@@ -11,10 +11,7 @@ import org.junit.Test;
 
 import soot.G;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CallGraphAnalysisStressTest {
 	private static String root_path = "/media/troy/Disk2/ONR/BigQuery/sample-projects";
@@ -60,7 +57,8 @@ public class CallGraphAnalysisStressTest {
 		HashSet<String> appClasses = new HashSet<String>();
 		Set<MethodData> appMethods = new HashSet<MethodData>();
 		Set<FieldData> appFields = new HashSet<FieldData>();
-		ASMUtils.readClass(app_class_path, appClasses, appMethods, appFields);
+		Map<MethodData, Set<FieldData>> appFieldRefs = new HashMap<MethodData, Set<FieldData>>();
+		ASMUtils.readClass(app_class_path, appClasses, appMethods, appFields, appFieldRefs);
 		Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(appMethods);
 		entryPoints.addAll(mainMethods);
 		

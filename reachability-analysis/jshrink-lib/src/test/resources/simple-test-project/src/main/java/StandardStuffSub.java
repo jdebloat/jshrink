@@ -6,6 +6,8 @@ import java.util.List;
 
 public class StandardStuffSub extends StandardStuff {
 
+	public String f1 = "shadow field A";
+
 	public StandardStuffSub(){
 		super();
 		protectedAndUntouched();

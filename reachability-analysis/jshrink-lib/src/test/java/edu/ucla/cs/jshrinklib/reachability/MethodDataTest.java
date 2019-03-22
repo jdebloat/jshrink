@@ -122,7 +122,7 @@ public class MethodDataTest {
 		ClassReader cr = new ClassReader(new FileInputStream(testClassPath));
 		Set<String> classes = new HashSet<String>();
 		Set<MethodData> methods = new HashSet<MethodData>();
-		cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, null), ClassReader.SKIP_DEBUG);
+		cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, null, null), ClassReader.SKIP_DEBUG);
 		for(MethodData md : methods) {
 			if(md.getName().startsWith("test")) {
 				assertTrue(md.isJUnit3Test());

@@ -17,7 +17,9 @@ public class FieldData {
         return this.name;
     }
 
-    public String getClassName() { return this.className; }
+    public String getClassName(){
+        return this.className;
+    }
 
     public String getType(){
         return this.type;

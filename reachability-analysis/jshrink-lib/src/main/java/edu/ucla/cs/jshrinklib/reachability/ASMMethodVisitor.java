@@ -2,19 +2,48 @@ package edu.ucla.cs.jshrinklib.reachability;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-public class ASMMethodVisitor extends MethodVisitor {
-	public boolean isTestMethod; 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
 
-	public ASMMethodVisitor(int api) {
+class ASMMethodVisitor extends MethodVisitor {
+	private final MethodData currentMethod;
+	public Set<FieldData> fieldReferences;
+
+	public ASMMethodVisitor(int api, MethodData method, Set<FieldData> fieldReferences) {
 		super(api);
-		isTestMethod = true;
+		this.currentMethod = method;
+		this.fieldReferences = fieldReferences;
 	}
-	
+
 	@Override
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        System.out.println("visitAnnotation: desc="+Type.getType(desc).getClassName() +" visible="+visible);
-        return null;
-    }
+	public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+		//System.out.println("visitAnnotation: desc="+desc+" visible="+visible);
+		this.currentMethod.setAnnotation(Type.getType(desc).getClassName());
+		return null;//super.visitAnnotation(desc, visible);
+	}
+
+	@Override
+	public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+		if(fieldReferences == null) {
+			// no need to collect field references
+			return;
+		}
+
+		boolean isStatic;
+		if(opcode == Opcodes.GETSTATIC || opcode == Opcodes.PUTSTATIC) {
+			isStatic = true;
+		} else {
+			isStatic = false;
+		}
+
+		String className = owner.replaceAll(Pattern.quote("/"), ".");
+
+		String type = Type.getType(desc).getClassName();
+		FieldData field = new FieldData(name, className, isStatic, type);
+		fieldReferences.add(field);
+	}
 }
