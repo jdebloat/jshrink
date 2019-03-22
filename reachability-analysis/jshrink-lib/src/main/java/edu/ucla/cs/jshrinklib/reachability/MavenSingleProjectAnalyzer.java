@@ -206,7 +206,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			reader.close();
 
-			exitValue = process1.exitValue();
+			exitValue = process2.exitValue();
 			
 			if(exitValue != 0) {
 				//throw new IOException("Cannot get dependency information!");
@@ -226,7 +226,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			reader.close();
 
-			exitValue = process1.exitValue();
+			exitValue = process3.exitValue();
 
 			if(exitValue != 0) {
 				//throw new IOException("Cannot get dependency information for compile scope!");
