@@ -129,4 +129,64 @@ public class MethodDataTest {
 			}
 		}
 	}
+
+	@Test
+	public void equalsTest(){
+		try {
+			MethodData methodData1 = new MethodData("<org.apache.log4j.config.PropertySetter: void introspect()>");
+			//public MethodData(String methodName, String methodClassName, String methodReturnType,
+			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
+			MethodData methodData2 = new MethodData("introspect",
+				"org.apache.log4j.config.PropertySetter", "void",
+				new String[0], false, false);
+
+			assertEquals(methodData1.getSignature(), methodData2.getSignature());
+			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
+			assertEquals(methodData1, methodData2);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	@Test
+	public void equalsTest2(){
+		try {
+			MethodData methodData1 = new MethodData("<org.apache.log4j.config.PropertySetter: void introspect(parameter)>");
+			//public MethodData(String methodName, String methodClassName, String methodReturnType,
+			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
+			String[] args = {"parameter"};
+			MethodData methodData2 = new MethodData("introspect",
+				"org.apache.log4j.config.PropertySetter", "void",
+				args, false, false);
+
+			assertEquals(methodData1.getSignature(), methodData2.getSignature());
+			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
+			assertEquals(methodData1, methodData2);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+
+	@Test
+	public void equalsTest3(){
+		try {
+			MethodData methodData1 = new MethodData(
+				"<org.apache.log4j.config.PropertySetter: public void introspect(parameter , parameter2)>");
+			//public MethodData(String methodName, String methodClassName, String methodReturnType,
+			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
+			String[] args = {"parameter", "parameter2"};
+			MethodData methodData2 = new MethodData("introspect",
+				"org.apache.log4j.config.PropertySetter", "void",
+				args, true, false);
+
+			assertEquals(methodData1.getSignature(), methodData2.getSignature());
+			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
+			assertEquals(methodData1, methodData2);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 }
