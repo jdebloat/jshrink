@@ -149,8 +149,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			 File libsDir = new File(root_dir + File.separator + "libs");
 
 			 String[] cmd;
-			 Process process1;
-			 BufferedReader reader;
+			 ProcessBuilder processBuilder;
+			 Process process;
+			 InputStream stdout;
+			 InputStreamReader isr;
+			 BufferedReader br;
 			 String line;
 			 int exitValue;
 			 if(this.compileProject) {
@@ -162,15 +165,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					 "--quiet",
 					 "--batch-mode",
 					 "-DskipTests=true"};
-				 process1 = Runtime.getRuntime().exec(cmd);
-				 process1.waitFor();
+				 processBuilder = new ProcessBuilder(cmd);
+				 processBuilder.redirectErrorStream(true);
+				 process = processBuilder.start();
+				 stdout = process.getInputStream();
+				 isr = new InputStreamReader(stdout);
+				 br = new BufferedReader(isr);
 
-				 reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
+				 while ((line = br.readLine()) != null) {}
+				 br.close();
 
-				 while ((line = reader.readLine()) != null) {}
-				 reader.close();
-
-				 exitValue = process1.exitValue();
+				 exitValue = process.waitFor();
 
 				 if (exitValue != 0) {
 					 //throw new IOException("Build failed!");
@@ -181,18 +186,21 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
 				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
-			process1 = Runtime.getRuntime().exec(cmd);
-			process1.waitFor();
+			processBuilder = new ProcessBuilder(cmd);
+			processBuilder.redirectErrorStream(true);
+			process = processBuilder.start();
+			stdout = process.getInputStream();
+			isr = new InputStreamReader(stdout);
+			br = new BufferedReader(isr);
 
-			reader = new BufferedReader(new InputStreamReader(process1.getInputStream()));
 
 			String maven_log = "";
-			while((line=reader.readLine()) != null) {
+			while((line=br.readLine()) != null) {
 				maven_log += line + System.lineSeparator();
 			}
-			reader.close();
+			br.close();
 
-			exitValue = process1.exitValue();
+			exitValue = process.waitFor();
 
 			if(exitValue != 0) {
 				this.setupStatus = SETUP_STATUS.TESTING_CRASH;
@@ -203,18 +211,21 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
 			// call graph in the static analysis later 
-			String[] cmd2 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
 					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode"};
-			Process process2 = Runtime.getRuntime().exec(cmd2);
-			process2.waitFor();
+			processBuilder = new ProcessBuilder(cmd);
+			processBuilder.redirectErrorStream(true);
+			process = processBuilder.start();
+			stdout = process.getInputStream();
+			isr = new InputStreamReader(stdout);
+			br = new BufferedReader(isr);
 
-			reader = new BufferedReader(new InputStreamReader(process2.getInputStream()));
-			while((line=reader.readLine()) != null) {
+			while((line=br.readLine()) != null) {
 				classpathInfo += line + System.lineSeparator();
 			}
-			reader.close();
+			br.close();
 
-			exitValue = process2.exitValue();
+			exitValue = process.waitFor();
 			
 			if(exitValue != 0) {
 				//throw new IOException("Cannot get dependency information!");
@@ -223,18 +234,21 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
-			String[] cmd3 = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
 					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
-			Process process3 = Runtime.getRuntime().exec(cmd3);
-			process3.waitFor();
-			
-			reader = new BufferedReader(new InputStreamReader(process3.getInputStream()));
-			while((line = reader.readLine()) != null) {
+			processBuilder = new ProcessBuilder(cmd);
+			processBuilder.redirectErrorStream(true);
+			process = processBuilder.start();
+			stdout = process.getInputStream();
+			isr = new InputStreamReader(stdout);
+			br = new BufferedReader(isr);
+
+			while((line = br.readLine()) != null) {
 				classpathInfo_compile_only += line + System.lineSeparator();
 			}
-			reader.close();
+			br.close();
 
-			exitValue = process3.exitValue();
+			exitValue = process.waitFor();
 
 			if(exitValue != 0) {
 				//throw new IOException("Cannot get dependency information for compile scope!");

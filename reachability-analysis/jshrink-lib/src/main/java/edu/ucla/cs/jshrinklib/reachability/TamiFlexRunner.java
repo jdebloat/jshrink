@@ -1,9 +1,6 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -286,20 +283,24 @@ public class TamiFlexRunner {
 	}
 	
 	public boolean runMavenTest() throws IOException, InterruptedException {
-		Process p = Runtime.getRuntime().exec("mvn test -fn --batch-mode", null, new File(project_path));
-		BufferedReader stdInput = new BufferedReader(new InputStreamReader(
-				p.getInputStream()));
+		String[] cmd = {"mvn", "-f" , (new File(project_path)).getAbsolutePath() ,"test", "-fn", "--batch-mode"};
+		ProcessBuilder processBuilder = new ProcessBuilder(cmd);
+		processBuilder.redirectErrorStream(true);
+		Process process = processBuilder.start();
+		InputStream stdout = process.getInputStream();
+		InputStreamReader isr = new InputStreamReader(stdout);
+		BufferedReader br = new BufferedReader(isr);
 
 		boolean testResult = false;
 		String output = null;
-		while ((output = stdInput.readLine()) != null) {
+		while ((output = br.readLine()) != null) {
 			if(output.contains("BUILD SUCCESS")) {
 				testResult = true;
 			} else if (output.contains("BUILD FAILURE")) {
 				testResult = false;
 			}
 		}
-		p.waitFor();
+		process.waitFor();
 		
 		return testResult;
 	}
