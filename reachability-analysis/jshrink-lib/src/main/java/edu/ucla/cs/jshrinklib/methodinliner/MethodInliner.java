@@ -55,7 +55,8 @@ public class MethodInliner {
 
 				if(debug){
 					System.out.println();
-					System.out.println("Attempting to inline " + callee.getSignature() + " at " + caller + ".");
+					System.out.println("Attempting to inline " + callee.getSignature()
+						+ " at " + caller.getSignature() + ".");
 				}
 
 				//Both the caller and callee classes must be within the current classpaths.
