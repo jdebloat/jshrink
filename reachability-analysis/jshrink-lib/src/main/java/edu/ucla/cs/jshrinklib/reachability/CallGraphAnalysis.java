@@ -34,6 +34,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Map<MethodData,Set<MethodData>> usedAppMethods; // callee -> a set of callers
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
+	private final Map<MethodData, Set<MethodData>> usedTestMethods;
+	private final Set<String> usedTestClasses;
 	private final EntryPointProcessor entryPointProcessor;
 	private Set<CallGraph> callgraphs = new HashSet<CallGraph>();
 	private final boolean useSpark;
@@ -64,6 +66,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		usedAppMethods = new HashMap<MethodData, Set<MethodData>>();
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
+		usedTestMethods = new HashMap<MethodData, Set<MethodData>>();
+		usedTestClasses = new HashSet<String>();
 		entryPointProcessor = entryPointProc;
 		this.useSpark = useSpark;
 	}
@@ -175,8 +179,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		// check for used library classes and methods
 		this.usedLibClasses.addAll(this.libClasses);
 		this.usedLibClasses.retainAll(usedClasses);
-		//this.usedLibMethods.addAll(this.libMethods);
-		//this.usedLibMethods.retainAll(usedMethods);
 		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
 			if(this.libMethods.contains(e.getKey())){
 				this.usedLibMethods.put(e.getKey(), e.getValue());
@@ -186,11 +188,18 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		// check for used application classes and methods
 		this.usedAppClasses.addAll(this.appClasses);
 		this.usedAppClasses.retainAll(usedClasses);
-		//this.usedAppMethods.addAll(this.appMethods);
-		//this.usedAppMethods.retainAll(usedMethods);
 		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
 			if(this.appMethods.contains(e.getKey())){
 				this.usedAppMethods.put(e.getKey(),e.getValue());
+			}
+		}
+
+		// check for used test classes and methods
+		this.usedTestClasses.addAll(this.testClasses);
+		this.usedTestClasses.retainAll(usedClasses);
+		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
+			if(this.testMethods.contains(e.getKey())){
+				this.usedTestMethods.put(e.getKey(), e.getValue());
 			}
 		}
 
@@ -303,5 +312,25 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public SETUP_STATUS getSetupStatus(){
 		return SETUP_STATUS.SUCCESS;
+	}
+
+	@Override
+	public Set<MethodData> getTestMethods(){
+		return this.testMethods;
+	}
+
+	@Override
+	public Map<MethodData, Set<MethodData>> getUsedTestMethods(){
+		return this.usedTestMethods;
+	}
+
+	@Override
+	public Set<String> getTestClasses(){
+		return this.testClasses;
+	}
+
+	@Override
+	public Set<String> getUsedTestClasses(){
+		return this.usedTestClasses;
 	}
 }

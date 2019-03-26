@@ -25,6 +25,10 @@ public interface IProjectAnalyser {
     public Set<String> getUsedLibClassesCompileOnly();
     public Map<MethodData,Set<MethodData>> getUsedLibMethods();
     public Map<MethodData,Set<MethodData>> getUsedLibMethodsCompileOnly();
+    public Set<MethodData> getTestMethods();
+    public Map<MethodData, Set<MethodData>> getUsedTestMethods();
+    public Set<String> getTestClasses();
+    public Set<String> getUsedTestClasses();
     public Set<String> getUsedAppClasses();
     public Map<MethodData,Set<MethodData>> getUsedAppMethods();
     public List<File> getAppClasspaths();

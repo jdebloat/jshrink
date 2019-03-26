@@ -44,6 +44,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Map<MethodData, Set<MethodData>> usedLibMethodsCompileOnly;
 	private final Set<String> usedAppClasses;
 	private final Map<MethodData, Set<MethodData>> usedAppMethods;
+	private final Set<MethodData> testMethods;
+	private final Map<MethodData, Set<MethodData>> usedTestMethods;
+	private final Set<String> testClasses;
+	private final Set<String> usedTestClasses;
 	private final Map<String,List<File>> app_class_paths;
 	private final Map<String,List<File>> app_test_paths;
 	private final Map<String,List<File>> lib_class_paths;
@@ -79,6 +83,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		app_class_paths = new HashMap<String, List<File>>();
 		app_test_paths = new HashMap<String, List<File>>();
 		lib_class_paths = new HashMap<String, List<File>>();
+		testMethods = new HashSet<MethodData>();
+		usedTestMethods = new HashMap<MethodData, Set<MethodData>>();
+		testClasses = new HashSet<String>();
+		usedTestClasses = new HashSet<String>();
 		classpaths = new HashMap<String, String>();
 		classpaths_compile_only = new HashMap<String, String>();
 		entryPointProcessor = entryPointProc;
@@ -373,6 +381,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				this.appMethods.addAll(runner.getAppMethods());
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
+
+				this.testClasses.addAll(runner.getTestClasses());
+				this.testMethods.addAll(runner.getTestMethods());
+				this.usedTestClasses.addAll(runner.getUsedTestClasses());
+				addToMap(this.usedTestMethods, runner.getUsedTestMethods());
+
 				this.entryPoints.addAll(runner.getEntryPoints());
 				
 				// make sure to reset Soot after running reachability analysis
@@ -455,6 +469,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 							}
 						}
 					}
+
+					if(!foundInApp){
+						for(MethodData md: testMethods){
+							if(class_name1.equals(md.getClassName()) && method_signature1.equals(md.getSubSignature())){
+								if(!usedTestMethods.containsKey(md)){
+									set.add(md);
+									usedTestMethods.put(md, new HashSet<MethodData>());
+									usedTestClasses.add(md.getClassName());
+								}
+								foundInApp = true;
+								break;
+							}
+						}
+					}
 					
 					new_entry_points.put(module, set);
 				}
@@ -498,6 +526,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
+
+				this.usedTestClasses.addAll(runner.getUsedTestClasses());
+				addToMap(this.usedTestMethods, runner.getUsedTestMethods());
 				
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
@@ -706,5 +737,25 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public SETUP_STATUS getSetupStatus(){
 		return this.setupStatus;
+	}
+
+	@Override
+	public Set<MethodData> getTestMethods(){
+		return this.testMethods;
+	}
+
+	@Override
+	public Map<MethodData, Set<MethodData>> getUsedTestMethods(){
+		return this.usedTestMethods;
+	}
+
+	@Override
+	public Set<String> getTestClasses(){
+		return this.testClasses;
+	}
+
+	@Override
+	public Set<String> getUsedTestClasses(){
+		return this.usedTestClasses;
 	}
 }

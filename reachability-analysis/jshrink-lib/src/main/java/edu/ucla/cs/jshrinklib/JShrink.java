@@ -158,6 +158,14 @@ public class JShrink {
 		return this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet();
 	}
 
+	public Set<MethodData> getAllTestMethods(){
+		return this.getProjectAnalyserRun().getTestMethods();
+	}
+
+	public Set<MethodData> getUsedTestMethods(){
+		return this.getProjectAnalyserRun().getUsedTestMethods().keySet();
+	}
+
 	public Set<String> getAllAppClasses(){
 		return this.getProjectAnalyserRun().getAppClasses();
 	}
@@ -172,6 +180,14 @@ public class JShrink {
 
 	public Set<String> getUsedLibClasses(){
 		return this.getProjectAnalyserRun().getUsedLibClassesCompileOnly();
+	}
+
+	public Set<String> getTestClasses(){
+		return this.getProjectAnalyserRun().getTestClasses();
+	}
+
+	public Set<String> getUsedTestClasses(){
+		return this.getProjectAnalyserRun().getUsedTestClasses();
 	}
 
 	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses){
