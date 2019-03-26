@@ -158,6 +158,14 @@ public class JShrink {
 		return this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet();
 	}
 
+	public Set<MethodData> getAllTestMethods(){
+		return this.getProjectAnalyserRun().getTestMethods();
+	}
+
+	public Set<MethodData> getUsedTestMethods(){
+		return this.getProjectAnalyserRun().getUsedTestMethods().keySet();
+	}
+
 	public Set<String> getAllAppClasses(){
 		return this.getProjectAnalyserRun().getAppClasses();
 	}
@@ -172,6 +180,14 @@ public class JShrink {
 
 	public Set<String> getUsedLibClasses(){
 		return this.getProjectAnalyserRun().getUsedLibClassesCompileOnly();
+	}
+
+	public Set<String> getTestClasses(){
+		return this.getProjectAnalyserRun().getTestClasses();
+	}
+
+	public Set<String> getUsedTestClasses(){
+		return this.getProjectAnalyserRun().getUsedTestClasses();
 	}
 
 	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses){
@@ -449,10 +465,16 @@ public class JShrink {
 		Set<SootClass> classesToRewrite = new HashSet<SootClass>();
 		for(String className : this.getProjectAnalyserRun().getAppClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				continue;
+			}
 			classesToRewrite.add(sootClass);
 		}
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				continue;
+			}
 			classesToRewrite.add(sootClass);
 		}
 		try {

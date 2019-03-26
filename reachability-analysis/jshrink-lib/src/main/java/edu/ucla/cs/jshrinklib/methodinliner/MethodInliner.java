@@ -148,7 +148,8 @@ public class MethodInliner {
 				SiteInliner.inlineSite(callee, site, caller);
 
 				//Record the inlined method.
-				toReturn.addInlinedMethods(callee.getSignature(), caller.getSignature());
+				toReturn.addInlinedMethods(SootUtils.sootMethodToMethodData(callee).getSignature(),
+					SootUtils.sootMethodToMethodData(caller).getSignature());
 				toReturn.addClassModified(caller.getDeclaringClass());
 
 				//Remove update our call graph information (I admit this is a bit inefficient but it's simple).

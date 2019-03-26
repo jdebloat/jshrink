@@ -87,6 +87,10 @@ public class MethodData {
 			methodArgs[i] = methodArgs[i].trim();
 		}
 
+		if(methodArgs.length == 1 && methodArgs[0].isEmpty()){ //For case "... method();
+			methodArgs = new String[0];
+		}
+
 		String[] temp = methodString.substring(0, methodString.indexOf(methodName)).trim().split("\\s+");
 		String methodReturnType = temp[temp.length-1];
 
