@@ -21,8 +21,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<String> libClasses;
 	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
-	private final Map<MethodData, Set<FieldData>> libFieldReferences;
 	private final Set<FieldData> libFields;
+	private final Map<MethodData, Set<FieldData>> libFieldReferences;
 	private final HashMap<MethodData, String> methodToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
