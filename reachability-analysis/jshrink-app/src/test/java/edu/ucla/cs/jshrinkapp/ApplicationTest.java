@@ -831,21 +831,21 @@ public class ApplicationTest {
 			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>").size());
 		Assert.assertTrue(methodsInlined.getInlineLocations()
 			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")
-			.contains("<StandardStuff$NestedClass: void nestedClassMethod()>"));
+			.contains("<StandardStuff$NestedClass: public void nestedClassMethod()>"));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			"<StandardStuff: java.lang.String getString()>"));
+			"<StandardStuff: public java.lang.String getString()>"));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get("<StandardStuff: java.lang.String getString()>").size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get("<StandardStuff: java.lang.String getString()>")
-			.contains("<Main: void main(java.lang.String[])>"));
+			.get("<StandardStuff: public java.lang.String getString()>").size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get("<StandardStuff: public java.lang.String getString()>")
+			.contains("<Main: public static void main(java.lang.String[])>"));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			"<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>"));
+			"<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>"));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>").size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get("<edu.ucla.cs.onr.test.LibraryClass: int getNumber()>")
-			.contains("<Main: void main(java.lang.String[])>"));
+			.get("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>").size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")
+			.contains("<Main: public static void main(java.lang.String[])>"));
 
 		assertTrue(jarIntact());
 	}
