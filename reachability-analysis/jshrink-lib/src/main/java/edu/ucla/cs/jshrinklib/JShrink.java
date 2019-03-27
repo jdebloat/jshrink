@@ -375,7 +375,41 @@ public class JShrink {
 	}
 
 	public void updateClassFiles(){
-		try {
+		/*
+		Previously (in the commented out code) I would only write to modifiable classes to save some unnecessary writes.
+		However, I found this was causing problems. E.g., the following:
+
+		```
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project <https://github.com/dieforfree/qart4j/> ");
+		arguments.append("--main-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("-S ");
+		arguments.append("-I ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+		```
+
+		This is simply inlining inlineable methods. However, using the previous updateClassFiles, the size of the
+		project increased. When I use "makeSootPass()", which will write all classes regardless as to whether we mark
+		them as modified or not, the size decreases.
+
+		TODO: I'd really like to resolve this issue. This is such an inefficient, nasty hack.
+		 */
+
+		makeSootPass();
+
+		Set<File> classPaths = this.getClassPaths();
+		JShrink.removeClasses(this.classesToRemove, classPaths);
+		this.classesToRemove.clear();
+		this.classesToModify.clear();
+
+
+		/*try {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
@@ -388,7 +422,7 @@ public class JShrink {
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
-		}
+		}*/
 	}
 
 	private void reset(){
