@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.methodwiper;
 
+import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.*;
 import soot.jimple.*;
@@ -151,23 +152,6 @@ public class MethodWiper {
 		body.getUnits().add(Jimple.v().newThrowStmt(localRuntimeException));
 	}
 
-	private static long getSize(SootClass sootClass){
-
-		for(SootMethod m: sootClass.getMethods()){
-			if(m.isConcrete()) {
-				m.retrieveActiveBody();
-			}
-		}
-
-		StringWriter stringWriter = new StringWriter();
-		PrintWriter writerOut = new PrintWriter(stringWriter);
-		JasminClass jasminClass = new JasminClass(sootClass);
-		jasminClass.print(writerOut);
-		writerOut.flush();
-
-		return stringWriter.getBuffer().length();
-	}
-
 	private static boolean wipeMethodBody(SootMethod sootMethod, Optional<Optional<String>> exception){
 
 		if(sootMethod.isAbstract() || sootMethod.isNative()){
@@ -180,7 +164,7 @@ public class MethodWiper {
 			return false;
 		}
 
-		long originalSize = getSize(sootClass);
+		long originalSize = ClassFileUtils.getSize(sootClass);
 
 
 		Body body = getBody(sootMethod);
@@ -194,7 +178,7 @@ public class MethodWiper {
 		body.setMethod(sootMethod);
 		sootMethod.setActiveBody(body);
 
-		long newSize = getSize(sootClass);
+		long newSize = ClassFileUtils.getSize(sootClass);
 
 		if(newSize >= originalSize){
 			sootMethod.setActiveBody(oldBody);

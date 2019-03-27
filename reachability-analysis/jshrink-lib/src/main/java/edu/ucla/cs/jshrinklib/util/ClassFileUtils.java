@@ -248,4 +248,21 @@ public class ClassFileUtils {
 
 		return directoryContains(dir, file.getParentFile());
 	}
+
+	public static long getSize(SootClass sootClass){
+
+		for(SootMethod m: sootClass.getMethods()){
+			if(m.isConcrete()) {
+				m.retrieveActiveBody();
+			}
+		}
+
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter writerOut = new PrintWriter(stringWriter);
+		JasminClass jasminClass = new JasminClass(sootClass);
+		jasminClass.print(writerOut);
+		writerOut.flush();
+
+		return stringWriter.getBuffer().length();
+	}
 }
