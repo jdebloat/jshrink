@@ -186,12 +186,6 @@ public class MethodInliner {
 					}
 				}
 
-				//Remove the callee method from its class.
-				toReturn.addClassModified(callee.getDeclaringClass());
-				SootClass calleeSootClass = callee.getDeclaringClass();
-				calleeSootClass.getMethods().remove(callee);
-				methodsRemoved.add(callee);
-
 				if(debug){
 					System.out.println("SUCCESS!");
 				}
