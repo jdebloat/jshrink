@@ -78,10 +78,10 @@ public class MethodInliner {
 					continue;
 				}
 
-			/*
-			We do not inline constructors (unless within a constructor in the same class). Doing so can cause
-			problems with the MethodWiper component.
-			 */
+				/*
+				We do not inline constructors (unless within a constructor in the same class). Doing so can cause
+				problems with the MethodWiper component.
+				 */
 				if (callee.isConstructor()) {
 					if (!(caller.getDeclaringClass().equals(callee.getDeclaringClass()) && caller.isConstructor())) {
 						if(debug){
@@ -133,11 +133,11 @@ public class MethodInliner {
 
 				Stmt site = toInline.iterator().next();
 
-			/*
-			I'm not sure exactly what this does, but I think it's good to use Soot's own "Inlinability" check here.
-			ModifierOptions: "safe", "unsafe", or "nochanges". Though, at the time of writing, "unsafe" is the only
-			option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
-			*/
+				/*
+				I'm not sure exactly what this does, but I think it's good to use Soot's own "Inlinability" check here.
+				ModifierOptions: "safe", "unsafe", or "nochanges". Though, at the time of writing, "unsafe" is the only
+				option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
+				*/
 				if (!InlinerSafetyManager.ensureInlinability(callee, site, caller, "unsafe")) {
 					if(debug){
 						System.out.println("FAILED: InlineSafetyManager.ensureInlinability returned false.");
