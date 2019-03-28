@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import soot.*;
 import soot.jimple.JasminClass;
@@ -58,6 +59,16 @@ public class SootUtils {
 		}
 
 		return new MethodData(methodName,methodClassName,methodReturnType,methodArgs,isPublic, isStatic);
+	}
+
+	public static FieldData sootFieldToFieldData(SootField sootField){
+		String fieldName = sootField.getName();
+		String className = sootField.getDeclaringClass().getName();
+		// Soot handles the generic type the same way as ASM due to type erasure in Java
+		String fieldType = sootField.getType().toString();
+		boolean isStatic = sootField.isStatic();
+
+		return new FieldData(fieldName, className, isStatic, fieldType);
 	}
 
 	public static Map<SootMethod, Set<SootMethod>> convertMethodDataCallGraphToSootMethodCallGraph(

@@ -37,6 +37,9 @@ public class ASMClassVisitorTest {
 
         assertEquals(4, methods.size());
         assertEquals(5, fields.size());
+
+        FieldData fieldWithGenericType = new FieldData("classes", "edu.ucla.cs.jshrinklib.reachability.ASMClassVisitor", false, "java.util.Set");
+        assertTrue(fields.contains(fieldWithGenericType));
     }
 
     @Test
