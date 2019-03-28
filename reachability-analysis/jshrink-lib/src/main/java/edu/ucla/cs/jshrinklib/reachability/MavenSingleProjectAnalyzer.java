@@ -36,14 +36,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<String> libClassesCompileOnly;
 	private final Set<MethodData> libMethods;
 	private final Set<MethodData> libMethodsCompileOnly;
+	private final Set<FieldData> libFields;
+	private final Set<FieldData> libFieldsCompileOnly;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
+	private final Set<FieldData> appFields;
 	private final Set<String> usedLibClasses;
 	private final Set<String> usedLibClassesCompileOnly;
 	private final Map<MethodData, Set<MethodData>> usedLibMethods;
 	private final Map<MethodData, Set<MethodData>> usedLibMethodsCompileOnly;
+	private final Set<FieldData> usedLibFields;
+	private final Set<FieldData> usedLibFieldsCompileOnly;
 	private final Set<String> usedAppClasses;
 	private final Map<MethodData, Set<MethodData>> usedAppMethods;
+	private final Set<FieldData> usedAppFields;
 	private final Set<MethodData> testMethods;
 	private final Map<MethodData, Set<MethodData>> usedTestMethods;
 	private final Set<String> testClasses;
@@ -72,14 +78,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		libClassesCompileOnly = new HashSet<String>();
 		libMethods = new HashSet<MethodData>();
 		libMethodsCompileOnly = new HashSet<MethodData>();
+		libFields = new HashSet<FieldData>();
+		libFieldsCompileOnly = new HashSet<FieldData>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
+		appFields = new HashSet<FieldData>();
 		usedLibClasses = new HashSet<String>();
 		usedLibClassesCompileOnly = new HashSet<String>();
 		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
 		usedLibMethodsCompileOnly = new HashMap<MethodData,Set<MethodData>>();
+		usedLibFields = new HashSet<FieldData>();
+		usedLibFieldsCompileOnly = new HashSet<FieldData>();
 		usedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashMap<MethodData, Set<MethodData>>();
+		usedAppFields = new HashSet<FieldData>();
 		app_class_paths = new HashMap<String, List<File>>();
 		app_test_paths = new HashMap<String, List<File>>();
 		lib_class_paths = new HashMap<String, List<File>>();
@@ -376,7 +388,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					if(compile_lib_paths.contains(lib_path)) {
 						this.libMethodsCompileOnly.add(libMethod);
 					}
-				}				
+				}
+				for(FieldData libField : runner.getLibFields()) {
+					this.libFields.add(libField);
+					String lib_path = runner.getLibPathOfField(libField);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.libFieldsCompileOnly.add(libField);
+					}
+				}
 				for(String usedLibClass : runner.getUsedLibClasses()) {
 					this.usedLibClasses.add(usedLibClass);
 					String lib_path = runner.getLibPathOfClass(usedLibClass);
@@ -391,10 +410,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						addToMap(this.usedLibMethodsCompileOnly, libMethod.getKey(), libMethod.getValue());
 					}
 				}
+				for(FieldData usedLibField : runner.getUsedLibFields()) {
+					this.usedLibFields.add(usedLibField);
+					String lib_path = runner.getLibPathOfField(usedLibField);
+					if(compile_lib_paths.contains(lib_path)) {
+						this.usedLibFieldsCompileOnly.add(usedLibField);
+					}
+				}
+
 				this.appClasses.addAll(runner.getAppClasses());
 				this.appMethods.addAll(runner.getAppMethods());
+				this.appFields.addAll(runner.getAppFields());
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
+				this.usedAppFields.addAll(runner.getUsedAppFields());
 
 				this.testClasses.addAll(runner.getTestClasses());
 				this.testMethods.addAll(runner.getTestMethods());
@@ -550,17 +579,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 		
 		if(count > 1) {
-			adjustClassesAndMethodsFromSubmodules();
+			adjustClassesAndMethodsAndFieldsFromSubmodules();
 		}
 	}
 	
 	/**
 	 * When analyzing different submodules, the application classes in one module may
 	 * be treated as library classes in another module. We need to adjust this so that 
-	 * application classes/methods are always stored in the application related fields, 
-	 * though they are used as library classes/methods in other modules
+	 * application classes/methods/fields are always stored in the application related fields,
+	 * though they are used as library classes/methods/fields in other modules
 	 */
-	private void adjustClassesAndMethodsFromSubmodules() {
+	private void adjustClassesAndMethodsAndFieldsFromSubmodules() {
 		Set<String> lib_classes_copy = new HashSet<String>(this.libClasses);
 		// only keep the app classes from other modules
 		lib_classes_copy.retainAll(this.appClasses);
@@ -580,6 +609,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		Set<MethodData> lib_methods_compile_only_copy = new HashSet<MethodData>(this.libMethodsCompileOnly);
 		lib_methods_compile_only_copy.retainAll(this.appMethods);
 		this.libMethodsCompileOnly.removeAll(lib_methods_compile_only_copy);
+
+		Set<FieldData> lib_fields_copy = new HashSet<FieldData>(this.libFields);
+		// only keep the app fields from other modules
+		lib_fields_copy.retainAll(this.appFields);
+		// after removing the app fields from other modules, only fields from external libs remain
+		this.libFields.removeAll(lib_fields_copy);
+		// do the same to get methods from external libs in the compile scope
+		Set<FieldData> lib_fields_compile_only_copy = new HashSet<FieldData>(this.libFieldsCompileOnly);
+		lib_fields_compile_only_copy.retainAll(this.appFields);
+		this.libFieldsCompileOnly.removeAll(lib_fields_compile_only_copy);
 		
 		Set<String> used_lib_classes_copy = new HashSet<String>(this.usedLibClasses);
 		// only keep used app classes from other modules
@@ -622,6 +661,20 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		// also need to add the used app methods from other modules back to the set of used app methods
 		// just in case that those methods are not called in their own modules
 		addToMap(this.usedAppMethods,used_lib_methods_copy);
+
+		Set<FieldData> used_lib_fields_copy = new HashSet<FieldData>(this.usedLibFields);
+		// only keep used app fields from other modules
+		used_lib_fields_copy.retainAll(this.appFields);
+		// after removing used app fields from other modules, only used fields from external libs remain
+		this.usedLibFields.removeAll(used_lib_fields_copy);
+		// do the same to get used fields from external libs in the compile scope
+		Set<FieldData> used_lib_fields_compile_only_copy = new HashSet<FieldData>(this.usedLibFieldsCompileOnly);
+		used_lib_fields_compile_only_copy.retainAll(this.appFields);
+		this.usedLibFieldsCompileOnly.removeAll(used_lib_fields_compile_only_copy);
+
+		// also need to add the used app fields from other modules back to the set of used app fields
+		// just in case that those fields are not used in their own modules
+		this.usedAppFields.addAll(used_lib_fields_copy);
 	}
 
 	@Override
@@ -674,6 +727,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedLibMethodsCompileOnly);
 	}
 
+	public Set<FieldData> getUsedLibFields() {
+		return Collections.unmodifiableSet(this.usedLibFields);
+	}
+
+	public Set<FieldData> getUsedLibFieldsCompileOnly() {
+		return Collections.unmodifiableSet(this.usedLibFieldsCompileOnly);
+	}
+
 	@Override
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
@@ -682,6 +743,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Map<MethodData, Set<MethodData>> getUsedAppMethods() {
 		return Collections.unmodifiableMap(this.usedAppMethods);
+	}
+
+	public Set<FieldData> getUsedAppFields() {
+		return Collections.unmodifiableSet(this.usedAppFields);
 	}
 
 	@Override

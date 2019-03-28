@@ -1,12 +1,11 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
-import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.junit.After;
 import org.junit.Test;
 import soot.*;
 import soot.jimple.InvokeStmt;
-import soot.options.Options;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,24 +15,6 @@ import static org.junit.Assert.*;
 
 public class ClassCollapserTest {
 
-    private static SootClass getSootClassFromResources(File path, String className){
-        File classFile = new File(path.getAbsolutePath() + File.separator + className + ".class");
-
-        final String workingClasspath=classFile.getParentFile().getAbsolutePath();
-        Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + workingClasspath);
-        Options.v().set_whole_program(true);
-        Options.v().set_allow_phantom_refs(true);
-
-        List<String> processDirs = new ArrayList<String>();
-        processDirs.add(workingClasspath);
-        Options.v().set_process_dir(processDirs);
-
-        SootClass sClass = Scene.v().loadClassAndSupport(className);
-        Scene.v().loadNecessaryClasses();
-
-        return sClass;
-    }
-
     @After
     public void after(){
         G.reset();
@@ -41,12 +22,12 @@ public class ClassCollapserTest {
 
     @Test
     public void classClassifierTest() throws IOException {
-        File overridePath
+        String overridePath
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser"
-                    + File.separator + "override" + File.separator + "original").getFile());
-        SootClass A = getSootClassFromResources(overridePath,"A");
-        SootClass B = getSootClassFromResources(overridePath,"B");
+                    + File.separator + "override" + File.separator + "original").getFile()).getAbsolutePath();
+        SootClass A = TestUtils.getSootClass(overridePath,"A");
+        SootClass B = TestUtils.getSootClass(overridePath,"B");
 
         Set<String> appClasses = new HashSet<String>();
         appClasses.add(A.getName());
@@ -76,12 +57,12 @@ public class ClassCollapserTest {
 
     @Test
     public void mergeTwoClassesTest_override() {
-        File overridePath
+        String overridePath
             = new File(ClassCollapser.class.getClassLoader()
             .getResource("classcollapser"
-                + File.separator + "override" + File.separator + "original").getFile());
-        SootClass A = getSootClassFromResources(overridePath,"A");
-        SootClass B = getSootClassFromResources(overridePath,"B");
+                + File.separator + "override" + File.separator + "original").getFile()).getAbsolutePath();
+        SootClass A = TestUtils.getSootClass(overridePath,"A");
+        SootClass B = TestUtils.getSootClass(overridePath,"B");
 
         assertEquals(2, A.getMethods().size());
         assertEquals(2, B.getMethodCount());
@@ -106,12 +87,12 @@ public class ClassCollapserTest {
 
     @Test
     public void mergeTwoClassesTest_field() {
-        File fieldPath
+        String fieldPath
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser" + File.separator
-                    + "field" + File.separator + "original").getFile());
-        SootClass A = getSootClassFromResources(fieldPath,"A");
-        SootClass B = getSootClassFromResources(fieldPath,"B");
+                    + "field" + File.separator + "original").getFile()).getAbsolutePath();
+        SootClass A = TestUtils.getSootClass(fieldPath,"A");
+        SootClass B = TestUtils.getSootClass(fieldPath,"B");
 
         assertEquals(1, A.getFieldCount());
         assertEquals(1, B.getFieldCount());
@@ -125,13 +106,13 @@ public class ClassCollapserTest {
 
     @Test
     public void changeClassNameTest_override() {
-        File overridePath
+        String overridePath
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser" + File.separator
-                    + "override" + File.separator + "original").getFile());
-        SootClass A = getSootClassFromResources(overridePath,"A");
-        SootClass B = getSootClassFromResources(overridePath,"B");
-        SootClass main = getSootClassFromResources(overridePath, "Main");
+                    + "override" + File.separator + "original").getFile()).getAbsolutePath();
+        SootClass A = TestUtils.getSootClass(overridePath,"A");
+        SootClass B = TestUtils.getSootClass(overridePath,"B");
+        SootClass main = TestUtils.getSootClass(overridePath, "Main");
 
         ClassCollapser.changeClassNamesInClass(main, B, A);
         for (SootMethod m: main.getMethods()) {
@@ -144,14 +125,14 @@ public class ClassCollapserTest {
 
     @Test
     public void classClassifierTest_simpleCollapseExample() throws IOException{
-        File overridePath
+        String overridePath
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser" + File.separator
-                    + "simple-collapse-example" + File.separator + "target" + File.separator + "classes").getFile());
-        SootClass A = getSootClassFromResources(overridePath,"A");
-        SootClass B = getSootClassFromResources(overridePath,"B");
-        SootClass C = getSootClassFromResources(overridePath,"C");
-        SootClass Main = getSootClassFromResources(overridePath,"Main");
+                    + "simple-collapse-example" + File.separator + "target" + File.separator + "classes").getFile()).getAbsolutePath();
+        SootClass A = TestUtils.getSootClass(overridePath,"A");
+        SootClass B = TestUtils.getSootClass(overridePath,"B");
+        SootClass C = TestUtils.getSootClass(overridePath,"C");
+        SootClass Main = TestUtils.getSootClass(overridePath,"Main");
 
         Set<String> appClasses = new HashSet<String>();
         appClasses.add(A.getName());

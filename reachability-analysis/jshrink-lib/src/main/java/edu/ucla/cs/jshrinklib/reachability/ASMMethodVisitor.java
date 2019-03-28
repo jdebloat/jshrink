@@ -42,6 +42,8 @@ class ASMMethodVisitor extends MethodVisitor {
 
 		String className = owner.replaceAll(Pattern.quote("/"), ".");
 
+		// note that for parameterized types we can only get the generic type from the type description
+		// due to type erasure in Java
 		String type = Type.getType(desc).getClassName();
 		FieldData field = new FieldData(name, className, isStatic, type);
 		fieldReferences.add(field);

@@ -1,6 +1,7 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.util.ASMUtils;
@@ -21,17 +22,20 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Set<String> libClasses;
 	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
-	private final Map<MethodData, Set<FieldData>> libFieldReferences;
 	private final Set<FieldData> libFields;
+	private final Map<MethodData, Set<FieldData>> libFieldReferences;
 	private final HashMap<MethodData, String> methodToLib;
+	private final HashMap<FieldData, String> fieldToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<FieldData> appFields;
 	private final Map<MethodData, Set<FieldData>> appFieldReferences;
 	private final Set<String> usedLibClasses;
 	private final Map<MethodData,Set<MethodData>> usedLibMethods; // callee -> a set of callers
+	private final Set<FieldData> usedLibFields;
 	private final Set<String> usedAppClasses;
 	private final Map<MethodData,Set<MethodData>> usedAppMethods; // callee -> a set of callers
+	private final Set<FieldData> usedAppFields;
 	private final Set<MethodData> testMethods;
 	private final Set<String> testClasses;
 	private final Map<MethodData, Set<MethodData>> usedTestMethods;
@@ -56,14 +60,17 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		libFields = new HashSet<FieldData>();
 		libFieldReferences = new HashMap<MethodData, Set<FieldData>>();
 		methodToLib = new HashMap<MethodData, String>();
+		fieldToLib = new HashMap<FieldData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		appFields = new HashSet<FieldData>();
 		appFieldReferences = new HashMap<MethodData, Set<FieldData>>();
 		usedLibClasses = new HashSet<String>();
 		usedLibMethods = new HashMap<MethodData, Set<MethodData>>();
+		usedLibFields = new HashSet<FieldData>();
 		usedAppClasses = new HashSet<String>();
 		usedAppMethods = new HashMap<MethodData, Set<MethodData>>();
+		usedAppFields = new HashSet<FieldData>();
 		testClasses = new HashSet<String>();
 		testMethods = new HashSet<MethodData>();
 		usedTestMethods = new HashMap<MethodData, Set<MethodData>>();
@@ -118,9 +125,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		for (File lib : this.libJarPath) {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
-			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, libFields, libFieldReferences);
+			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib, libFieldReferences);
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
+			this.libFields.addAll(fields_in_this_lib);
 
 			String lib_path = lib.getAbsolutePath();
 			for(String class_name : classes_in_this_lib) {
@@ -128,6 +137,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			}
 			for(MethodData md : methods_in_this_lib) {
 				methodToLib.put(md, lib_path);
+			}
+			for(FieldData fd : fields_in_this_lib) {
+				fieldToLib.put(fd, lib_path);
 			}
 		}
 
@@ -203,6 +215,25 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			}
 		}
 
+		// check for used lib fields
+		for(MethodData method : usedMethods.keySet()) {
+			Set<FieldData> fieldRefs;
+			if(this.libFieldReferences.containsKey(method)) {
+				fieldRefs = this.libFieldReferences.get(method);
+			} else if (this.appFieldReferences.containsKey(method)) {
+				fieldRefs = this.appFieldReferences.get(method);
+			} else {
+				continue;
+			}
+
+			for(FieldData field : fieldRefs) {
+				if(libFields.contains(field)) {
+					usedLibFields.add(field);
+				} else if (appFields.contains(field)) {
+					usedAppFields.add(field);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -218,9 +249,17 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
+
+	public Set<FieldData> getLibFields() {
+		return Collections.unmodifiableSet(this.libFields);
+	}
 	
 	public String getLibPathOfMethod(MethodData methodData) {
 		return this.methodToLib.get(methodData);
+	}
+
+	public String getLibPathOfField(FieldData fieldData) {
+		return this.fieldToLib.get(fieldData);
 	}
 
 	@Override
@@ -233,6 +272,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
+	public Set<FieldData> getAppFields() {
+		return Collections.unmodifiableSet(this.appFields);
+	}
+
 	@Override
 	public Set<String> getUsedLibClasses() {
 		return Collections.unmodifiableSet(this.usedLibClasses);
@@ -243,6 +286,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedLibMethods);
 	}
 
+	public Set<FieldData> getUsedLibFields() {
+		return Collections.unmodifiableSet(this.usedLibFields);
+	}
+
 	@Override
 	public Set<String> getUsedAppClasses() {
 		return Collections.unmodifiableSet(this.usedAppClasses);
@@ -251,6 +298,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public Map<MethodData,Set<MethodData>>getUsedAppMethods() {
 		return Collections.unmodifiableMap(this.usedAppMethods);
+	}
+
+	public Set<FieldData> getUsedAppFields() {
+		return Collections.unmodifiableSet(this.usedAppFields);
 	}
 
 	@Override

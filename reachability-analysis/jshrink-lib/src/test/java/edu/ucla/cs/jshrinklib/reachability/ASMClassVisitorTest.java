@@ -37,6 +37,9 @@ public class ASMClassVisitorTest {
 
         assertEquals(4, methods.size());
         assertEquals(5, fields.size());
+
+        FieldData fieldWithGenericType = new FieldData("classes", "edu.ucla.cs.jshrinklib.reachability.ASMClassVisitor", false, "java.util.Set");
+        assertTrue(fields.contains(fieldWithGenericType));
     }
 
     @Test
@@ -111,6 +114,63 @@ public class ASMClassVisitorTest {
             assertNull(f2);
             assertNotNull(f3);
             assertTrue(f3.isStatic());
+
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testFieldReferenceCornerCases() {
+        ClassLoader classLoader = ASMClassVisitorTest.class.getClassLoader();
+        String pathToClassFile = classLoader.getResource("simple-test-project3"
+                + File.separator + "target" + File.separator + "classes" + File.separator + "A.class").getFile();
+        Set<String> classes = new HashSet<String>();
+        Set<MethodData> methods = new HashSet<MethodData>();
+        Set<FieldData> fields = new HashSet<FieldData>();
+        Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        try {
+            FileInputStream fis = new FileInputStream(pathToClassFile);
+            ClassReader cr = new ClassReader(fis);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs);
+            cr.accept(cv, ClassReader.SKIP_DEBUG);
+            // check for the initialization of static fields. All of them will be compiled to an anonymous static method called <clinit>.
+            MethodData method1 = new MethodData("<clinit>", "A", "void", new String[] {}, false, true);
+            Set<FieldData> fieldReferences1 = fieldRefs.get(method1);
+            assertNotNull(fieldReferences1);
+            assertEquals(4, fieldReferences1.size());
+            FieldData f1 = new FieldData("f1", "A", true,  "java.lang.String");
+            FieldData f2 = new FieldData("f2", "A", true,  "java.lang.String");
+            FieldData constantA = new FieldData("A", "Constants", true,  "java.lang.String");
+            FieldData constantB = new FieldData("B", "Constants", true,  "java.lang.String");
+            assertTrue(fieldReferences1.contains(f1));
+            assertTrue(fieldReferences1.contains(f2));
+            assertTrue(fieldReferences1.contains(constantA));
+            assertTrue(fieldReferences1.contains(constantB));
+
+            // check for the intialization of a non-static field. It will be compiled to all class constructors.
+            // one constructor
+            MethodData method2 = new MethodData("<init>", "A", "void", new String[] {"java.lang.String"}, true, false);
+            Set<FieldData> fieldReferences2 = fieldRefs.get(method2);
+            assertNotNull(fieldReferences2);
+            assertEquals(3, fieldReferences2.size());
+            FieldData f3 = new FieldData("f3", "A", false,  "java.lang.String");
+            FieldData constantC = new FieldData("C", "Constants", true,  "java.lang.String");
+            assertTrue(fieldReferences2.contains(f1));
+            assertTrue(fieldReferences2.contains(f3));
+            assertTrue(fieldReferences2.contains(constantC));
+
+            // another constructor
+            MethodData method3 = new MethodData("<init>", "A", "void",
+                    new String[] {"java.lang.String", "java.lang.String"}, true, false);
+            Set<FieldData> fieldReferences3 = fieldRefs.get(method3);
+            assertNotNull(fieldReferences3);
+            assertEquals(4, fieldReferences3.size());
+            assertTrue(fieldReferences3.contains(f1));
+            assertTrue(fieldReferences3.contains(f2));
+            assertTrue(fieldReferences3.contains(f3));
+            assertTrue(fieldReferences3.contains(constantC));
 
             fis.close();
         } catch (IOException e) {

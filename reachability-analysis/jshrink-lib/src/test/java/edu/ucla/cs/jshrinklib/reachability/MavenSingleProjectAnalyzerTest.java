@@ -51,11 +51,14 @@ public class MavenSingleProjectAnalyzerTest {
 		runner.setup();
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
-		assertEquals(350, runner.getUsedLibMethods().size());
+		assertEquals(354, runner.getUsedLibMethods().size());
 		assertEquals(37, runner.getUsedLibClassesCompileOnly().size());
-		assertEquals(195, runner.getUsedLibMethodsCompileOnly().size());
+		assertEquals(197, runner.getUsedLibMethodsCompileOnly().size());
 		assertEquals(254, runner.getUsedAppClasses().size());
 		assertEquals(1474, runner.getUsedAppMethods().size());
+		assertEquals(87, runner.getUsedLibFields().size());
+		assertEquals(37, runner.getUsedLibFieldsCompileOnly().size());
+		assertEquals(366, runner.getUsedAppFields().size());
 	}
 	
 	@Test @Ignore

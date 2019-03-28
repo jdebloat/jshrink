@@ -3,6 +3,7 @@ package edu.ucla.cs.jshrinklib;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapser;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserAnalysis;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
+import edu.ucla.cs.jshrinklib.fieldwiper.FieldWiper;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.methodinliner.MethodInliner;
 import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
@@ -14,6 +15,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -587,5 +589,27 @@ public class JShrink {
 				System.exit(1);
 			}
 		}
+	}
+
+	public Set<FieldData> removeFields(Set<FieldData> toRemove) {
+		Set<FieldData> removedFields = new HashSet<FieldData>();
+
+		Set<SootClass> sootClassesAffected = new HashSet<SootClass>();
+		for (FieldData fieldData : toRemove) {
+			sootClassesAffected.add(Scene.v().loadClassAndSupport(fieldData.getClassName()));
+		}
+
+		for (SootClass sootClass : sootClassesAffected) {
+			for (SootField sootField : sootClass.getFields()) {
+				FieldData fieldData = SootUtils.sootFieldToFieldData(sootField);
+				if (!toRemove.contains(fieldData)) {
+					FieldWiper.removeField(sootField);
+					removedFields.add(fieldData);
+					this.classesToModify.add(sootClass);
+				}
+			}
+		}
+
+		return removedFields;
 	}
 }
