@@ -48,7 +48,9 @@ public class SootUtils {
 		String methodName = sootMethod.getName();
 		String methodClassName = sootMethod.getDeclaringClass().getName();
 		String methodReturnType = sootMethod.getReturnType().toString();
-		boolean isPublic = sootMethod.isPublic();
+
+		//For some reason, Soot sets Public to true in some cases where the method is protected.
+		boolean isPublic = !sootMethod.isProtected() && sootMethod.isPublic();
 		boolean isStatic = sootMethod.isStatic();
 
 		String[] methodArgs = new String[sootMethod.getParameterCount()];
