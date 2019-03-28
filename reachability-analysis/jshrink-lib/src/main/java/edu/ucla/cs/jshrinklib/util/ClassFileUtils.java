@@ -174,6 +174,7 @@ public class ClassFileUtils {
 
 		assert(fileToReturn.isPresent());
 		FileUtils.forceDelete(fileToReturn.get());
+		assert(!getClassFile(sootClass, classPath).isPresent());
 	}
 
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{

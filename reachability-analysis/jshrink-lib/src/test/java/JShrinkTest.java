@@ -142,7 +142,7 @@ public class JShrinkTest {
 			"Main$1", "compare"));
 		assertTrue(isPresent(this.jShrink.getAllAppMethods(),
 			"Main$1", "<init>"));
-		assertEquals(29,this.jShrink.getAllAppMethods().size());
+		assertEquals(30,this.jShrink.getAllAppMethods().size());
 	}
 
 	@Test
@@ -211,7 +211,7 @@ public class JShrinkTest {
 			"Main$1", "compare"));
 		assertTrue(isPresent(this.jShrink.getUsedAppMethods(),
 			"Main", "compare"));
-		assertEquals(17,this.jShrink.getUsedAppMethods().size());
+		assertEquals(18,this.jShrink.getUsedAppMethods().size());
 	}
 
 	@Test
@@ -235,7 +235,7 @@ public class JShrinkTest {
 
 	@Test
 	public void getSizesTest(){
-		assertEquals(10393, this.jShrink.getAppSize(true));
+		assertEquals(10723, this.jShrink.getAppSize(true));
 		assertEquals(8014, this.jShrink.getLibSize(true));
 	}
 

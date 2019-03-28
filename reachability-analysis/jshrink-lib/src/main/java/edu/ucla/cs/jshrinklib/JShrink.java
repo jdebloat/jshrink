@@ -15,6 +15,7 @@ import soot.jimple.toolkits.callgraph.CallGraph;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class JShrink {
 	private File projectDir;
@@ -127,16 +128,17 @@ public class JShrink {
 		return this.projectAnalyser.get();
 	}
 
+	private void loadClasses(){
+		G.reset();
+		SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
+			this.getProjectAnalyser().getAppClasspaths(), this.getProjectAnalyser().getTestClasspaths());
+		Scene.v().loadNecessaryClasses();
+	}
+
 	private IProjectAnalyser getProjectAnalyserRun(){
 		if(!this.projectAnalyserRun){
 			this.getProjectAnalyser().run();
-
-
-			G.reset();
-			SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
-				this.getProjectAnalyser().getAppClasspaths(), this.getProjectAnalyser().getTestClasspaths());
-			Scene.v().loadNecessaryClasses();
-
+			loadClasses();
 			this.projectAnalyserRun = true;
 		}
 		return this.getProjectAnalyser();
@@ -357,6 +359,7 @@ public class JShrink {
 
 
 	public void removeClasses(Set<String> classes){
+		loadClasses();
 		for(String className : classes){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			this.classesToRemove.add(sootClass);
@@ -402,11 +405,30 @@ public class JShrink {
 		 */
 
 		makeSootPass();
-
-		Set<File> classPaths = this.getClassPaths();
-		JShrink.removeClasses(this.classesToRemove, classPaths);
-		this.classesToRemove.clear();
 		this.classesToModify.clear();
+
+		try {
+			Set<File> classPaths = this.getClassPaths();
+			Set<File> decompressedJars =
+				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+			JShrink.removeClasses(this.classesToRemove, classPaths);
+
+			/*
+			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
+			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
+			solved this problem. However, it would be good to find a better solution to this problem.
+			TODO: Fix the above.
+			 */
+			TimeUnit.SECONDS.sleep(1);
+
+			ClassFileUtils.compressJars(decompressedJars);
+			this.classesToRemove.clear();
+		} catch(IOException | InterruptedException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		this.reset();
 
 
 		/*try {
