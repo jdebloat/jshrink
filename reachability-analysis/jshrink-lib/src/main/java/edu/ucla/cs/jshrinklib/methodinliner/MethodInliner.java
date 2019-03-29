@@ -55,7 +55,8 @@ public class MethodInliner {
 
 				if(debug){
 					System.out.println();
-					System.out.println("Attempting to inline " + callee.getSignature() + " at " + caller + ".");
+					System.out.println("Attempting to inline " + callee.getSignature()
+						+ " at " + caller.getSignature() + ".");
 				}
 
 				//Both the caller and callee classes must be within the current classpaths.
@@ -77,10 +78,10 @@ public class MethodInliner {
 					continue;
 				}
 
-			/*
-			We do not inline constructors (unless within a constructor in the same class). Doing so can cause
-			problems with the MethodWiper component.
-			 */
+				/*
+				We do not inline constructors (unless within a constructor in the same class). Doing so can cause
+				problems with the MethodWiper component.
+				 */
 				if (callee.isConstructor()) {
 					if (!(caller.getDeclaringClass().equals(callee.getDeclaringClass()) && caller.isConstructor())) {
 						if(debug){
@@ -132,17 +133,41 @@ public class MethodInliner {
 
 				Stmt site = toInline.iterator().next();
 
-			/*
-			I'm not sure exactly what this does, but I think it's good to use Soot's own "Inlinability" check here.
-			ModifierOptions: "safe", "unsafe", or "nochanges". Though, at the time of writing, "unsafe" is the only
-			option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
-			*/
+				/*
+				I'm not sure exactly what this does, but I think it's good to use Soot's own "Inlinability" check here.
+				ModifierOptions: "safe", "unsafe", or "nochanges". Though, at the time of writing, "unsafe" is the only
+				option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
+				*/
 				if (!InlinerSafetyManager.ensureInlinability(callee, site, caller, "unsafe")) {
 					if(debug){
 						System.out.println("FAILED: InlineSafetyManager.ensureInlinability returned false.");
 					}
 					continue;
 				}
+
+				if(!inlineIsEfficient(callee, site, caller)){
+					if(debug){
+						System.out.println("FAILED: This inline operation would increase the size of the app.");
+					}
+					continue;
+				}
+
+
+				//I don't know why I have to do this again, but I get errors otherwise.
+				toInline = new ArrayList<Stmt>();
+				b = caller.retrieveActiveBody();
+
+				for (Unit u : b.getUnits()) {
+					if (u instanceof InvokeStmt) {
+						InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
+						SootMethod sootMethod = expr.getMethod();
+						if (sootMethod.equals(callee)) {
+							toInline.add((InvokeStmt) u);
+						}
+					}
+				}
+				site = toInline.iterator().next();
+
 
 				//Inline the method
 				SiteInliner.inlineSite(callee, site, caller);
@@ -161,12 +186,6 @@ public class MethodInliner {
 					}
 				}
 
-				//Remove the callee method from its class.
-				toReturn.addClassModified(callee.getDeclaringClass());
-				SootClass calleeSootClass = callee.getDeclaringClass();
-				calleeSootClass.getMethods().remove(callee);
-				methodsRemoved.add(callee);
-
 				if(debug){
 					System.out.println("SUCCESS!");
 				}
@@ -179,5 +198,38 @@ public class MethodInliner {
 		}
 
 		return toReturn;
+	}
+
+	private static boolean inlineIsEfficient(SootMethod inline, Stmt toInline, SootMethod container){
+		SootClass inlineClass = inline.getDeclaringClass();
+		SootClass containerClass = container.getDeclaringClass();
+
+		//Obtain the sizes before inlining.
+		long inlineClassSizeBefore = ClassFileUtils.getSize(inlineClass);
+		long containerClassSizeBefore = ClassFileUtils.getSize(containerClass);
+
+		//Inline and remove the inlined location.
+
+		Body body = container.retrieveActiveBody();
+		Body bodyClone = (Body)body.clone();//SerializationUtils.clone(body);
+		assert(body.toString().equals(bodyClone.toString()));
+		SiteInliner.inlineSite(inline, toInline, container);
+
+		int inlineMethodIndex = inlineClass.getMethods().indexOf(inline);
+		inlineClass.getMethods().remove(inline);
+
+		//Obtain the sizes after inlining.
+		long inlineClassSizeAfter = ClassFileUtils.getSize(inlineClass);
+		long containerClassSizeAfter = ClassFileUtils.getSize(containerClass);
+
+		//Revert the inlining and re-add the removed method.
+		inlineClass.getMethods().add(inlineMethodIndex, inline);
+		container.setActiveBody(bodyClone);
+		assert(bodyClone.toString().equals(container.retrieveActiveBody().toString()));
+
+		//Return true if inlining reduces size, otherwise return false.
+		return (inlineClassSizeAfter + containerClassSizeAfter)
+			-(inlineClassSizeBefore + containerClassSizeBefore) < 0;
+
 	}
 }

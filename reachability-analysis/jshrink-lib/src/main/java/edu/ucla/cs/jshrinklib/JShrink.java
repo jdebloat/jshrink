@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class JShrink {
 	private File projectDir;
@@ -129,16 +130,17 @@ public class JShrink {
 		return this.projectAnalyser.get();
 	}
 
+	private void loadClasses(){
+		G.reset();
+		SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
+			this.getProjectAnalyser().getAppClasspaths(), this.getProjectAnalyser().getTestClasspaths());
+		Scene.v().loadNecessaryClasses();
+	}
+
 	private IProjectAnalyser getProjectAnalyserRun(){
 		if(!this.projectAnalyserRun){
 			this.getProjectAnalyser().run();
-
-
-			G.reset();
-			SootUtils.setup_trimming(this.getProjectAnalyser().getLibClasspaths(),
-				this.getProjectAnalyser().getAppClasspaths(), this.getProjectAnalyser().getTestClasspaths());
-			Scene.v().loadNecessaryClasses();
-
+			loadClasses();
 			this.projectAnalyserRun = true;
 		}
 		return this.getProjectAnalyser();
@@ -359,6 +361,7 @@ public class JShrink {
 
 
 	public void removeClasses(Set<String> classes){
+		loadClasses();
 		for(String className : classes){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			this.classesToRemove.add(sootClass);
@@ -377,7 +380,60 @@ public class JShrink {
 	}
 
 	public void updateClassFiles(){
+		/*
+		Previously (in the commented out code) I would only write to modifiable classes to save some unnecessary writes.
+		However, I found this was causing problems. E.g., the following:
+
+		```
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project <https://github.com/dieforfree/qart4j/> ");
+		arguments.append("--main-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("-S ");
+		arguments.append("-I ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+		```
+
+		This is simply inlining inlineable methods. However, using the previous updateClassFiles, the size of the
+		project increased. When I use "makeSootPass()", which will write all classes regardless as to whether we mark
+		them as modified or not, the size decreases.
+
+		TODO: I'd really like to resolve this issue. This is such an inefficient, nasty hack.
+		 */
+
+		makeSootPass();
+		this.classesToModify.clear();
+
 		try {
+			Set<File> classPaths = this.getClassPaths();
+			Set<File> decompressedJars =
+				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+			JShrink.removeClasses(this.classesToRemove, classPaths);
+
+			/*
+			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
+			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
+			solved this problem. However, it would be good to find a better solution to this problem.
+			TODO: Fix the above.
+			 */
+			TimeUnit.SECONDS.sleep(1);
+
+			ClassFileUtils.compressJars(decompressedJars);
+			this.classesToRemove.clear();
+		} catch(IOException | InterruptedException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		this.reset();
+
+
+		/*try {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
@@ -390,7 +446,7 @@ public class JShrink {
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
-		}
+		}*/
 	}
 
 	private void reset(){

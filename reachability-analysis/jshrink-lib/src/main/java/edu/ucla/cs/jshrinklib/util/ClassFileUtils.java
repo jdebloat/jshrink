@@ -174,6 +174,7 @@ public class ClassFileUtils {
 
 		assert(fileToReturn.isPresent());
 		FileUtils.forceDelete(fileToReturn.get());
+		assert(!getClassFile(sootClass, classPath).isPresent());
 	}
 
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
@@ -247,5 +248,22 @@ public class ClassFileUtils {
 		}
 
 		return directoryContains(dir, file.getParentFile());
+	}
+
+	public static long getSize(SootClass sootClass){
+
+		for(SootMethod m: sootClass.getMethods()){
+			if(m.isConcrete()) {
+				m.retrieveActiveBody();
+			}
+		}
+
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter writerOut = new PrintWriter(stringWriter);
+		JasminClass jasminClass = new JasminClass(sootClass);
+		jasminClass.print(writerOut);
+		writerOut.flush();
+
+		return stringWriter.getBuffer().length();
 	}
 }
