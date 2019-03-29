@@ -28,6 +28,10 @@ public class JShrink {
 	private boolean projectAnalyserRun = false;
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
+	private long libSizeCompressed = -1;
+	private long libSizeDecompressed = -1;
+	private long appSizeCompressed = -1;
+	private long appSizeDecompressed = -1;
 
 	/*
 	Regardless of whether "reset()" is run, the project, if compiled, remains so. We do not want to recompile, thus
@@ -95,6 +99,10 @@ public class JShrink {
 			instance.get().tamiflex = tamiflex;
 			instance.get().useSpark = useSpark;
 			instance.get().alreadyCompiled = false;
+			instance.get().libSizeCompressed = -1;
+			instance.get().libSizeDecompressed = -1;
+			instance.get().appSizeCompressed = -1;
+			instance.get().appSizeDecompressed = -1;
 			return instance.get();
 		}
 		throw new IOException("Instance of JShrink does not exist. Please use \"createInstance\".");
@@ -126,6 +134,7 @@ public class JShrink {
 
 		this.projectAnalyser.get().setup();
 		this.alreadyCompiled = true;
+		updateSizes();
 
 		return this.projectAnalyser.get();
 	}
@@ -430,6 +439,7 @@ public class JShrink {
 			System.exit(1);
 		}
 
+		updateSizes();
 		this.reset();
 
 
@@ -479,21 +489,35 @@ public class JShrink {
 		return toReturn;
 	}
 
+	private void updateSizes(){
+		this.libSizeCompressed = getSize(false, this.getProjectAnalyser().getLibClasspaths());
+		this.libSizeDecompressed = getSize(true, this.getProjectAnalyser().getLibClasspaths());
+		this.appSizeCompressed = getSize(false, this.getProjectAnalyser().getAppClasspaths());
+		this.appSizeDecompressed = getSize(true, this.getProjectAnalyser().getAppClasspaths());
+	}
+
+	private void checkSizes(){
+		if(this.libSizeCompressed < 0 || this.libSizeDecompressed < 0
+			|| this.appSizeCompressed < 0 || this.appSizeDecompressed < 0){
+			updateSizes();
+		}
+	}
+
 	public long getLibSize(boolean withJarsDecompressed){
+		checkSizes();
 		if(withJarsDecompressed){
-			return getSize(true,
-				this.getProjectAnalyser().getLibClasspaths());
+			return this.libSizeDecompressed;
 		} else {
-			return getSize(false, this.getProjectAnalyser().getLibClasspaths());
+			return this.libSizeCompressed;
 		}
 	}
 
 	public long getAppSize(boolean withJarsDecompressed){
+		checkSizes();
 		if(withJarsDecompressed){
-			return getSize(true,
-				this.getProjectAnalyser().getAppClasspaths());
+			return this.appSizeDecompressed;
 		} else {
-			return getSize(false, this.getProjectAnalyser().getAppClasspaths());
+			return this.appSizeCompressed;
 		}
 	}
 
@@ -544,6 +568,7 @@ public class JShrink {
 			e.printStackTrace();
 			System.exit(1);
 		}
+		updateSizes();
 	}
 
 	/*
