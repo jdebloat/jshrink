@@ -2,6 +2,7 @@ package edu.ucla.cs.jshrinkapp;
 
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
@@ -938,4 +939,43 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
+    private boolean isFieldPresent(Set<FieldData> fieldSet, String className, String fieldName){
+        for(FieldData fieldData : fieldSet){
+            if(fieldData.getClassName().equals(className) && fieldData.getName().equals(fieldName)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+	/**
+	 * This test case aims to test the field removal function only without interacting with other transformations.
+	 */
+	@Test
+	public void fieldRemovalTest() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
+		arguments.append("--main-entry ");
+        arguments.append("--test-entry ");
+		arguments.append("--remove-fields ");
+        arguments.append("--skip-method-removal ");
+        arguments.append("--test-output ");
+        arguments.append("--verbose");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+        Set<FieldData> fieldsRemoved = Application.removedFields;
+
+        assertEquals(4, fieldsRemoved.size());
+        // though the following fields are referened in the source code, they are inlined by Java compiler in the bytecode
+        // so they are not used in bytecode
+        assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "HELLO_WORLD_STRING"));
+        assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "GOODBYE_STRING"));
+        assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "x"));
+        assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "y"));
+        assertEquals(Application.testOutputBefore, Application.testOutputAfter);
+
+        assertTrue(jarIntact());
+	}
 }

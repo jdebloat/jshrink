@@ -33,6 +33,7 @@ public class ApplicationCommandLineParser {
 	private final boolean verbose;
 	private final boolean testOutput;
 	private final boolean skipMethodRemoval;
+	private final boolean removeFields;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -163,6 +164,7 @@ public class ApplicationCommandLineParser {
 		this.verbose = commandLine.hasOption("v");
 		this.testOutput = commandLine.hasOption("T");
 		this.skipMethodRemoval = commandLine.hasOption("S");
+		this.removeFields = commandLine.hasOption("F");
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -366,6 +368,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option removeFieldsOption = Option.builder("F")
+				.desc("Remove unused field members of a class.")
+				.longOpt("remove-fields")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -388,6 +397,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(verboseOption);
 		toReturn.addOption(testOutputOption);
 		toReturn.addOption(skipMethodWiping);
+		toReturn.addOption(removeFieldsOption);
 
 		return toReturn;
 	}
@@ -486,5 +496,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean isSkipMethodRemoval(){
 		return this.skipMethodRemoval;
+	}
+
+	public boolean removedFields() {
+		return this.removeFields;
 	}
 }

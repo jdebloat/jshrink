@@ -20,6 +20,8 @@ public class Application {
 	//I use this for testing to see if the correct classes have been removed.
 	/*package*/ static final Set<String> removedClasses = new HashSet<String>();
 
+	static final Set<FieldData> removedFields = new HashSet<FieldData>();
+
 	//I use this for testing to see if the correct methods have been inlined.
 	/*package*/ static InlineData inlineData = null;
 
@@ -41,6 +43,7 @@ public class Application {
 		//Re-initialise this each time Application is run (for testing).
 		removedMethods.clear();
 		removedClasses.clear();
+		removedFields.clear();
 		inlineData = null;
 		classCollapserData = null;
 		removedMethod = false;
@@ -125,18 +128,24 @@ public class Application {
 			System.out.println("tests_skipped_before," + testOutputBefore.getSkipped());
 		}
 
-		//Note the number of library and application methods before and transformations.
+		//Note the number of library and application methods and fields before and transformations.
 		Set<MethodData> allAppMethodsBefore = jShrink.getAllAppMethods();
 		Set<MethodData> allLibMethodsBefore = jShrink.getAllLibMethods();
+		Set<FieldData> allAppFieldsBefore = jShrink.getAllAppFields();
+		Set<FieldData> allLibFieldsBefore = jShrink.getAllLibFields();
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_num_methods_before," + allAppMethodsBefore.size());
 			System.out.println("libs_num_methods_before," + allLibMethodsBefore.size());
+			System.out.println("app_num_fields_before," + allAppFieldsBefore.size());
+			System.out.println("libs_num_fields_before," + allLibFieldsBefore.size());
 		}
 
-		//These two sets will be used to keep track of the application and library methods removed.
+		//These two sets will be used to keep track of the application and library methods and fields removed.
 		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
 		Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
+		Set<FieldData> appFieldsRemoved = new HashSet<FieldData>();
+		Set<FieldData> libFieldsRemoved = new HashSet<FieldData>();
 
 		//Run the method inliner.
 		if (commandLineParser.inlineMethods()) {
@@ -214,11 +223,33 @@ public class Application {
 			jShrink.updateClassFiles();
 		}
 
+		if(commandLineParser.removedFields()) {
+			Set<FieldData> libFieldsToRemove = new HashSet<FieldData>();
+			libFieldsToRemove.addAll(jShrink.getAllLibFields());
+			libFieldsToRemove.removeAll(jShrink.getUsedLibFields());
+			libFieldsRemoved.addAll(jShrink.removeFields(libFieldsToRemove));
+			removedFields.addAll(libFieldsRemoved);
+
+			if(commandLineParser.isPruneAppInstance()) {
+				Set<FieldData> appFieldsToRemove = new HashSet<FieldData>();
+				appFieldsToRemove.addAll(jShrink.getAllAppFields());
+				appFieldsToRemove.removeAll(jShrink.getUsedAppFields());
+				appFieldsRemoved.addAll(jShrink.removeFields(appFieldsToRemove));
+				removedFields.addAll(appFieldsRemoved);
+			}
+
+			jShrink.updateClassFiles();
+		}
+
 		if(commandLineParser.isVerbose()){
 			System.out.println("app_num_methods_after," +
 				(allAppMethodsBefore.size() - appMethodsRemoved.size()));
 			System.out.println("libs_num_methods_after," +
 				(allLibMethodsBefore.size() - libMethodsRemoved.size()));
+			System.out.println("app_num_fields_after," +
+					(allAppFieldsBefore.size() - appFieldsRemoved.size()));
+			System.out.println("libs_num_fields_after," +
+					(allLibFieldsBefore.size() - libFieldsRemoved.size()));
 		}
 
 		if(commandLineParser.isVerbose()){
