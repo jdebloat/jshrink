@@ -10,8 +10,7 @@ import soot.SootField;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class FieldWiperTest {
     private SootClass getSootClassFromResources(String className) {
@@ -34,12 +33,21 @@ public class FieldWiperTest {
     @Test
     public void testSimpleWipeField() {
         SootClass sootClass = getSootClassFromResources("SimpleClass");
+        assertEquals(2, sootClass.getFieldCount());
         String before = TestUtils.runClass(sootClass);
         // remove the unused field, f2 in SimpleClass.java
         SootField field = sootClass.getField("f2", RefType.v("java.lang.String"));
-        sootClass.removeField(field);
+        FieldWiper.removeField(field);
+        assertEquals(1, sootClass.getFieldCount());
         // the output should still be the same
         String after = TestUtils.runClass(sootClass);
         assertEquals(before, after);
+    }
+
+    @Test
+    public void testSubTyping() {
+        SootClass sootClass = getSootClassFromResources("SubClass");
+        // Java bytecode won't keep track of any fields inheritated from superclass
+        assertEquals(1, sootClass.getFieldCount());
     }
 }
