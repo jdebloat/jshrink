@@ -1,14 +1,13 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
+import fj.P;
 import org.junit.Test;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Method;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class FieldReachabilityTest {
     @Test
@@ -91,5 +90,70 @@ public class FieldReachabilityTest {
         assertEquals(8, runner.getAppFields().size());
         assertEquals(6, runner.getUsedAppFields().size());
         assertEquals(0, runner.getUsedLibFields().size());
+    }
+
+    @Test
+    public void testSubTypingAndFieldInheritance() {
+        // SubClass inherits f1 from SimpleClass
+        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        List<File> libJarPath = new ArrayList<File>();
+        List<File> appClassPath = new ArrayList<File>();
+        appClassPath.add(new File(classLoader.getResource("fieldwiper").getFile()));
+        List<File> appTestPath = new ArrayList<File>();
+        Set<MethodData> entryMethods = new HashSet<MethodData>();
+        MethodData entry =
+                new MethodData("main", "SubClass",
+                        "void", new String[] {"java.lang.String[]"}, true, true);
+        entryMethods.add(entry);
+        CallGraphAnalysis runner =
+                new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+                        new EntryPointProcessor(false, false,
+                                false,false, entryMethods), false);
+        runner.run();
+        assertEquals(2, runner.getUsedAppFields().size());
+        assertEquals(0, runner.getUsedLibFields().size());
+
+        FieldData inheritField = new FieldData("f1", "SubClass", false, "java.lang.String");
+        FieldData originalField = new FieldData("f1", "SimpleClass", false, "java.lang.String");
+        // this reference to an inherited field should be already resolved
+        assertFalse(runner.getUsedAppFields().contains(inheritField));
+        assertTrue(runner.getUsedAppFields().contains(originalField));
+
+        Set<FieldData> fieldRefInMain = runner.getAppFieldReferences().get(entry);
+        assertTrue(fieldRefInMain.contains(originalField));
+        assertFalse(fieldRefInMain.contains(inheritField));
+    }
+
+    @Test
+    public void testSubTypingAndFieldInheritance2() {
+        // SubClass inherits f1 from SimpleClass
+        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        List<File> libJarPath = new ArrayList<File>();
+        List<File> appClassPath = new ArrayList<File>();
+        appClassPath.add(new File(classLoader.getResource("fieldwiper").getFile()));
+        List<File> appTestPath = new ArrayList<File>();
+        Set<MethodData> entryMethods = new HashSet<MethodData>();
+        // use a public method as entry point
+        MethodData entry =
+                new MethodData("setValue", "SubClass",
+                        "void", new String[] {"java.lang.String"}, true, false);
+        entryMethods.add(entry);
+        CallGraphAnalysis runner =
+                new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+                        new EntryPointProcessor(false, false,
+                                false,false, entryMethods), false);
+        runner.run();
+        assertEquals(1, runner.getUsedAppFields().size());
+        assertEquals(0, runner.getUsedLibFields().size());
+
+        FieldData inheritField = new FieldData("f1", "SubClass", false, "java.lang.String");
+        FieldData originalField = new FieldData("f1", "SimpleClass", false, "java.lang.String");
+        // this reference to an inherited field should be already resolved
+        assertFalse(runner.getUsedAppFields().contains(inheritField));
+        assertTrue(runner.getUsedAppFields().contains(originalField));
+
+        Set<FieldData> fieldRefInMain = runner.getAppFieldReferences().get(entry);
+        assertTrue(fieldRefInMain.contains(originalField));
+        assertFalse(fieldRefInMain.contains(inheritField));
     }
 }

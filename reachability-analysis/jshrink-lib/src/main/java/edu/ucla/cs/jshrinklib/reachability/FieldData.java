@@ -29,6 +29,10 @@ public class FieldData {
         return this.isStatic;
     }
 
+    public void setClassName(String newClassName) {
+        this.className = newClassName;
+    }
+
     @Override
     public boolean equals(Object o){
         if(o instanceof FieldData){
@@ -49,5 +53,10 @@ public class FieldData {
         hash += this.type.hashCode() * 31;
         hash += this.isStatic ? 7 : 13;
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return (this.isStatic ? "static " : " ") + this.type + " " + this.name + "@" + this.className;
     }
 }

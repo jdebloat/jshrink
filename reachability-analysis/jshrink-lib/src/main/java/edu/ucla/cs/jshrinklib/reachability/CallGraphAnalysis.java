@@ -8,6 +8,8 @@ import edu.ucla.cs.jshrinklib.util.ASMUtils;
 import edu.ucla.cs.jshrinklib.util.EntryPointUtil;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.Scene;
+import soot.SootClass;
+import soot.SootField;
 import soot.SootMethod;
 import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
@@ -226,11 +228,56 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 				continue;
 			}
 
+			Map<FieldData, String> fieldToUpdate = new HashMap<FieldData, String>();
 			for(FieldData field : fieldRefs) {
 				if(libFields.contains(field)) {
 					usedLibFields.add(field);
 				} else if (appFields.contains(field)) {
 					usedAppFields.add(field);
+				} else {
+					// two cases: 1. this field is from JDK class 2. this field is inherited from super class
+					// we need to handle the second case
+					String ownerClass = field.getClassName();
+					if(this.libClasses.contains(ownerClass) || this.appClasses.contains(ownerClass)) {
+						// this field is inherited
+						boolean notFound = true;
+						String currentClassName = ownerClass;
+						while(notFound) {
+							SootClass sootClass = Scene.v().getSootClass(currentClassName);
+							if(!sootClass.hasSuperclass()) {
+								// the field is inherited from a JDK class
+								break;
+							}
+
+							SootClass superClass = sootClass.getSuperclass();
+							for(SootField superField : superClass.getFields()) {
+								if(superField.getName().equals(field.getName())) {
+									notFound = false;
+									// If we directly modify the field data, the hash set
+									// will not update the pre-computed hash value of this field
+									// data in its hashtable
+									fieldToUpdate.put(field, superClass.getName());
+
+									break;
+								}
+							}
+							currentClassName = superClass.getName();
+						}
+					}
+				}
+
+				for(FieldData fd : fieldToUpdate.keySet()) {
+					String superClassName = fieldToUpdate.get(fd);
+					fieldRefs.remove(fd);
+					fd.setClassName(superClassName);
+					fieldRefs.add(fd);
+
+					// also add this updated field data to the corresponding used field set
+					if(this.libClasses.contains(superClassName)) {
+						this.usedLibFields.add(field);
+					} else if (this.appClasses.contains(superClassName)) {
+						this.usedAppFields.add(field);
+					}
 				}
 			}
 		}
@@ -274,6 +321,10 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 
 	public Set<FieldData> getAppFields() {
 		return Collections.unmodifiableSet(this.appFields);
+	}
+
+	public Map<MethodData, Set<FieldData>> getAppFieldReferences() {
+		return Collections.unmodifiableMap(this.appFieldReferences);
 	}
 
 	@Override
