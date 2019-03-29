@@ -39,4 +39,10 @@ public interface IProjectAnalyser {
     public Set<String> classesToIgnore();
     public TestOutput getTestOutput();
     public SETUP_STATUS getSetupStatus();
+    public Set<FieldData> getLibFields();
+    public Set<FieldData> getLibFieldsCompileOnly();
+    public Set<FieldData> getAppFields();
+    public Set<FieldData> getUsedLibFields();
+    public Set<FieldData> getUsedLibFieldsCompileOnly();
+    public Set<FieldData> getUsedAppFields();
 }

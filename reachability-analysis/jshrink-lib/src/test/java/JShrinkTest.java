@@ -1,6 +1,8 @@
 import edu.ucla.cs.jshrinklib.JShrink;
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.reachability.EntryPointProcessor;
+import edu.ucla.cs.jshrinklib.reachability.TestOutput;
 import org.apache.commons.io.FileUtils;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
@@ -92,6 +94,8 @@ public class JShrinkTest {
 	public void getAllAppMethodsTest(){
 		assertTrue(isPresent(this.jShrink.getAllAppMethods(),
 			"StandardStuff", "<init>"));
+		assertTrue(isPresent(this.jShrink.getAllAppMethods(),
+				"StandardStuff", "<clinit>"));
 		assertTrue(isPresent(this.jShrink.getAllAppMethods(),
 			"StandardStuff", "doNothing"));
 		assertTrue(isPresent(this.jShrink.getAllAppMethods(),
@@ -297,6 +301,126 @@ public class JShrinkTest {
 		for(String removed: toRemove){
 			assertFalse(this.jShrink.getAllLibClasses().contains(removed));
 		}
+		reboot(); //Reset things back to normal
+	}
+
+	private boolean isFieldPresent(Set<FieldData> fieldSet, String className, String fieldName){
+		for(FieldData fieldData : fieldSet){
+			if(fieldData.getClassName().equals(className) && fieldData.getName().equals(fieldName)){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Test
+	public void getAllAppFieldsTest() {
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff", "HELLO_WORLD_STRING"));
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff", "GOODBYE_STRING"));
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff", "integer"));
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff", "f1"));
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff", "f2"));
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuffSub", "f1"));
+		// an anonymous class has an implicit field to its container class
+		assertTrue(isFieldPresent(this.jShrink.getAllAppFields(),
+				"StandardStuff$1", "this$0"));
+		assertEquals(7, this.jShrink.getAllAppFields().size());
+	}
+
+	@Test
+	public void getAllLibFieldsTest() {
+		assertTrue(isFieldPresent(this.jShrink.getAllLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass", "x"));
+		assertTrue(isFieldPresent(this.jShrink.getAllLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass", "f1"));
+		assertTrue(isFieldPresent(this.jShrink.getAllLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass2", "y"));
+		assertEquals(3, this.jShrink.getAllLibFields().size());
+	}
+
+	@Test
+	public void getUsedAppFieldsTest() {
+		// Final fields are inlined during java compilation
+		// so the following two fields are not referenced at all
+		assertFalse(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff", "HELLO_WORLD_STRING"));
+		assertFalse(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff", "GOODBYE_STRING"));
+		assertTrue(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff", "integer"));
+
+		// Since f1 and f2 are initialized, they are always used as long as the class is used
+		assertTrue(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff", "f1"));
+		assertTrue(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff", "f2"));
+
+		// Though StandardStuffSub.f1 is also initialized, its class is not used when setting the main method as an entry point
+		// So this field is not used
+		assertFalse(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuffSub", "f1"));
+
+		assertTrue(isFieldPresent(this.jShrink.getUsedAppFields(),
+				"StandardStuff$1", "this$0"));
+
+		assertEquals(4, this.jShrink.getUsedAppFields().size());
+	}
+
+	@Test
+	public void getUsedLibFieldsTest() {
+		// x and y are inlined by Java compiler
+		assertFalse(isFieldPresent(this.jShrink.getUsedLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass", "x"));
+		assertFalse(isFieldPresent(this.jShrink.getUsedLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass2", "y"));
+		// f1 is not used
+		assertFalse(isFieldPresent(this.jShrink.getUsedLibFields(),
+				"edu.ucla.cs.onr.test.LibraryClass", "f1"));
+		assertEquals(0, this.jShrink.getUsedLibFields().size());
+	}
+
+	@Test
+	public void removeFieldsTest() {
+		Set<FieldData> toRemove = new HashSet<FieldData>();
+		toRemove.addAll(this.jShrink.getAllAppFields());
+		toRemove.removeAll(this.jShrink.getUsedAppFields());
+		TestOutput before = this.jShrink.getTestOutput().get();
+		Set<FieldData> fieldsRemoved = this.jShrink.removeFields(toRemove);
+		this.jShrink.updateClassFiles();
+
+		assertEquals(3, fieldsRemoved.size());
+		for(FieldData removed : fieldsRemoved){
+			assertFalse(this.jShrink.getAllAppFields().contains(removed));
+		}
+		TestOutput after = this.jShrink.getTestOutput().get();
+
+		// make sure the test result is still the same after field removal
+		assertEquals(before, after);
+
+		// continue to remove unused lib fields
+		toRemove.clear();
+		toRemove.addAll(this.jShrink.getAllLibFields());
+		toRemove.removeAll(this.jShrink.getUsedLibFields());
+		fieldsRemoved.clear();
+		fieldsRemoved = this.jShrink.removeFields(toRemove);
+		this.jShrink.updateClassFiles();
+
+		assertEquals(3, fieldsRemoved.size());
+		for(FieldData removed : fieldsRemoved){
+			assertFalse(this.jShrink.getAllLibFields().contains(removed));
+		}
+
+		after =  this.jShrink.getTestOutput().get();
+
+		// check the test result again
+		assertEquals(before, after);
+
 		reboot(); //Reset things back to normal
 	}
 }

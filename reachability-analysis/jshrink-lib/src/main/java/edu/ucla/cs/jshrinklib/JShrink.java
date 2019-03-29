@@ -154,12 +154,28 @@ public class JShrink {
 		return this.getProjectAnalyserRun().getLibMethodsCompileOnly();
 	}
 
+	public Set<FieldData> getAllAppFields() {
+		return this.getProjectAnalyserRun().getAppFields();
+	}
+
+	public Set<FieldData> getAllLibFields() {
+		return this.getProjectAnalyserRun().getLibFieldsCompileOnly();
+	}
+
 	public Set<MethodData> getUsedAppMethods(){
 		return this.getProjectAnalyserRun().getUsedAppMethods().keySet();
 	}
 
 	public Set<MethodData> getUsedLibMethods(){
 		return this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly().keySet();
+	}
+
+	public Set<FieldData> getUsedAppFields() {
+		return this.getProjectAnalyserRun().getUsedAppFields();
+	}
+
+	public Set<FieldData> getUsedLibFields() {
+		return this.getProjectAnalyserRun().getUsedLibFieldsCompileOnly();
 	}
 
 	public Set<MethodData> getAllTestMethods(){
@@ -594,17 +610,36 @@ public class JShrink {
 	public Set<FieldData> removeFields(Set<FieldData> toRemove) {
 		Set<FieldData> removedFields = new HashSet<FieldData>();
 
-		Set<SootClass> sootClassesAffected = new HashSet<SootClass>();
-		for (FieldData fieldData : toRemove) {
-			sootClassesAffected.add(Scene.v().loadClassAndSupport(fieldData.getClassName()));
+		// cluster fields based on their owner classes, so we only need to load each class once in Soot
+		Map<String, Set<FieldData>>  toRemoveByClassName = new HashMap<String, Set<FieldData>>();
+		for(FieldData field : toRemove) {
+			String className = field.getClassName();
+			Set<FieldData> set;
+			if(toRemoveByClassName.containsKey(className)) {
+				set = toRemoveByClassName.get(className);
+			} else {
+				set = new HashSet<FieldData>();
+			}
+			set.add(field);
+			toRemoveByClassName.put(className, set);
 		}
 
-		for (SootClass sootClass : sootClassesAffected) {
-			for (SootField sootField : sootClass.getFields()) {
-				FieldData fieldData = SootUtils.sootFieldToFieldData(sootField);
-				if (!toRemove.contains(fieldData)) {
+		// modify each Soot class
+		for(String className : toRemoveByClassName.keySet()) {
+			SootClass sootClass = Scene.v().getSootClass(className);
+			Set<FieldData> unusedFields = toRemoveByClassName.get(className);
+			for(FieldData unusedField : unusedFields) {
+				SootField sootField = null;
+				for(SootField field : sootClass.getFields()) {
+					if(field.getName().equals(unusedField.getName()) && field.getType().toString().equals(unusedField.getType())) {
+						sootField = field;
+						break;
+					}
+				}
+
+				if(sootField != null) {
 					FieldWiper.removeField(sootField);
-					removedFields.add(fieldData);
+					removedFields.add(unusedField);
 					this.classesToModify.add(sootClass);
 				}
 			}

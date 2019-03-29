@@ -1,7 +1,9 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import fj.P;
+import org.junit.After;
 import org.junit.Test;
+import soot.G;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -155,5 +157,10 @@ public class FieldReachabilityTest {
         Set<FieldData> fieldRefInMain = runner.getAppFieldReferences().get(entry);
         assertTrue(fieldRefInMain.contains(originalField));
         assertFalse(fieldRefInMain.contains(inheritField));
+    }
+
+    @After
+    public void cleanup() {
+        G.reset();
     }
 }

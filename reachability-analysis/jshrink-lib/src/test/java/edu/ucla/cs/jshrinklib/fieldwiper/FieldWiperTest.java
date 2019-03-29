@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.fieldwiper;
 
+import edu.ucla.cs.jshrinklib.JShrink;
 import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
@@ -45,9 +46,17 @@ public class FieldWiperTest {
     }
 
     @Test
-    public void testSubTyping() {
+    public void testWipeUnusedFieldsInSuperClass() {
         SootClass sootClass = getSootClassFromResources("SubClass");
         // Java bytecode won't keep track of any fields inheritated from superclass
         assertEquals(1, sootClass.getFieldCount());
+        String before = TestUtils.runClass(sootClass);
+        SootClass superClass = getSootClassFromResources("SimpleClass");
+        SootField unusedField = superClass.getField("f2", RefType.v("java.lang.String"));
+        FieldWiper.removeField(unusedField);
+        assertEquals(1, superClass.getFieldCount());
+        // the output should still be the same
+        String after = TestUtils.runClass(sootClass);
+        assertEquals(before, after);
     }
 }

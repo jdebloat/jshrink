@@ -217,7 +217,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			}
 		}
 
-		// check for used lib fields
+		// check for used fields
 		for(MethodData method : usedMethods.keySet()) {
 			Set<FieldData> fieldRefs;
 			if(this.libFieldReferences.containsKey(method)) {
@@ -297,6 +297,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
 
+	@Override
 	public Set<FieldData> getLibFields() {
 		return Collections.unmodifiableSet(this.libFields);
 	}
@@ -319,6 +320,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableSet(this.appMethods);
 	}
 
+	@Override
 	public Set<FieldData> getAppFields() {
 		return Collections.unmodifiableSet(this.appFields);
 	}
@@ -337,6 +339,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedLibMethods);
 	}
 
+	@Override
 	public Set<FieldData> getUsedLibFields() {
 		return Collections.unmodifiableSet(this.usedLibFields);
 	}
@@ -351,6 +354,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedAppMethods);
 	}
 
+	@Override
 	public Set<FieldData> getUsedAppFields() {
 		return Collections.unmodifiableSet(this.usedAppFields);
 	}
@@ -386,6 +390,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
+	public Set<FieldData> getUsedLibFieldsCompileOnly() {
+		return this.getUsedLibFieldsCompileOnly();
+	}
+
+	@Override
 	public Set<String> getLibClassesCompileOnly() {
 		return this.getLibClasses();
 	}
@@ -393,6 +402,11 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public Set<MethodData> getLibMethodsCompileOnly() {
 		return this.getLibMethods();
+	}
+
+	@Override
+	public Set<FieldData> getLibFieldsCompileOnly() {
+		return this.getLibFields();
 	}
 
 	@Override

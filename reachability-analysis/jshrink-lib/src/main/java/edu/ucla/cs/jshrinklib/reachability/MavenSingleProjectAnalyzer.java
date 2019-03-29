@@ -686,6 +686,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	public Set<MethodData> getLibMethods() {
 		return Collections.unmodifiableSet(this.libMethods);
 	}
+
+	@Override
+	public Set<FieldData> getLibFields() {
+		return Collections.unmodifiableSet(this.libFields);
+	}
 	
 	@Override
 	public Set<String> getLibClassesCompileOnly() {
@@ -698,6 +703,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	}
 
 	@Override
+	public Set<FieldData> getLibFieldsCompileOnly() {
+		return Collections.unmodifiableSet(this.libFieldsCompileOnly);
+	}
+
+	@Override
 	public Set<String> getAppClasses() {
 		return Collections.unmodifiableSet(this.appClasses);
 	}
@@ -705,6 +715,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<MethodData> getAppMethods() {
 		return Collections.unmodifiableSet(this.appMethods);
+	}
+
+	@Override
+	public Set<FieldData> getAppFields() {
+		return Collections.unmodifiableSet(this.appFields);
 	}
 
 	@Override
@@ -727,10 +742,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedLibMethodsCompileOnly);
 	}
 
+	@Override
 	public Set<FieldData> getUsedLibFields() {
 		return Collections.unmodifiableSet(this.usedLibFields);
 	}
 
+	@Override
 	public Set<FieldData> getUsedLibFieldsCompileOnly() {
 		return Collections.unmodifiableSet(this.usedLibFieldsCompileOnly);
 	}
@@ -745,6 +762,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return Collections.unmodifiableMap(this.usedAppMethods);
 	}
 
+	@Override
 	public Set<FieldData> getUsedAppFields() {
 		return Collections.unmodifiableSet(this.usedAppFields);
 	}

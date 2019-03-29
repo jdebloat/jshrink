@@ -4,6 +4,8 @@ public class LibraryClass {
 
 	private static final String x="NOT ACCESSIBLE";
 
+	public String f1; // never used
+
 	public LibraryClass(){}
 
 	public int getNumber(){
