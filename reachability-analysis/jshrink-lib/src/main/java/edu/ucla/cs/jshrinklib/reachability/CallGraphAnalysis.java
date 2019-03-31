@@ -265,19 +265,19 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 						}
 					}
 				}
+			}
 
-				for(FieldData fd : fieldToUpdate.keySet()) {
-					String superClassName = fieldToUpdate.get(fd);
-					fieldRefs.remove(fd);
-					fd.setClassName(superClassName);
-					fieldRefs.add(fd);
+			for(FieldData fd : fieldToUpdate.keySet()) {
+				String superClassName = fieldToUpdate.get(fd);
+				fieldRefs.remove(fd);
+				fd.setClassName(superClassName);
+				fieldRefs.add(fd);
 
-					// also add this updated field data to the corresponding used field set
-					if(this.libClasses.contains(superClassName)) {
-						this.usedLibFields.add(field);
-					} else if (this.appClasses.contains(superClassName)) {
-						this.usedAppFields.add(field);
-					}
+				// also add this updated field data to the corresponding used field set
+				if(this.libClasses.contains(superClassName)) {
+					this.usedLibFields.add(fd);
+				} else if (this.appClasses.contains(superClassName)) {
+					this.usedAppFields.add(fd);
 				}
 			}
 		}

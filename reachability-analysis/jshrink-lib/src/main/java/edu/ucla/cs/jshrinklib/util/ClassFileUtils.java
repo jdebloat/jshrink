@@ -187,14 +187,19 @@ public class ClassFileUtils {
 
 		assert(fileToReturn.isPresent());
 
-		//I don't fully understand why, but you need to retrieve the methods before writing to the fole
+		writeClass(sootClass, fileToReturn.get());
+	}
+
+	public static void writeClass(SootClass sootClass, File outputFile) throws IOException {
+
+		//I don't fully understand why, but you need to retrieve the methods before writing to the file
 		for (SootMethod sootMethod : sootClass.getMethods()) {
 			if(sootMethod.isConcrete()){
 				sootMethod.retrieveActiveBody();
 			}
 		}
 
-		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(fileToReturn.get()));
+		OutputStream streamOut = new JasminOutputStream(new FileOutputStream(outputFile));
 		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
 
 		JasminClass jasminClass = new soot.jimple.JasminClass(sootClass);

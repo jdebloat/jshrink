@@ -978,4 +978,26 @@ public class ApplicationTest {
 
         assertTrue(jarIntact());
 	}
+
+    @Test
+    public void runFieldRemovalOnJUnit(){
+        //This tests ensures that all test cases pass before and after the tool is run
+        StringBuilder arguments = new StringBuilder();
+        arguments.append("--prune-app ");
+        arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
+        arguments.append("--main-entry ");
+        arguments.append("--test-entry ");
+        arguments.append("--public-entry ");
+        arguments.append("--remove-fields ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--verbose ");
+        arguments.append("-T ");
+
+        Application.main(arguments.toString().split("\\s+"));
+
+        assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+        assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+        assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+        assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+    }
 }
