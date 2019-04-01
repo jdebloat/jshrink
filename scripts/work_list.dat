@@ -3,7 +3,6 @@ google_guava
 sohutv_cachecloud
 code4craft_webmagic
 perwendel_spark
-google_auto
 thinkgem_jeesite
 google_guice
 openhab_openhab
@@ -60,7 +59,6 @@ BroadleafCommerce_BroadleafCommerce
 graphhopper_graphhopper
 google_google-java-format
 docker-java_docker-java
-Nukkit_Nukkit
 mybatis_mybatis-spring-boot
 qiujiayu_AutoLoadCache
 Netflix_curator
@@ -70,7 +68,6 @@ sqshq_PiggyMetrics
 searchbox-io_Jest
 devnied_EMV-NFC-Paycard-Enrollment
 edvin_tornadofx
-toolbox4minecraft_amidst
 pinterest_secor
 google_jimfs
 apache_shiro
