@@ -979,6 +979,35 @@ public class ApplicationTest {
         assertTrue(jarIntact());
 	}
 
+	@Test
+	public void fieldRemovalTestWithTamiFlex() {
+		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
+		String tamiflex_test_project_path =
+				new File(classLoader.getResource("tamiflex-test-project").getFile()).getAbsolutePath();
+
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project " + tamiflex_test_project_path + " ");
+		arguments.append("--test-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--remove-fields ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--test-output ");
+		arguments.append("--verbose");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<FieldData> fieldsRemoved = Application.removedFields;
+
+		assertEquals(1, fieldsRemoved.size());
+		// though the following fields are referened in the source code, they are inlined by Java compiler in the bytecode
+		// so they are not used in bytecode
+		assertTrue(isFieldPresent(fieldsRemoved, "A", "f3"));
+		assertEquals(Application.testOutputBefore, Application.testOutputAfter);
+
+		assertTrue(jarIntact());
+	}
+
     @Test
     public void runFieldRemovalOnJUnit(){
         //This tests ensures that all test cases pass before and after the tool is run

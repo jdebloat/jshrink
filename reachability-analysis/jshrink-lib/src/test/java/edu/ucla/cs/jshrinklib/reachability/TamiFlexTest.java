@@ -263,6 +263,28 @@ public class TamiFlexTest {
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+	public void testTamiFlexOnSimpleMavenProject() {
+		String project_path = new File(TamiFlexTest.class.getClassLoader()
+				.getResource("tamiflex" + File.separator + "tamiflex-test-project").getFile()).getAbsolutePath();
+		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
+				.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+			assertTrue(tamiflex.accessed_classes.get("tamiflex-test-project").contains("A"));
+			assertFalse(tamiflex.accessed_classes.get("tamiflex-test-project").contains("Main"));
+			String field1 = "A: java.lang.String f4";
+			String field2 = "A: java.lang.String f5";
+			// Though A.f4 is used in a dynamically invoked method, it is not dynamically accessed so it is not
+			// logged by TamiFlex
+			assertFalse(tamiflex.accessed_fields.get("tamiflex-test-project").contains(field1));
+			assertTrue(tamiflex.accessed_fields.get("tamiflex-test-project").contains(field2));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	@Test
 	public void testTamiFlexOnMavenProjectWithOneSubmodule() {
