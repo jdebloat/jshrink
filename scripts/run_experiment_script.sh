@@ -15,7 +15,7 @@ if [ ! -f "${JAVA}" ]; then
 	exit 1
 fi
 
-if [ ! -f "${TAMIFLEX}"]; then
+if [ ! -f "${TAMIFLEX}" ]; then
 	>&2 echo "Could not find TamiFlex at specified path: "${TAMIFLEX}
 	exit 1
 fi
@@ -25,7 +25,7 @@ if [ -f ${SIZE_FILE} ]; then
 	exit 1
 fi
 
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,tamiflex,remove_methods,method_inliner,class_collapser,parameter_removal,app_size_before,libs_size_before,app_size_after,libs_size_after,app_num_methods_before,libs_num_methods_before,app_num_methods_after,libs_num_methods_after,tests_run_before,tests_errors_before,tests_failed_before,tests_skipped_before,tests_run_after,tests_errors_after,tests_failed_after,tests_skipped_after" >${SIZE_FILE}
+echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,tamiflex,remove_methods,method_inliner,class_collapser,parameter_removal,app_size_before,libs_size_before,app_size_after,libs_size_after,app_num_methods_before,libs_num_methods_before,app_num_methods_after,libs_num_methods_after,tests_run_before,tests_errors_before,tests_failed_before,tests_skipped_before,tests_run_after,tests_errors_after,tests_failed_after,tests_skipped_after,time_elapsed" >${SIZE_FILE}
 
 if [ ! -f "${DEBLOAT_APP}" ]; then
 	echo "Cannot find "${DEBLOAT_APP}
@@ -63,7 +63,8 @@ cat ${WORK_LIST} |  while read item; do
 		lib_num_methods_before=$(cat ${temp_file} | awk -F, '($1=="libs_num_methods_before"){print $2}')
 		app_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="app_num_methods_after"){print $2}')
 		lib_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="libs_num_methods_after"){print $2}')
-		
+		time_elapsed=$(cat ${temp_file} | awk -F, '$($1=="time_elapsed"){print $2}')		
+
 		#The current settings
 		using_public_entry="1"
 		using_main_entry="1"
@@ -74,9 +75,9 @@ cat ${WORK_LIST} |  while read item; do
 		remove_methods="1"
 		method_inliner="0"
 		class_collapser="0"
-		parameter_removal="0
+		parameter_removal="0"
 
-		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after} >>${SIZE_FILE}
+		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after},${time_elapsed} >>${SIZE_FILE}
 	elif [[ ${exit_status} == 124 ]];then
 		echo "TIMEOUT!"
 		echo ""
