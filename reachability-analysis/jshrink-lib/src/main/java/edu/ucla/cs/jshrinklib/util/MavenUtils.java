@@ -69,7 +69,7 @@ public class MavenUtils {
 			}
 		}
 
-		return new TestOutput(run, failures, errors, skipped);
+		return new TestOutput(run, failures, errors, skipped, mavenOutput);
 	}
 
 	public static HashMap<String, String> getClasspathsFromFile(File log_file) {

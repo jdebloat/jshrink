@@ -401,7 +401,10 @@ public class JShrinkTest {
 		TestOutput after = this.jShrink.getTestOutput().get();
 
 		// make sure the test result is still the same after field removal
-		assertEquals(before, after);
+		assertEquals(before.getRun(), after.getRun());
+		assertEquals(before.getErrors(), after.getErrors());
+		assertEquals(before.getFailures(), after.getFailures());
+		assertEquals(before.getSkipped(), after.getSkipped());
 
 		// continue to remove unused lib fields
 		toRemove.clear();
@@ -419,7 +422,10 @@ public class JShrinkTest {
 		after =  this.jShrink.getTestOutput().get();
 
 		// check the test result again
-		assertEquals(before, after);
+		assertEquals(before.getRun(), after.getRun());
+		assertEquals(before.getErrors(), after.getErrors());
+		assertEquals(before.getFailures(), after.getFailures());
+		assertEquals(before.getSkipped(), after.getSkipped());
 
 		reboot(); //Reset things back to normal
 	}
