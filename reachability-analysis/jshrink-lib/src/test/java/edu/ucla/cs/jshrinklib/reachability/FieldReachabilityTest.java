@@ -15,7 +15,7 @@ public class FieldReachabilityTest {
     @Test
     public void testSimpleFieldAccess1() {
         // a simple case where only one of two fields in a class is referenced in a used method
-        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
         List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project3"
@@ -42,7 +42,7 @@ public class FieldReachabilityTest {
     @Test
     public void testSimpleFieldAccess2() {
         // a simple case where both fields in a class is referenced in a used method
-        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
         List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project3"
@@ -70,7 +70,7 @@ public class FieldReachabilityTest {
     public void testStaticFieldAccess() {
         // a complex case where static fields are initialized in a static block, which are executed immediately after class loading
         // as a result, these static fields are always considered used
-        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
         List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("simple-test-project3"
@@ -97,7 +97,7 @@ public class FieldReachabilityTest {
     @Test
     public void testSubTypingAndFieldInheritance() {
         // SubClass inherits f1 from SimpleClass
-        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
         List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("fieldwiper").getFile()));
@@ -129,7 +129,7 @@ public class FieldReachabilityTest {
     @Test
     public void testSubTypingAndFieldInheritance2() {
         // SubClass inherits f1 from SimpleClass
-        ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
         List<File> libJarPath = new ArrayList<File>();
         List<File> appClassPath = new ArrayList<File>();
         appClassPath.add(new File(classLoader.getResource("fieldwiper").getFile()));
@@ -157,6 +157,38 @@ public class FieldReachabilityTest {
         Set<FieldData> fieldRefInMain = runner.getAppFieldReferences().get(entry);
         assertTrue(fieldRefInMain.contains(originalField));
         assertFalse(fieldRefInMain.contains(inheritField));
+    }
+
+    @Test
+    public void testFieldAccessByJavaReflection() {
+        ClassLoader classLoader = FieldReachabilityTest.class.getClassLoader();
+        String tamiflex_test_project_path =
+                new File(classLoader.getResource("tamiflex" + File.separator + "tamiflex-test-project").getFile()).getAbsolutePath();
+        File tamiflex_jar = new File(TamiFlexTest.class.getClassLoader()
+                .getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile());
+        MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(tamiflex_test_project_path,
+                new EntryPointProcessor(false, false, true,
+                        false, new HashSet<MethodData>()),
+                Optional.of(tamiflex_jar), false);
+        runner.setup();
+        runner.run();
+        assertTrue(runner.getUsedAppFields().contains(new FieldData("f1", "A", true, "java.lang.String")));
+        assertTrue(runner.getUsedAppFields().contains(new FieldData("f2", "A", false, "java.lang.String")));
+        assertTrue(runner.getUsedAppFields().contains(new FieldData("f4", "A", false, "java.lang.String")));
+        assertTrue(runner.getUsedAppFields().contains(new FieldData("f5", "A", false, "java.lang.String")));
+        assertEquals(4, runner.getUsedAppFields().size());
+        assertEquals(0, runner.getUsedLibFieldsCompileOnly().size());
+        assertTrue(runner.getUsedAppMethods().containsKey(
+                new MethodData("<init>", "A", "void", new String[] {"java.lang.String"}, true, false)));
+        assertTrue(runner.getUsedAppMethods().containsKey(
+                new MethodData("<clinit>", "A", "void", new String[] {}, false, true)));
+        assertTrue(runner.getUsedAppMethods().containsKey(
+                new MethodData("m3", "A", "void", new String[] {}, true, false)));
+        assertEquals(3, runner.getUsedAppMethods().size());
+        assertEquals(0, runner.getUsedLibMethodsCompileOnly().size());
+        assertTrue(runner.getUsedAppClasses().contains("A"));
+        assertEquals(1, runner.getUsedAppClasses().size());
+        assertEquals(0, runner.getUsedLibClassesCompileOnly().size());
     }
 
     @After

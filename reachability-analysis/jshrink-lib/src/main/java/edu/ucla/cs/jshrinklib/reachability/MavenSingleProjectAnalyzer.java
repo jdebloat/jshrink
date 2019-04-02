@@ -475,7 +475,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						// and arguments. There are no access modifiers.
 						String method_signature2 = md.getSubSignature(); 
 						if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
-							// this is a library method 
+							// this is an application method
 							if(!usedAppMethods.containsKey(md)) {
 								// this method is already identified as a used method by static analysis
 								set.add(md);
@@ -530,6 +530,45 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					new_entry_points.put(module, set);
 				}
 			}
+
+
+			// aggregate all accessed fields from each submodule (if any) into one set
+			for(String module : tamiflex.accessed_fields.keySet()) {
+				for(String record : tamiflex.accessed_fields.get(module)) {
+					String[] ss = record.split(": ");
+					String ownerClassName = ss[0];
+					String fieldSignature = ss[1];
+					String[] ss2 = fieldSignature.split(" ");
+					String fieldType = ss2[0];
+					String fieldName = ss2[1];
+
+					// check the application fields first
+					if(appClasses.contains(ownerClassName)) {
+						// this accessed field is from application classes
+						for(FieldData field : appFields) {
+							if(field.getName().equals(fieldName) && field.getClassName().equals(ownerClassName)
+									&& field.getType().equals(fieldType)) {
+								usedAppFields.add(field);
+								usedAppClasses.add(ownerClassName);
+							}
+						}
+					} else if (libClasses.contains(ownerClassName)) {
+						// this accessed field is from external libraries
+						for(FieldData field : libFields) {
+							if(field.getName().equals(fieldName) && field.getClassName().equals(ownerClassName)
+									&& field.getType().equals(fieldType)) {
+								usedLibFields.add(field);
+								usedLibClasses.add(ownerClassName);
+
+								if(libFieldsCompileOnly.contains(field)) {
+									usedLibFieldsCompileOnly.add(field);
+									usedLibClassesCompileOnly.add(ownerClassName);
+								}
+							}
+						}
+					}
+				}
+			}
 			
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
@@ -566,9 +605,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						addToMap(this.usedLibMethodsCompileOnly, entry.getKey(), entry.getValue());
 					}
 				}
+				for(FieldData field : runner.getUsedLibFields()) {
+					this.usedLibFields.add(field);
+					if(this.libFieldsCompileOnly.contains(field)) {
+						this.usedLibFieldsCompileOnly.add(field);
+					}
+				}
+
 				this.usedAppClasses.addAll(runner.getUsedAppClasses());
 				addToMap(this.usedAppMethods, runner.getUsedAppMethods());
 				this.entryPoints.addAll(runner.getEntryPoints());
+				this.usedAppFields.addAll(runner.getUsedAppFields());
 
 				this.usedTestClasses.addAll(runner.getUsedTestClasses());
 				addToMap(this.usedTestMethods, runner.getUsedTestMethods());
