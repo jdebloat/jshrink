@@ -20,18 +20,16 @@ if [ ! -f "${TAMIFLEX}" ]; then
 	exit 1
 fi
 
-if [ -f ${SIZE_FILE} ]; then
-	>&2 echo "The original size file ("${SIZE_FILE}") already exists"
-	exit 1
+if [ ! -f ${SIZE_FILE} ]; then
+	echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,tamiflex,remove_methods,method_inliner,class_collapser,parameter_removal,app_size_before,libs_size_before,app_size_after,libs_size_after,app_num_methods_before,libs_num_methods_before,app_num_methods_after,libs_num_methods_after,tests_run_before,tests_errors_before,tests_failed_before,tests_skipped_before,tests_run_after,tests_errors_after,tests_failed_after,tests_skipped_after,time_elapsed" >${SIZE_FILE}
+else
+	2>&1 echo "WARNING: size file \""${SIZE_FILE}"\" already exists. Appending to this file"
 fi
-
-echo "project,using_public_entry,using_main_entry,using_test_entry,custom_entry,is_app_prune,tamiflex,remove_methods,method_inliner,class_collapser,parameter_removal,app_size_before,libs_size_before,app_size_after,libs_size_after,app_num_methods_before,libs_num_methods_before,app_num_methods_after,libs_num_methods_after,tests_run_before,tests_errors_before,tests_failed_before,tests_skipped_before,tests_run_after,tests_errors_after,tests_failed_after,tests_skipped_after,time_elapsed" >${SIZE_FILE}
 
 if [ ! -f "${DEBLOAT_APP}" ]; then
 	echo "Cannot find "${DEBLOAT_APP}
 	exit 1
 fi
-
 
 cat ${WORK_LIST} |  while read item; do
 	item_dir="${PROJECT_DIR}/${item}"
@@ -42,7 +40,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 3 hour timeout
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -71,7 +69,7 @@ cat ${WORK_LIST} |  while read item; do
 		using_test_entry="1"
 		custom_entry=""
 		is_app_prune="1"
-		tamiflex="1"
+		tamiflex="0"
 		remove_methods="1"
 		method_inliner="0"
 		class_collapser="0"
