@@ -20,10 +20,14 @@ To download the sample projects (used in the experiments), run:
 This will download all the projects, from GitHub, stated in 
 "sample-maven-projects.csv" into a directory called "sample-projects".
 
---- Run experiments --
+--- Run experiments ---
 
 Copy the desired experiment run from "experiment_scripts" to the root
 directory, and execute.
 
 The script will run JShrink on all projects stated in the "work_list.dat"
 file, and output to "size_data.csv".
+
+Once the experiment script has finished running, please run 
+"reset_work_list.sh" to clean the projects in "sample-projects" (the 
+projects must be "cleaned" before any other experiments are run again!).
