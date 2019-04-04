@@ -25,6 +25,12 @@ This will download all the projects, from GitHub, stated in
 Copy the desired experiment run from "experiment_scripts" to the root
 directory, and execute.
 
+Before running, please ensure a copy of "jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
+is within the current directory. If not, go to "../reachability-analysis",
+compile project and copy 
+"../reachability-analysis/jshrink-app/target/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
+to the current directory.
+
 The script will run JShrink on all projects stated in the "work_list.dat"
 file, and output to "size_data.csv".
 
