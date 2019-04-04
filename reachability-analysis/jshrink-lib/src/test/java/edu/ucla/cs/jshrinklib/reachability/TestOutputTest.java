@@ -50,6 +50,7 @@ public class TestOutputTest {
 		assertEquals(0, output.getFailures());
 		assertEquals(0, output.getErrors());
 		assertEquals(2, output.getSkipped());
+		assertEquals(toProcess, output.getTestOutputText());
 	}
 
 	@Test
@@ -104,6 +105,7 @@ public class TestOutputTest {
 		assertEquals(0, output.getFailures());
 		assertEquals(0, output.getErrors());
 		assertEquals(0, output.getSkipped());
+		assertEquals(toProcess, output.getTestOutputText());
 	}
 
 	@Test
@@ -121,5 +123,6 @@ public class TestOutputTest {
 		assertEquals(0, output.getFailures());
 		assertEquals(0, output.getErrors());
 		assertEquals(0, output.getSkipped());
+		assertEquals(toProcess, output.getTestOutputText());
 	}
 }

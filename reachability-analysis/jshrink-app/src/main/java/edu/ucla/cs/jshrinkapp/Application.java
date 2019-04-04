@@ -126,6 +126,10 @@ public class Application {
 			System.out.println("tests_errors_before," + testOutputBefore.getErrors());
 			System.out.println("tests_failed_before," + testOutputBefore.getFailures());
 			System.out.println("tests_skipped_before," + testOutputBefore.getSkipped());
+			if(testOutputBefore.getErrors() > 0 || testOutputBefore.getFailures() > 0){
+				System.out.println("Test Failure before processing. Output below: ");
+				System.out.println(testOutputBefore.getTestOutputText());
+			}
 		}
 
 		//Note the number of library and application methods and fields before and transformations.
@@ -261,7 +265,7 @@ public class Application {
 
 		testOutput = jShrink.getTestOutput();
 		if(!testOutput.isPresent()){
-			testOutputAfter = new TestOutput(-1,-1,-1,-1);
+			testOutputAfter = new TestOutput(-1,-1,-1,-1, "");
 		} else {
 			testOutputAfter = testOutput.get();
 		}
@@ -270,6 +274,10 @@ public class Application {
 			System.out.println("tests_errors_after," + testOutputAfter.getErrors());
 			System.out.println("tests_failed_after," + testOutputAfter.getFailures());
 			System.out.println("tests_skipped_after," + testOutputAfter.getSkipped());
+			if(testOutputAfter.getErrors() > 0 || testOutputAfter.getFailures() > 0){
+				System.out.println("Test Failure before processing. Output below: ");
+				System.out.println(testOutputAfter.getTestOutputText());
+			}
 		}
 
 		removedMethods.addAll(appMethodsRemoved);
