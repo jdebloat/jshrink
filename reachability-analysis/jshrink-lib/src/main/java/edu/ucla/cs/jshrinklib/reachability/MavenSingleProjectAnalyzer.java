@@ -205,7 +205,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			isr = new InputStreamReader(stdout);
 			br = new BufferedReader(isr);
 
-
 			String maven_log = "";
 			while((line=br.readLine()) != null) {
 				maven_log += line + System.lineSeparator();
@@ -214,12 +213,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			exitValue = process.waitFor();
 
+			// still get test output even in case of test failure
+			this.testOutput = MavenUtils.testOutputFromString(maven_log);
+
 			if(exitValue != 0) {
 				this.setupStatus = SETUP_STATUS.TESTING_CRASH;
 				return;
 			}
-
-			this.testOutput = MavenUtils.testOutputFromString(maven_log);
 
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
 			// call graph in the static analysis later 

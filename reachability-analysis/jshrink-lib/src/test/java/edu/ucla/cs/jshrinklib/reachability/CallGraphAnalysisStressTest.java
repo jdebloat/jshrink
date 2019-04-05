@@ -58,7 +58,8 @@ public class CallGraphAnalysisStressTest {
 		Set<MethodData> appMethods = new HashSet<MethodData>();
 		Set<FieldData> appFields = new HashSet<FieldData>();
 		Map<MethodData, Set<FieldData>> appFieldRefs = new HashMap<MethodData, Set<FieldData>>();
-		ASMUtils.readClass(app_class_path, appClasses, appMethods, appFields, appFieldRefs);
+		Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClass(app_class_path, appClasses, appMethods, appFields, appFieldRefs, virtualCalls);
 		Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(appMethods);
 		entryPoints.addAll(mainMethods);
 		

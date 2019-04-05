@@ -14,6 +14,7 @@ public class ASMClassVisitor extends ClassVisitor{
 	private Set<MethodData> methods;
 	private Set<FieldData> fields;
 	private Map<MethodData, Set<FieldData>> fieldReferences;
+	private Map<MethodData, Set<MethodData>> virtualMethodCalls;
 	private boolean isJUnit3Test;
 
 	/**
@@ -25,12 +26,13 @@ public class ASMClassVisitor extends ClassVisitor{
 	 * @param fieldReferences set this to null if you do not want to collect field references
 	 */
 	public ASMClassVisitor(int api, Set<String> classes, Set<MethodData> methods, Set<FieldData> fields,
-						   Map<MethodData, Set<FieldData>> fieldReferences) {
+						   Map<MethodData, Set<FieldData>> fieldReferences, Map<MethodData, Set<MethodData>> virtualMethodCalls) {
 		super(api);
 		this.classes = classes;
 		this.methods = methods;
 		this.fields = fields;
 		this.fieldReferences = fieldReferences;
+		this.virtualMethodCalls = virtualMethodCalls;
 		isJUnit3Test = false;
 	}
 	
@@ -51,21 +53,10 @@ public class ASMClassVisitor extends ClassVisitor{
 			String desc, String signature, String[] exceptions) {
 		String returnType = Type.getReturnType(desc).getClassName();
 		Type[] ts = Type.getArgumentTypes(desc);
-		
-		// No idea why this works, but it do.
-		String args = "";
-		for(int i = 0; i < ts.length - 1; i++) {
-				args += ts[i].getClassName() + ",";
-		}
-		if(ts.length > 0 && !ts[ts.length - 1].getClassName().equals("")) {
-			args += ts[ts.length - 1].getClassName();
-		}
 
 		List<String> argsList = new ArrayList<String>();
-		for(String arg: args.split(",")){
-			if(!arg.trim().isEmpty()){
-				argsList.add(arg);
-			}
+		for(Type t : ts) {
+			argsList.add(t.getClassName());
 		}
 		
 		MethodData methodData = new MethodData(name, currentClass,returnType,
@@ -80,9 +71,9 @@ public class ASMClassVisitor extends ClassVisitor{
 		if(fieldReferences != null) {
 			Set<FieldData> fieldRefs = new HashSet<FieldData>(10);
 			fieldReferences.put(methodData, fieldRefs);
-			mv = new ASMMethodVisitor(this.api, methodData, fieldRefs);
+			mv = new ASMMethodVisitor(this.api, methodData, fieldRefs, virtualMethodCalls);
 		} else {
-			mv = new ASMMethodVisitor(this.api, methodData, null);
+			mv = new ASMMethodVisitor(this.api, methodData, null, virtualMethodCalls);
 		}
 
 		return mv;

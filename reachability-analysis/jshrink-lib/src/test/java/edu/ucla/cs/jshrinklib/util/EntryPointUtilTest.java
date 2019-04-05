@@ -3,7 +3,9 @@ package edu.ucla.cs.jshrinklib.util;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
@@ -21,7 +23,8 @@ public class EntryPointUtilTest {
 					+ File.separator + "target" + File.separator + "classes").getFile());
 		Set<String> classes = new HashSet<String>();
 		Set<MethodData> methods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods, null, null);
+		Map<MethodData, Set<MethodData>> virtualMethodCalls = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClassFromDirectory(app_class_dir, classes, methods, null, null, virtualMethodCalls);
 		Set<MethodData> mainMethods = EntryPointUtil.getMainMethodsAsEntryPoints(methods);
 		assertEquals(4, mainMethods.size());
 	}
@@ -67,7 +70,8 @@ public class EntryPointUtilTest {
 		// get test cases based on annotations
 		Set<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods, null, null);
+		Map<MethodData, Set<MethodData>> virtualMethods = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClassFromDirectory(test_class_dir, testClasses, testMethods, null, null, virtualMethods);
 		Set<MethodData> testsByAnnotations = EntryPointUtil.getTestMethodsAsEntryPoints(testMethods);
 		
 		

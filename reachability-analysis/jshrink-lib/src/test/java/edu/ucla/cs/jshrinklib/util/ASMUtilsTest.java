@@ -20,11 +20,17 @@ public class ASMUtilsTest {
 		HashSet<MethodData> methods = new HashSet<MethodData>();
 		HashSet<FieldData> fields = new HashSet<FieldData>();
 		Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
-		ASMUtils.readClass(jarPath, classes, methods, fields, fieldRefs);
+		Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClass(jarPath, classes, methods, fields, fieldRefs, virtualCalls);
 		assertEquals(9, classes.size());
 		assertEquals(118, methods.size());
 		assertEquals(35, fields.size());
-		assertEquals(118, fieldRefs.size());
+		assertEquals(118, virtualCalls.size());
+		Set<MethodData> allVirtualCalls = new HashSet<MethodData>();
+		for(MethodData md : virtualCalls.keySet()) {
+			allVirtualCalls.addAll(virtualCalls.get(md));
+		}
+		assertEquals(102, allVirtualCalls.size());
 	}
 	
 	@Test
@@ -34,10 +40,17 @@ public class ASMUtilsTest {
 		HashSet<MethodData> methods = new HashSet<MethodData>();
 		HashSet<FieldData> fields = new HashSet<FieldData>();
 		Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
-		ASMUtils.readClass(jarPath, classes, methods, fields, fieldRefs);
+		Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClass(jarPath, classes, methods, fields, fieldRefs, virtualCalls);
 		assertEquals(9, classes.size());
 		assertEquals(118, methods.size());
 		assertEquals(35, fields.size());
 		assertEquals(118, fieldRefs.size());
+		assertEquals(118, virtualCalls.size());
+		Set<MethodData> allVirtualCalls = new HashSet<MethodData>();
+		for(MethodData md : virtualCalls.keySet()) {
+			allVirtualCalls.addAll(virtualCalls.get(md));
+		}
+		assertEquals(102, allVirtualCalls.size());
 	}
 }

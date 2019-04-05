@@ -2,10 +2,7 @@ package edu.ucla.cs.jshrinkapp;
 
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
-import edu.ucla.cs.jshrinklib.reachability.EntryPointProcessor;
-import edu.ucla.cs.jshrinklib.reachability.FieldData;
-import edu.ucla.cs.jshrinklib.reachability.MavenSingleProjectAnalyzer;
-import edu.ucla.cs.jshrinklib.reachability.MethodData;
+import edu.ucla.cs.jshrinklib.reachability.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -30,7 +27,7 @@ public class ApplicationTest {
 	private static Optional<File> junitProject = Optional.empty();
 	private static Optional<File> classCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
-	private static Optional<File> junitFailureProject = Optional.empty();
+	private static Optional<File> dynamicDispatchingProject = Optional.empty();
 
 	private static File getOptionalFile(Optional<File> optionalFile, String resources){
 		if(optionalFile.isPresent()){
@@ -90,8 +87,8 @@ public class ApplicationTest {
 		return getOptionalFile(lambdaProject, "lambda-test-project");
 	}
 
-	private File getJUnitFailureProject(){
-		return getOptionalFile(junitFailureProject, "junit-failure-test-project");
+	private File getDynamicDispatchingProject(){
+		return getOptionalFile(dynamicDispatchingProject, "dynamic-dispatching-test-project");
 	}
 
 	private File getTamiFlexJar(){
@@ -756,7 +753,6 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
-		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--verbose ");
 		arguments.append("-T ");
@@ -770,37 +766,36 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void reproduce_junit_test_failure(){
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getJUnitFailureProject().getAbsolutePath() + "\" ");
-		arguments.append("--main-entry ");
-		arguments.append("--test-entry ");
-		arguments.append("--public-entry ");
-		arguments.append("--remove-methods ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
-		Application.main(arguments.toString().split("\\s+"));
-
-		Set<MethodData> md = Application.removedMethods;
-		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
-		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
-		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
-		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
-	}
-
-	@Test
 	public void test_junit_test_failures() {
 		String junit_project_path = getJunitProjectDir().getAbsolutePath();
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[] {}, true, false);
-		MethodData extraTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[] {}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
+	}
+
+	@Test
+	public void reproduce_junit_test_failure(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getDynamicDispatchingProject().getAbsolutePath() + "\" ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> md = Application.removedMethods;
+		assertEquals(1, md.size());
+		assertTrue(isPresent(md, "A", "unused"));
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
 	@Test @Ignore
@@ -1049,15 +1044,44 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
+	/**
+	 * Check how many test failures there will be when running our tool on JUnit without enabling TamiFlex
+	 */
+	@Test
+	public void runFieldRemovalOnJUnitWithoutTamiFlex(){
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-fields ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(0, Application.testOutputBefore.getErrors());
+		assertEquals(10, Application.testOutputAfter.getErrors());
+
+		assertTrue(jarIntact());
+	}
+
+	/**
+	 * After enabling TamiFlex, there should be no test failure after removing unused fields.
+	 */
     @Test
-    public void runFieldRemovalOnJUnit(){
-        //This tests ensures that all test cases pass before and after the tool is run
+    public void runFieldRemovalOnJUnitWithTamiFlex(){
+        //This test ensures that all test cases pass before and after the tool is run
         StringBuilder arguments = new StringBuilder();
         arguments.append("--prune-app ");
         arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
         arguments.append("--main-entry ");
         arguments.append("--test-entry ");
-        arguments.append("--public-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--public-entry ");
         arguments.append("--remove-fields ");
 		arguments.append("--skip-method-removal ");
 		arguments.append("--verbose ");
@@ -1069,5 +1093,7 @@ public class ApplicationTest {
         assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
         assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
         assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+
+		assertTrue(jarIntact());
     }
 }

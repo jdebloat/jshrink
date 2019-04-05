@@ -15,7 +15,7 @@ public class MethodData {
 	private String returnType;
 	private boolean isStaticMethod;
 	private Optional<String> annotation;
-	
+
 	/* Handle test cases written in JUnit 3*/
 	private boolean isJUnit3Test = false;
 	
@@ -48,7 +48,6 @@ public class MethodData {
 		this.returnType = methodReturnType;
 		this.isStaticMethod = isStatic;
 		this.annotation = Optional.empty();
-
 	}
 
 	public MethodData(String signature) throws IOException{ //TODO: is this the correct exception to throw?

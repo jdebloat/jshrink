@@ -45,6 +45,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final EntryPointProcessor entryPointProcessor;
 	private Set<CallGraph> callgraphs = new HashSet<CallGraph>();
 	private final boolean useSpark;
+	private final Map<MethodData, Set<MethodData>> virtualMethodCalls;
 
 	public CallGraphAnalysis(List<File> libJarPath,
 	                              List<File> appClassPath, 
@@ -79,6 +80,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		usedTestClasses = new HashSet<String>();
 		entryPointProcessor = entryPointProc;
 		this.useSpark = useSpark;
+		virtualMethodCalls = new HashMap<MethodData, Set<MethodData>>();
 	}
 
 	@Override
@@ -128,7 +130,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
 			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
-			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib, libFieldReferences);
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib, libFieldReferences, virtualMethodCalls);
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
 			this.libFields.addAll(fields_in_this_lib);
@@ -146,12 +148,12 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		}
 
 		for (File appPath : appClassPath) {
-			ASMUtils.readClass(appPath, appClasses, appMethods, appFields, appFieldReferences);
+			ASMUtils.readClass(appPath, appClasses, appMethods, appFields, appFieldReferences, virtualMethodCalls);
 		}
 
 		for (File testPath : this.appTestPath){
 			// no need to collect field data for test cases
-			ASMUtils.readClass(testPath,testClasses,testMethods,null, null);
+			ASMUtils.readClass(testPath, testClasses, testMethods,null, null, virtualMethodCalls);
 		}
 	}
 
@@ -187,7 +189,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 				usedMethods.put(entryMethodData, new HashSet<MethodData>());
 			}
 			usedClasses.add(entryMethodData.getClassName());
-			SootUtils.visitMethodNonRecur(entryMethod, cg, usedClasses, usedMethods);
+			SootUtils.visitMethodNonRecur(entryMethod, cg, usedClasses, usedMethods, this.appClasses, this.libClasses);
 		}
 
 		// check for used library classes and methods
@@ -214,6 +216,42 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		for(Map.Entry<MethodData, Set<MethodData>> e : usedMethods.entrySet()){
 			if(this.testMethods.contains(e.getKey())){
 				this.usedTestMethods.put(e.getKey(), e.getValue());
+			}
+		}
+
+		// check for the referenced but not actually invoked methods
+		// we still want to keep those methods since JVM needs to find them at runtime for dynamic dispatching
+		for(MethodData method : this.virtualMethodCalls.keySet()) {
+			if (this.usedLibMethods.containsKey(method) || this.usedAppMethods.containsKey(method)
+					|| this.usedTestMethods.containsKey(method) || this.entryMethods.contains(method)) {
+				// this method is used, check whether all virtual calls in this method is also in the used method set
+				Set<MethodData> virtualCalls = this.virtualMethodCalls.get(method);
+				for (MethodData virtualCall : virtualCalls) {
+					String className = virtualCall.getClassName();
+					if (appClasses.contains(className)) {
+						// a virtual call to an application method
+						MethodData md = findMethodCall(virtualCall, appMethods);
+						if (md != null) {
+							if (!usedAppMethods.containsKey(md)) {
+								usedAppMethods.put(md, new HashSet<MethodData>());
+								if (!usedAppClasses.contains(className)) {
+									usedAppClasses.add(className);
+								}
+							}
+						}
+					} else if (libClasses.contains(className)) {
+						// a virtual call to a library method
+						MethodData md = findMethodCall(virtualCall, libMethods);
+						if (md != null) {
+							if (!usedLibMethods.containsKey(md)) {
+								usedLibMethods.put(md, new HashSet<MethodData>());
+								if (!usedLibClasses.contains(className)) {
+									usedLibClasses.add(className);
+								}
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -281,6 +319,27 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 				}
 			}
 		}
+	}
+
+	/**
+	 * This method is to find the original MethodData object of a method call. The isPublic and isStatic fields in a
+	 * method call object are always set to true and false since there is no method modifier information in the callsite.
+	 * So we use this method to find the original MethodData object of a method call. Return null if we cannot find one.
+	 *
+	 * @param call
+	 * @param set
+	 * @return
+	 */
+	private MethodData findMethodCall(MethodData call, Set<MethodData> set) {
+		for(MethodData method : set) {
+			if(method.getClassName().equals(call.getClassName())
+				&& method.getName().equals(call.getName())
+				&& Arrays.equals(method.getArgs(), call.getArgs())) {
+				return method;
+			}
+		}
+
+		return null;
 	}
 
 	@Override

@@ -3,11 +3,7 @@ package edu.ucla.cs.jshrinklib.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
@@ -25,13 +21,15 @@ public class EntryPointUtil {
 	 * Now we consider all methods in a test class as test methods, 
 	 * represented in the 'className:*' format
 	 * 
-	 * @param testLog
+	 * @param test_log
+	 * @param test_classes
 	 * @return
 	 */
 	public static Set<MethodData> getTestMethodsAsEntryPoints(File test_log, File test_classes) {
 		HashSet<String> testClasses = new HashSet<String>();
 		Set<MethodData> testMethods = new HashSet<MethodData>();
-		ASMUtils.readClass(test_classes, testClasses, testMethods, null, null);
+		Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
+		ASMUtils.readClass(test_classes, testClasses, testMethods, null, null, virtualCalls);
 		
 		Set<String> executedTests = getTestMethodsAsEntryPoints(test_log);
 		

@@ -495,13 +495,7 @@ public class JShrink {
 		return this.getProjectAnalyser().getSetupStatus();
 	}
 
-	//return Optional.empty if the tool failed to build and/or the testing crashed
 	public Optional<TestOutput> getTestOutput(){
-		if(this.getSetupStatus().equals(SETUP_STATUS.BUILD_FAILED)
-			|| this.getSetupStatus().equals(SETUP_STATUS.TESTING_CRASH)){
-			return Optional.empty();
-		}
-
 		return Optional.of(this.getProjectAnalyser().getTestOutput());
 	}
 

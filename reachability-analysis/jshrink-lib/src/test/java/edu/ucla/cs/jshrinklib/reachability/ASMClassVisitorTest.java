@@ -25,10 +25,11 @@ public class ASMClassVisitorTest {
         Set<MethodData> methods = new HashSet<MethodData>();
         Set<FieldData> fields = new HashSet<FieldData>();
         Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
         try {
             FileInputStream fis = new FileInputStream(pathToClassFile);
             ClassReader cr = new ClassReader(fis);
-            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCalls);
             cr.accept(cv, ClassReader.SKIP_DEBUG);
             fis.close();
         } catch (IOException e) {
@@ -37,9 +38,41 @@ public class ASMClassVisitorTest {
 
         assertEquals(4, methods.size());
         assertEquals(5, fields.size());
+        assertEquals(4, virtualCalls.size());
+        Set<MethodData> allVirtualCalls = new HashSet<MethodData>();
+        for(MethodData md : virtualCalls.keySet()) {
+            allVirtualCalls.addAll(virtualCalls.get(md));
+        }
+        assertEquals(10, allVirtualCalls.size());
 
         FieldData fieldWithGenericType = new FieldData("classes", "edu.ucla.cs.jshrinklib.reachability.ASMClassVisitor", false, "java.util.Set");
         assertTrue(fields.contains(fieldWithGenericType));
+    }
+
+    @Test
+    public void testVisitVirtualCalls() {
+        ClassLoader classLoader = ASMClassVisitorTest.class.getClassLoader();
+        String pathToClassFile = classLoader.getResource("simple-test-project2" + File.separator + "target"
+                + File.separator + "classes" + File.separator + "Main.class").getFile();
+        Set<String> classes = new HashSet<String>();
+        Set<MethodData> methods = new HashSet<MethodData>();
+        Set<FieldData> fields = new HashSet<FieldData>();
+        Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCallMap = new HashMap<MethodData, Set<MethodData>>();
+        try {
+            FileInputStream fis = new FileInputStream(pathToClassFile);
+            ClassReader cr = new ClassReader(fis);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCallMap);
+            cr.accept(cv, ClassReader.SKIP_DEBUG);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1, virtualCallMap.size());
+        MethodData mainMethod = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
+        Set<MethodData> virtualCalls = virtualCallMap.get(mainMethod);
+        assertEquals(2, virtualCalls.size());
     }
 
     @Test
@@ -51,10 +84,11 @@ public class ASMClassVisitorTest {
         Set<MethodData> methods = new HashSet<MethodData>();
         Set<FieldData> fields = new HashSet<FieldData>();
         Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
         try {
             FileInputStream fis = new FileInputStream(pathToClassFile);
             ClassReader cr = new ClassReader(fis);
-            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCalls);
             cr.accept(cv, ClassReader.SKIP_DEBUG);
             MethodData method1 = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
             Set<FieldData> fieldReferences1 = fieldRefs.get(method1);
@@ -89,10 +123,11 @@ public class ASMClassVisitorTest {
         Set<MethodData> methods = new HashSet<MethodData>();
         Set<FieldData> fields = new HashSet<FieldData>();
         Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
         try {
             FileInputStream fis = new FileInputStream(pathToClassFile);
             ClassReader cr = new ClassReader(fis);
-            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCalls);
             cr.accept(cv, ClassReader.SKIP_DEBUG);
             MethodData method1 = new MethodData("getStringStatic", "StandardStuff", "java.lang.String", new String[] {"int"}, false, true);
             Set<FieldData> fieldReferences1 = fieldRefs.get(method1);
@@ -130,10 +165,11 @@ public class ASMClassVisitorTest {
         Set<MethodData> methods = new HashSet<MethodData>();
         Set<FieldData> fields = new HashSet<FieldData>();
         Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
         try {
             FileInputStream fis = new FileInputStream(pathToClassFile);
             ClassReader cr = new ClassReader(fis);
-            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCalls);
             cr.accept(cv, ClassReader.SKIP_DEBUG);
             // check for the initialization of static fields. All of them will be compiled to an anonymous static method called <clinit>.
             MethodData method1 = new MethodData("<clinit>", "A", "void", new String[] {}, false, true);

@@ -275,7 +275,7 @@ public class SootUtils {
 	}
 
 	public static void visitMethodNonRecur(SootMethod parent, CallGraph cg, Set<String> usedClass, Map<MethodData,
-			Set<MethodData>> visited){
+			Set<MethodData>> visited, Set<String> appClasses, Set<String> libClasses){
 		Queue<SootMethod> stack = new LinkedList<SootMethod>();
 		stack.add(parent);
 
