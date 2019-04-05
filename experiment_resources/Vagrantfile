@@ -1,29 +1,30 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
+require 'vagrant-aws'
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/bionic64"
-  # Share an additional folder to the guest VM. The first argument is
-  # the path on the host to the actual folder. The second argument is
-  # the path on the guest to mount the folder. And the optional third
-  # argument is a set of non-required options.
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  config.vm.box = 'dummy'
 
-  #
-  config.vm.provider "virtualbox" do |vb|
-    # Customize the amount of memory on the VM:
-    #24GB
-    vb.memory = "24000"
+  config.vm.provider 'aws' do |aws, override|
+    aws.access_key_id = "xxxxxxxxxxxxxxxxxx"
+    aws.secret_access_key = "xxxxxxxxxxxxxxxxxxxxxxx"
+    aws.keypair_name = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+    aws.instance_type = "r5.xlarge"
+    aws.region = 'us-east-2'
+    aws.ami = 'ami-0c55b159cbfafe1f0'
+    aws.security_groups = ['default']
+    override.ssh.username = 'ubuntu'
+    override.ssh.private_key_path = 'xxxxxxxxxxxxxxxxxxxxxxx'
+
+    config.vm.provider "aws" do |aws|
+      aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 120 }]
+    end
+
   end
-  #
-  # View the documentation for the provider you are using for more
-  # information on available options.
 
-  # Enable provisioning with a shell script. Additional provisioners such as
-  # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
-  # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y git make maven unzip bc openjdk-8-jdk
+    apt-get install -y git
+    apt-get remove -y openjdk*
+    apt-get install -y openjdk-8-jdk
+    apt install -y maven
   SHELL
+
 end

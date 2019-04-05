@@ -1,4 +1,4 @@
---- Setup the VM ---
+--- Setup the VM on AWS ---
 
 To setup the experiment up, please ensure Vagrant and VirtualBox is 
 installed
@@ -7,9 +7,17 @@ For Linux:
 
 "sudo apt install vagrant virtualbox"
 
-Setup and ssh into the VM using:
+To setup the VM, modify the "Vagrantfile", replacing "aws.access_key_id"
+"aws.secret_access_key", "aws.keypair_name", and
+"override.ssh.private_key_path" to those of your own AWS account. Then,
+execute the following commands:
 
-"vagrant up && vagrant ssh"
+"
+vagrant box add dummy dummy.box
+vagrant up --provider=aws
+"
+
+Enter the VM using "vagrant ssh"
 
 --- Download the sample projects ---
 
@@ -25,9 +33,10 @@ This will download all the projects, from GitHub, stated in
 Copy the desired experiment run from "experiment_scripts" to the root
 directory, and execute.
 
-Before running, please ensure a copy of "jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
-is within the current directory. If not, go to "../reachability-analysis",
-compile project and copy 
+Before running, please ensure a copy of 
+"jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar" is within the 
+current directory. If not, go to "../reachability-analysis", compile 
+project and copy 
 "../reachability-analysis/jshrink-app/target/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 to the current directory.
 

@@ -5,7 +5,7 @@ WORK_LIST="${PWD}/work_list.dat"
 PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
-JAVA="/usr/lib/jvm/java-8-oracle/bin/java"
+JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
 TIMEOUT=10800 #3 hours
 
