@@ -13,6 +13,7 @@ To setup the VM, modify the "Vagrantfile", replacing "aws.access_key_id"
 execute the following commands:
 
 "
+vagrant plugin install vagrant-aws
 vagrant box add dummy dummy.box
 vagrant up --provider=aws
 "
