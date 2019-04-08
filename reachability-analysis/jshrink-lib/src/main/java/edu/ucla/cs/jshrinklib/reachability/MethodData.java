@@ -128,8 +128,7 @@ public class MethodData {
 		if(o instanceof MethodData){
 			MethodData toCompare = (MethodData)o;
 			if(this.name.equals(toCompare.name) && this.className.equals(toCompare.className)
-				&& this.isPublicMethod == toCompare.isPublicMethod && this.args.length == toCompare.args.length
-				&& this.returnType.equals(toCompare.returnType) && this.isStaticMethod == toCompare.isStaticMethod){
+				&& this.args.length == toCompare.args.length && this.returnType.equals(toCompare.returnType)){
 				for(int i=0; i<this.args.length; i++){
 					if(!this.args[i].equals(toCompare.args[i])){
 						return false;
@@ -144,8 +143,8 @@ public class MethodData {
 
 	@Override
 	public int hashCode(){
-		int toReturn = this.name.length() * 1 + this.className.length() * 2 + (this.isPublicMethod? 1 : 0) * 4
-			+ (this.isStaticMethod ? 1 :0) *8 + this.returnType.length() * 16;
+		int toReturn = this.name.length() * 1 + this.className.length() * 2
+			 + this.returnType.length() * 16;
 
 		for(int i=0; i<this.args.length; i++){
 			toReturn += this.args[i].length() * Math.pow(2.0, (i+5));
