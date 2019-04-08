@@ -1,8 +1,10 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
+import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.spark.ondemand.pautil.SootUtil;
 import soot.jimple.toolkits.invoke.SiteInliner;
 
 import java.io.IOException;
@@ -43,12 +45,7 @@ public class ClassCollapser {
             this.classesToRewrite.add(to.getName());
             this.classesToRemove.add(from.getName());
             for(SootMethod method : from.getMethods()){
-                try {
-                    this.removedMethods.add(new MethodData(method.getSignature()));
-                }catch(IOException e){
-                    e.printStackTrace();
-                    System.exit(1);
-                }
+                this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
             }
         }
 
@@ -121,12 +118,7 @@ public class ClassCollapser {
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                    try {
-                        toReturn.add(new MethodData(method.getSignature()));
-                    }catch(IOException e){
-                        e.printStackTrace();
-                        System.exit(1);
-                    }
+                    toReturn.add(SootUtils.sootMethodToMethodData(method));
                 }
                 to.getMethods().add(method);
             } else {
@@ -135,12 +127,7 @@ public class ClassCollapser {
                 } else {
                     if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
                         to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                        try {
-                            toReturn.add(new MethodData(method.getSignature()));
-                        }catch(IOException e){
-                            e.printStackTrace();
-                            System.exit(1);
-                        }
+                        toReturn.add(SootUtils.sootMethodToMethodData(method));
                         to.getMethods().add(method);
                     }
                 }

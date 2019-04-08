@@ -156,20 +156,14 @@ public class Application {
 			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
 
 			//Remove all the methods that have been inlined
-			for(String methodInlined : inlineData.getInlineLocations().keySet()){
-				try {
-					MethodData toRemove = new MethodData(methodInlined);
-					if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(toRemove))
-						,commandLineParser.removeClasses()).isEmpty()) {
-						if (allAppMethodsBefore.contains(toRemove)) {
-							appMethodsRemoved.add(toRemove);
-						} else if (allLibMethodsBefore.contains(toRemove)) {
-							libMethodsRemoved.add(toRemove);
-						}
+			for(MethodData methodInlined : inlineData.getInlineLocations().keySet()){
+				if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(methodInlined))
+					,commandLineParser.removeClasses()).isEmpty()) {
+					if (allAppMethodsBefore.contains(methodInlined)) {
+						appMethodsRemoved.add(methodInlined);
+					} else if (allLibMethodsBefore.contains(methodInlined)) {
+						libMethodsRemoved.add(methodInlined);
 					}
-				}catch(IOException e){
-					e.printStackTrace();
-					System.exit(1);
 				}
 			}
 
