@@ -81,42 +81,7 @@ public class MethodDataTest {
 		assertEquals(annotation, methodData.getAnnotation().get());
 	}
 
-	@Test
-	public void methodDataSignatureBasic() throws IOException {
-		String signature =
-			"<com.example.Class1: public static void method_1(java.util.String, com.example.Class2, int)>";
-		MethodData methodData = new MethodData(signature);
 
-		assertFalse(methodData.getAnnotation().isPresent());
-		assertEquals("method_1", methodData.getName());
-		assertEquals("com.example.Class1", methodData.getClassName());
-		assertEquals("void", methodData.getReturnType());
-		assertEquals(3, methodData.getArgs().length);
-		assertEquals("java.util.String", methodData.getArgs()[0]);
-		assertEquals("com.example.Class2", methodData.getArgs()[1]);
-		assertEquals("int", methodData.getArgs()[2]);
-		assertTrue(methodData.isPublic());
-		assertTrue(methodData.isStatic());
-
-	}
-
-	@Test
-	public void methodDataSignatureInit() throws IOException {
-		String signature =
-				"<com.example.Class1: void <init>(java.util.String, com.example.Class2, int)>";
-		MethodData methodData = new MethodData(signature);
-
-		assertFalse(methodData.getAnnotation().isPresent());
-		assertEquals("<init>", methodData.getName());
-		assertEquals("com.example.Class1", methodData.getClassName());
-		assertEquals("void", methodData.getReturnType());
-		assertEquals(3, methodData.getArgs().length);
-		assertEquals("java.util.String", methodData.getArgs()[0]);
-		assertEquals("com.example.Class2", methodData.getArgs()[1]);
-		assertEquals("int", methodData.getArgs()[2]);
-		assertFalse(methodData.isPublic());
-		assertFalse(methodData.isStatic());
-	}
 
 	@Test
 	public void testJUnit3Test() throws FileNotFoundException, IOException {
@@ -135,61 +100,30 @@ public class MethodDataTest {
 
 	@Test
 	public void equalsTest(){
-		try {
-			MethodData methodData1 = new MethodData("<org.apache.log4j.config.PropertySetter: void introspect()>");
-			//public MethodData(String methodName, String methodClassName, String methodReturnType,
-			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
-			MethodData methodData2 = new MethodData("introspect",
-				"org.apache.log4j.config.PropertySetter", "void",
-				new String[0], false, false);
+		MethodData methodData1 = new MethodData("introspect",
+			"org.apache.log4j.config.PropertySetter", "void",
+			new String[0], false, false);
+		MethodData methodData2 = new MethodData("introspect",
+			"org.apache.log4j.config.PropertySetter", "void",
+			new String[0], false, false);
 
-			assertEquals(methodData1.getSignature(), methodData2.getSignature());
-			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
-			assertEquals(methodData1, methodData2);
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
+		assertEquals(methodData1.getSignature(), methodData2.getSignature());
+		assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
+		assertEquals(methodData1, methodData2);
 	}
 
 	@Test
 	public void equalsTest2(){
-		try {
-			MethodData methodData1 = new MethodData("<org.apache.log4j.config.PropertySetter: void introspect(parameter)>");
-			//public MethodData(String methodName, String methodClassName, String methodReturnType,
-			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
-			String[] args = {"parameter"};
-			MethodData methodData2 = new MethodData("introspect",
-				"org.apache.log4j.config.PropertySetter", "void",
-				args, false, false);
+		String[] args = {"parameter"};
+		MethodData methodData1 = new MethodData("introspect",
+			"org.apache.log4j.config.PropertySetter", "void",
+			args, false, false);
+		MethodData methodData2 = new MethodData("introspect",
+			"org.apache.log4j.config.PropertySetter", "void",
+			args, false, false);
 
-			assertEquals(methodData1.getSignature(), methodData2.getSignature());
-			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
-			assertEquals(methodData1, methodData2);
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-	@Test
-	public void equalsTest3(){
-		try {
-			MethodData methodData1 = new MethodData(
-				"<org.apache.log4j.config.PropertySetter: public void introspect(parameter , parameter2)>");
-			//public MethodData(String methodName, String methodClassName, String methodReturnType,
-			//	                  String[] methodArgs, boolean isPublic, boolean isStatic)
-			String[] args = {"parameter", "parameter2"};
-			MethodData methodData2 = new MethodData("introspect",
-				"org.apache.log4j.config.PropertySetter", "void",
-				args, true, false);
-
-			assertEquals(methodData1.getSignature(), methodData2.getSignature());
-			assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
-			assertEquals(methodData1, methodData2);
-		}catch(IOException e){
-			e.printStackTrace();
-			System.exit(1);
-		}
+		assertEquals(methodData1.getSignature(), methodData2.getSignature());
+		assertEquals(methodData1.getSubSignature(), methodData2.getSubSignature());
+		assertEquals(methodData1, methodData2);
 	}
 }

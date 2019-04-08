@@ -236,7 +236,8 @@ public class JShrink {
 		}
 
 		ClassCollapserAnalysis classCollapserAnalysis =
-			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods);
+			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.entryPointProcessor.getEntryPoints());
+		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.run(classCollapserAnalysis);
 

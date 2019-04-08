@@ -17,6 +17,9 @@ public class EntryPointProcessor {
 
     private Set<MethodData> customEntry;
 
+    // cache the entry points to avoid re-computation
+    private Set<MethodData> entryPoints;
+
     public EntryPointProcessor(boolean setMainEntry, boolean setPublicEntry,
                                boolean setTestEntry, boolean setLambdaExpression, Set<MethodData> setCustomEntry){
         this.mainEntry = setMainEntry;
@@ -24,35 +27,37 @@ public class EntryPointProcessor {
         this.testEntry = setTestEntry;
         this.lambdaExpression = setLambdaExpression;
         this.customEntry = setCustomEntry;
+        this.entryPoints = new HashSet<MethodData>();
     }
 
-    public Set<MethodData> getEntryPoints(Set<MethodData> appMethods, Set<MethodData> libMethods,
-                                          Set<MethodData> testMethods){
-        Set<MethodData> toReturn = new HashSet<MethodData>();
-
+    public Set<MethodData> getEntryPoints(Set<MethodData> appMethods, Set<MethodData> testMethods){
         if(this.mainEntry){
-            toReturn.addAll(EntryPointUtil.getMainMethodsAsEntryPoints(appMethods));
+            entryPoints.addAll(EntryPointUtil.getMainMethodsAsEntryPoints(appMethods));
             if(this.lambdaExpression){
-                toReturn.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(appMethods));
+                entryPoints.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(appMethods));
             }
         }
 
         if(this.publicEntry){
-            toReturn.addAll(EntryPointUtil.getPublicMethodsAsEntryPoints(appMethods));
+            entryPoints.addAll(EntryPointUtil.getPublicMethodsAsEntryPoints(appMethods));
             if(this.lambdaExpression){
-                toReturn.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(appMethods));
+                entryPoints.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(appMethods));
             }
         }
 
         if(this.testEntry){
-            toReturn.addAll(EntryPointUtil.getTestMethodsAsEntryPoints(testMethods));
+            entryPoints.addAll(EntryPointUtil.getTestMethodsAsEntryPoints(testMethods));
             if(this.lambdaExpression){
-                toReturn.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(testMethods));
+                entryPoints.addAll(EntryPointUtil.getLambdaExpressionsAsEntryPoints(testMethods));
             }
         }
 
-        toReturn.addAll(customEntry);
+        entryPoints.addAll(customEntry);
 
-        return toReturn;
+        return entryPoints;
+    }
+
+    public Set<MethodData> getEntryPoints() {
+        return entryPoints;
     }
 }

@@ -50,52 +50,6 @@ public class MethodData {
 		this.annotation = Optional.empty();
 	}
 
-	public MethodData(String signature) throws IOException{ //TODO: is this the correct exception to throw?
-		signature = signature.trim();
-		if(!signature.startsWith("<") || !signature.endsWith(">")){
-			throw new IOException("Signature must start with with '<' and end with '>'");
-		}
-
-		signature = signature.substring(1,signature.length()-1);
-		String[] signatureSplit = signature.split(":");
-
-		if(signatureSplit.length != 2){
-			throw new IOException("Method signature must be in format of " +
-				"'<[classname]:[public?] [static?] [returnType] [methodName]([args...?])>'");
-		}
-
-		String clName = signatureSplit[0];
-		String methodString = signatureSplit[1];
-
-		boolean publicMethod = methodString.toLowerCase().contains("public");
-		boolean staticMethod = methodString.toLowerCase().contains("static");
-
-		Pattern pattern = Pattern.compile("<?([a-zA-Z][a-zA-Z0-9_]*>?)(\\(.*\\))");
-		Matcher matcher = pattern.matcher(methodString);
-
-		if(!matcher.find()){
-			throw new IOException("Could not find a method matching our regex pattern ('" + pattern.toString() + "')");
-		}
-
-		String method = matcher.group();
-		String methodName = method.substring(0,method.indexOf('('));
-		String[] methodArgs = method.substring(method.indexOf('(')+1, method.lastIndexOf(')'))
-			.split(",");
-
-		for(int i=0; i<methodArgs.length; i++){
-			methodArgs[i] = methodArgs[i].trim();
-		}
-
-		if(methodArgs.length == 1 && methodArgs[0].isEmpty()){ //For case "... method();
-			methodArgs = new String[0];
-		}
-
-		String[] temp = methodString.substring(0, methodString.indexOf(methodName)).trim().split("\\s+");
-		String methodReturnType = temp[temp.length-1];
-
-		this.setData(methodName,clName,methodReturnType, methodArgs, publicMethod, staticMethod);
-	}
-
 	//I don't like this, but I can't construct MethodData with knowledge of whether it's annotated or not
 	/*package*/ void setAnnotation(String annotation){
 		this.annotation = Optional.of(annotation);
@@ -174,8 +128,7 @@ public class MethodData {
 		if(o instanceof MethodData){
 			MethodData toCompare = (MethodData)o;
 			if(this.name.equals(toCompare.name) && this.className.equals(toCompare.className)
-				&& this.isPublicMethod == toCompare.isPublicMethod && this.args.length == toCompare.args.length
-				&& this.returnType.equals(toCompare.returnType) && this.isStaticMethod == toCompare.isStaticMethod){
+				&& this.args.length == toCompare.args.length && this.returnType.equals(toCompare.returnType)){
 				for(int i=0; i<this.args.length; i++){
 					if(!this.args[i].equals(toCompare.args[i])){
 						return false;
@@ -190,8 +143,8 @@ public class MethodData {
 
 	@Override
 	public int hashCode(){
-		int toReturn = this.name.length() * 1 + this.className.length() * 2 + (this.isPublicMethod? 1 : 0) * 4
-			+ (this.isStaticMethod ? 1 :0) *8 + this.returnType.length() * 16;
+		int toReturn = this.name.length() * 1 + this.className.length() * 2
+			 + this.returnType.length() * 16;
 
 		for(int i=0; i<this.args.length; i++){
 			toReturn += this.args[i].length() * Math.pow(2.0, (i+5));

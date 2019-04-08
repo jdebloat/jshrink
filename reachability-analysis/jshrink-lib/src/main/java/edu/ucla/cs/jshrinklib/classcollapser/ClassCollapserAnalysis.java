@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import fj.P;
 import soot.Scene;
 import soot.SootClass;
 
@@ -14,23 +15,28 @@ public class ClassCollapserAnalysis {
     public Set<String> appClasses;
     private Set<String> usedAppClasses;
     public Map<String, Set<String>> usedAppMethods;
+    private Set<MethodData> usedAppMethodData;
     private Set<String> processableLeaves;
     private LinkedList<ArrayList<String>> collapseList;
     private Set<String> removeList;
     private Map<String, String> nameChangeList;
 
-    private Map<String, String> parentsMap;
-    private Map<String, Set<String>> childrenMap;
-    private Map<String, Set<String>> parentsVirtualMap;
-    private Map<String, Set<String>> childrenVirtualMap;
+    private Map<String, String> parentsMap; // class -> superclass
+    private Map<String, Set<String>> childrenMap; // class -> subclasses
+    private Map<String, Set<String>> parentsVirtualMap; // class -> interfaces
+    private Map<String, Set<String>> childrenVirtualMap; // interface -> subclasses
     private Map<String, SootClass> appClassMap;
+    private Set<MethodData> entryPoints;
+
+    private Map<MethodData, Set<MethodData>> callGraph;
 
     public ClassCollapserAnalysis(Set<String> appCls,
                                   Set<String> usedAppCls,
-                                  Set<MethodData> usedAppMethodData) {
+                                  Set<MethodData> usedAppMethodData,
+                                  Map<MethodData, Set<MethodData>> callGraph,
+                                  Set<MethodData> entryPoints) {
 
         appClasses = appCls;
-        usedAppClasses = new HashSet<String>(usedAppCls);  //We're modifying used appClasses in this analysis, therefore copy here
         parentsMap = new HashMap<String, String>();
         childrenMap = new HashMap<String, Set<String>>();
         parentsVirtualMap  = new HashMap<String, Set<String>>();
@@ -40,6 +46,9 @@ public class ClassCollapserAnalysis {
         nameChangeList = new HashMap<String, String>();
         removeList = new HashSet<String>();
         appClassMap = new HashMap<String, SootClass> ();
+        this.entryPoints = entryPoints;
+        usedAppClasses = new HashSet<String>(usedAppCls);  //We're modifying used appClasses in this analysis, therefore copy here
+        this.usedAppMethodData = usedAppMethodData;
 
         usedAppMethods = new HashMap<String, Set<String>>();
         for (MethodData m: usedAppMethodData) {
@@ -49,6 +58,8 @@ public class ClassCollapserAnalysis {
             }
             usedAppMethods.get(className).add(m.getSubSignature());
         }
+
+        this.callGraph = callGraph;
     }
 
     public void run() {
@@ -124,6 +135,56 @@ public class ClassCollapserAnalysis {
     private void setup() {
         initClassHierarchy();
         initLeaves();
+        handleVirtualCallsAndSuperConstructors();
+    }
+
+    private void handleVirtualCallsAndSuperConstructors() {
+        // handle virtual method calls and superclass constructor calls
+        Set<String> affectedClasses = new HashSet<String>();
+        for(MethodData m : usedAppMethodData) {
+            Set<MethodData> callers = callGraph.get(m);
+            if(callers.isEmpty() && !entryPoints.contains(m)) {
+                // this is a virtual call that is never invoked at runtime
+                // exclude it from used methods
+                String subSignature = m.getSubSignature();
+                String className = m.getClassName();
+                usedAppMethods.get(className).remove(subSignature);
+                affectedClasses.add(className);
+            } else if (m.getName().equals("<init>")) {
+                // check if this constructor is only called in the constructors of its subclasses
+                String className = m.getClassName();
+                if(!childrenMap.containsKey(className)) {
+                    // this class has no subclasses, so no need to check
+                    continue;
+                }
+
+                Set<String> subClasses = childrenMap.get(className);
+                boolean onlyCalledInSubClassConstructor = true;
+                for(MethodData caller : callers) {
+                    String callerClass = caller.getClassName();
+                    if(!subClasses.contains(callerClass)) {
+                        // this constructor is not only called in its subclasses
+                        onlyCalledInSubClassConstructor = false;
+                        break;
+                    }
+                }
+
+                if(onlyCalledInSubClassConstructor) {
+                    String subSignature = m.getSubSignature();
+                    usedAppMethods.get(className).remove(subSignature);
+                    affectedClasses.add(className);
+                }
+            }
+        }
+
+        // after removing unused virtual calls and superclass constructor calls
+        // we need to update the used classes to filter out those used classes that are included due to these calls
+        for(String className : affectedClasses) {
+            if(usedAppMethods.get(className).isEmpty()) {
+                usedAppMethods.remove(className);
+                usedAppClasses.remove(className);
+            }
+        }
     }
 
     private void postprocess() {
@@ -227,6 +288,7 @@ public class ClassCollapserAnalysis {
         visited.add(thisClass);
 
         SootClass sootClass = Scene.v().loadClassAndSupport(thisClass);
+        Scene.v().loadNecessaryClasses();
         appClassMap.put(thisClass, sootClass);
         if (sootClass.hasSuperclass() && childrenMap.containsKey(sootClass.getSuperclass().getName())) {
             parentsMap.put(thisClass, sootClass.getSuperclass().getName());

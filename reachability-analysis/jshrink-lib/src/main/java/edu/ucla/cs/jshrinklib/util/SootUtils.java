@@ -205,35 +205,6 @@ public class SootUtils {
 		opt.put("set-mass","false"); 
 		return opt;
 	}
-	
-	/**
-	 * 
-	 * This recursive function does not work well when a call graph is very deep.
-	 * Call visitMethodNonRecur instead.
-	 * 
-	 * @param m
-	 * @param cg
-	 * @param usedClass
-	 * @param visited
-	 */
-	@Deprecated
-	public static void visitMethod(SootMethod m, CallGraph cg, Set<String> usedClass, Set<String> visited) {
-		String className = m.getDeclaringClass().toString();
-		String signature = m.getSubSignature();
-		// remove the brackets before and after the method signature
-		signature = signature.substring(1, signature.length() - 1);
-		if(!visited.contains(signature)) {
-			// visited early and avoid recursion
-			usedClass.add(className);
-			visited.add(signature);
-			
-			Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(m));
-			while (targets.hasNext()){
-				SootMethod method = (SootMethod)targets.next();
-				visitMethod(method, cg, usedClass, visited);
-			}
-		}
-	}
 
 	public static void visitMethodClassCollapser(SootMethod m, CallGraph cg, Set<String> usedClass, Set<MethodData> usedMethods) {
 		//a queue of Pair objects of SootMethods, the second object is the callsite of the first method
@@ -296,7 +267,6 @@ public class SootUtils {
 
 				visited.get(methodMethodData).add(parentMethodData);
 				stack.add(method);
-			//	visitMethodNonRecur(method, cg, usedClass, visited);
 			}
 		}
 	}
