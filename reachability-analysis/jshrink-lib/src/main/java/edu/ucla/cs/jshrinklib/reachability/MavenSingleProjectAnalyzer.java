@@ -65,7 +65,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<CallGraph> callgraphs;
 	private final Set<String> classesToIgnore;
 	private final boolean useSpark;
-	private TestOutput testOutput = null;
+	private TestOutput testOutput;
 	private SETUP_STATUS setupStatus;
 	private boolean compileProject = true;
 	
@@ -107,6 +107,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.callgraphs = new HashSet<CallGraph>();
 		this.classesToIgnore = new HashSet<String>();
 		this.useSpark = useSpark;
+
+		// initialize a dummy test output object instead of assigning a null value
+		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
+		testOutput = new TestOutput(-1, -1, -1, -1, "");
 	}
 
 	public void setCompileProject(boolean compileProject) {
