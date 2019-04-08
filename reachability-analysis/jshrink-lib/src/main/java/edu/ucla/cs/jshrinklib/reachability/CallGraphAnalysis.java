@@ -95,7 +95,7 @@ public class CallGraphAnalysis implements IProjectAnalyser {
         // 1. use ASM to find all classes and methods
         this.findAllClassesAndMethodsAndFields();
         // 2. get entry points
-        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,libMethods,testMethods));
+        this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,testMethods));
 		// 3. construct the call graph and compute the reachable classes and methods
 		this.runCallGraphAnalysis();
 	}

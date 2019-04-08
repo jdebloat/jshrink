@@ -19,6 +19,15 @@ public class TestUtils {
      * Therefore, do not use this method if you are also using Soot for other analysis
      */
     public static SootClass getSootClass(String classPath, String className){
+        soot_setup(classPath);
+
+        SootClass sClass = Scene.v().loadClassAndSupport(className);
+        Scene.v().loadNecessaryClasses();
+
+        return sClass;
+    }
+
+    public static void soot_setup(String classPath) {
         Options.v().set_soot_classpath(SootUtils.getJREJars() + File.pathSeparator + classPath);
         Options.v().set_whole_program(true);
         Options.v().set_allow_phantom_refs(true);
@@ -26,11 +35,6 @@ public class TestUtils {
         List<String> processDirs = new ArrayList<String>();
         processDirs.add(classPath);
         Options.v().set_process_dir(processDirs);
-
-        SootClass sClass = Scene.v().loadClassAndSupport(className);
-        Scene.v().loadNecessaryClasses();
-
-        return sClass;
     }
 
     public static File createClass(SootClass sootClass){

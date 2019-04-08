@@ -25,33 +25,59 @@ public class ClassCollapserTest {
         String overridePath
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser"
-                    + File.separator + "override" + File.separator + "original").getFile()).getAbsolutePath();
-        SootClass A = TestUtils.getSootClass(overridePath,"A");
-        SootClass B = TestUtils.getSootClass(overridePath,"B");
+                        + File.separator + "override" + File.separator + "original").getFile()).getAbsolutePath();
+        TestUtils.soot_setup(overridePath);
 
         Set<String> appClasses = new HashSet<String>();
-        appClasses.add(A.getName());
-        appClasses.add(B.getName());
+        appClasses.add("A");
+        appClasses.add("B");
 
         Set<String> usedAppClasses = new HashSet<String>();
-        usedAppClasses.add(B.getName());
+        usedAppClasses.add("A"); // A is considered used due to the virtual call to A.foo in Main
+        usedAppClasses.add("B");
+
+        MethodData m1 = new MethodData("foo", "B", "void", new String[] {}, true, false);
+        MethodData m2 = new MethodData("<init>", "B", "void", new String[] {}, true, false);
+        MethodData m3 = new MethodData("<init>", "A", "void", new String[] {}, true, false);
+        MethodData m4 = new MethodData("foo", "A", "void", new String[] {}, true, false);
+        MethodData m5 = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
 
         Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
-        for (SootMethod m : B.getMethods()) {
-            usedAppMethodData.add(new MethodData(m.getSignature()));
-        }
+        usedAppMethodData.add(m1);
+        usedAppMethodData.add(m2);
+        usedAppMethodData.add(m3);
+        usedAppMethodData.add(m4);
+
+        Map<MethodData, Set<MethodData>> callGraph = new HashMap<MethodData, Set<MethodData>>();
+
+        Set<MethodData> m1_callers = new HashSet<MethodData>();
+        m1_callers.add(m5);
+        callGraph.put(m1, m1_callers);
+        Set<MethodData> m2_callers = new HashSet<MethodData>();
+        m2_callers.add(m5);
+        callGraph.put(m2, m2_callers);
+        Set<MethodData> m3_callers = new HashSet<MethodData>();
+        m3_callers.add(m2);
+        callGraph.put(m3, m3_callers);
+        // A.foo is a virtual call so its caller set is empty
+        callGraph.put(m4, new HashSet<MethodData>());
+        // Main.main is an entry method so its caller set is also empty
+        callGraph.put(m5, new HashSet<MethodData>());
+
+        Set<MethodData> entryPoints = new HashSet<MethodData>();
+        entryPoints.add(m5);
 
         ClassCollapserAnalysis classCollapserAnalysis
-                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData);
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints);
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
         classCollapser.run(classCollapserAnalysis);
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
-        assertTrue(classCollapserData.getClassesToRemove().contains(B.getName()));
+        assertTrue(classCollapserData.getClassesToRemove().contains("B"));
         assertEquals(1, classCollapserData.getClassesToRemove().size());
-        assertTrue(classCollapserData.getClassesToRewrite().contains(A.getName()));
+        assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
         assertEquals(1, classCollapserData.getClassesToRewrite().size());
     }
 
@@ -129,28 +155,68 @@ public class ClassCollapserTest {
                 = new File(ClassCollapser.class.getClassLoader()
                 .getResource("classcollapser" + File.separator
                     + "simple-collapse-example" + File.separator + "target" + File.separator + "classes").getFile()).getAbsolutePath();
-        SootClass A = TestUtils.getSootClass(overridePath,"A");
-        SootClass B = TestUtils.getSootClass(overridePath,"B");
-        SootClass C = TestUtils.getSootClass(overridePath,"C");
-        SootClass Main = TestUtils.getSootClass(overridePath,"Main");
+        TestUtils.soot_setup(overridePath);
 
         Set<String> appClasses = new HashSet<String>();
-        appClasses.add(A.getName());
-        appClasses.add(B.getName());
-        appClasses.add(C.getName());
-        appClasses.add(Main.getName());
+        appClasses.add("A");
+        appClasses.add("B");
+        appClasses.add("C");
+        appClasses.add("Main");
 
         Set<String> usedAppClasses = new HashSet<String>();
-        usedAppClasses.add(B.getName());
-        usedAppClasses.add(Main.getName());
+        usedAppClasses.add("A");
+        usedAppClasses.add("B");
+        usedAppClasses.add("Main");
+
+        MethodData m1 = new MethodData("saySomething", "B", "java.lang.String", new String[] {}, true, false);
+        MethodData m2 = new MethodData("<init>", "B", "void", new String[] {}, true, false);
+        MethodData m3 = new MethodData("uniqueToB", "B", "java.lang.String", new String[] {}, true, false);
+        MethodData m4 = new MethodData("uniqueToA", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m5 = new MethodData("<init>", "A", "void", new String[] {"java.lang.String"}, true, false);
+        MethodData m6 = new MethodData("getClassType", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m7 = new MethodData("saySomething", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m8 = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
 
         Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
-        for (SootMethod m : B.getMethods()) {
-            usedAppMethodData.add(new MethodData(m.getSignature()));
-        }
+        usedAppMethodData.add(m1);
+        usedAppMethodData.add(m2);
+        usedAppMethodData.add(m3);
+        usedAppMethodData.add(m4);
+        usedAppMethodData.add(m5);
+        usedAppMethodData.add(m6);
+        usedAppMethodData.add(m7);
+        usedAppMethodData.add(m8);;
+
+        Map<MethodData, Set<MethodData>> callGraph = new HashMap<MethodData, Set<MethodData>>();
+        Set<MethodData> m1_callers = new HashSet<MethodData>();
+        m1_callers.add(m8);
+        callGraph.put(m1, m1_callers);
+        Set<MethodData> m2_callers = new HashSet<MethodData>();
+        m2_callers.add(m8);
+        callGraph.put(m2, m2_callers);
+        Set<MethodData> m3_callers = new HashSet<MethodData>();
+        m3_callers.add(m8);
+        callGraph.put(m3, m3_callers);
+        Set<MethodData> m4_callers = new HashSet<MethodData>();
+        m4_callers.add(m8);
+        callGraph.put(m4, m4_callers);
+        // the superclass constructor is only called in the subclass constructor
+        Set<MethodData> m5_callers = new HashSet<MethodData>();
+        m5_callers.add(m2);
+        callGraph.put(m5, m5_callers);
+        Set<MethodData> m6_callers = new HashSet<MethodData>();
+        m6_callers.add(m8);
+        callGraph.put(m6, m6_callers);
+        // this is a virtual call, therefore the caller set is set to empty
+        callGraph.put(m7, new HashSet<MethodData>());
+        // main is the entry method, so its caller set is also empty
+        callGraph.put(m8, new HashSet<MethodData>());
+
+        Set<MethodData> entryPoints = new HashSet<MethodData>();
+        entryPoints.add(m8);
 
         ClassCollapserAnalysis classCollapserAnalysis
-                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData);
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints);
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
@@ -159,11 +225,13 @@ public class ClassCollapserTest {
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 
         assertEquals(1,classCollapserData.getClassesToRemove().size());
-        assertTrue(classCollapserData.getClassesToRemove().contains(B.getName()));
+        assertTrue(classCollapserData.getClassesToRemove().contains("B"));
 
         assertEquals(2, classCollapserData.getClassesToRewrite().size());
-        assertTrue(classCollapserData.getClassesToRewrite().contains(A.getName()));
-        assertTrue(classCollapserData.getClassesToRewrite().contains(Main.getName()));
+        assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
+        assertTrue(classCollapserData.getClassesToRewrite().contains("Main"));
+
+        SootClass A = TestUtils.getSootClass(overridePath, "A");
 
         assertNotNull(A.getMethodByName("getClassType"));
         assertNotNull(A.getMethodByName("saySomething"));
