@@ -69,10 +69,12 @@ public class ASMClassVisitorTest {
             e.printStackTrace();
         }
 
-        assertEquals(1, virtualCallMap.size());
+        // Main.class has two methods <init> and main(String[] args)
+        assertEquals(2, virtualCallMap.size());
         MethodData mainMethod = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
         Set<MethodData> virtualCalls = virtualCallMap.get(mainMethod);
-        assertEquals(2, virtualCalls.size());
+        // Main.main has one virtual call to A.foo()
+        assertEquals(1, virtualCalls.size());
     }
 
     @Test
