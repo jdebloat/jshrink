@@ -240,7 +240,7 @@ public class JShrinkTest {
 	@Test
 	public void getSizesTest(){
 		assertEquals(10723, this.jShrink.getAppSize(true));
-		assertEquals(8014, this.jShrink.getLibSize(true));
+		assertEquals(8020, this.jShrink.getLibSize(true));
 	}
 
 	@Test

@@ -1,0 +1,12 @@
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv
+./build.sh >>build_output.csv

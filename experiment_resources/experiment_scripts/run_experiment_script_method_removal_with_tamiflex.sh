@@ -61,7 +61,7 @@ cat ${WORK_LIST} |  while read item; do
 		lib_num_methods_before=$(cat ${temp_file} | awk -F, '($1=="libs_num_methods_before"){print $2}')
 		app_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="app_num_methods_after"){print $2}')
 		lib_num_methods_after=$(cat ${temp_file} | awk -F, '($1=="libs_num_methods_after"){print $2}')
-		time_elapsed=$(cat ${temp_file} | awk -F, '$($1=="time_elapsed"){print $2}')		
+		time_elapsed=$(cat ${temp_file} | awk -F, '($1=="time_elapsed"){print $2}')		
 
 		#The current settings
 		using_public_entry="1"

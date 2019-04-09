@@ -851,7 +851,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void inlineMethodTest(){
+	public void inlineMethodTest() throws IOException{
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -862,27 +862,27 @@ public class ApplicationTest {
 
 		InlineData methodsInlined = Application.inlineData;
 
-		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			"<StandardStuff$NestedClass: void nestedClassMethodCallee()>"));
+		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(TestUtils.getMethodDataFromSignature(
+			"<StandardStuff$NestedClass: void nestedClassMethodCallee()>")));
 		assertEquals(1,methodsInlined.getInlineLocations()
-			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>").size());
+			.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")).size());
 		Assert.assertTrue(methodsInlined.getInlineLocations()
-			.get("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")
-			.contains("<StandardStuff$NestedClass: public void nestedClassMethod()>"));
+			.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>"))
+			.contains(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: public void nestedClassMethod()>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			"<StandardStuff: public java.lang.String getString()>"));
+			TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get("<StandardStuff: public java.lang.String getString()>").size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get("<StandardStuff: public java.lang.String getString()>")
-			.contains("<Main: public static void main(java.lang.String[])>"));
+			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")).size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>"))
+			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			"<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>"));
+			TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>").size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")
-			.contains("<Main: public static void main(java.lang.String[])>"));
+			.get(TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")).size());
+		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>"))
+			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(jarIntact());
 	}

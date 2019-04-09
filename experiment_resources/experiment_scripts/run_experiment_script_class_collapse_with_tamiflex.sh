@@ -40,7 +40,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 3 hour timeout
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --skip-method-removal --class-collapser --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -69,10 +69,10 @@ cat ${WORK_LIST} |  while read item; do
 		using_test_entry="1"
 		custom_entry=""
 		is_app_prune="1"
-		tamiflex="0"
-		remove_methods="1"
+		tamiflex="1"
+		remove_methods="0"
 		method_inliner="0"
-		class_collapser="0"
+		class_collapser="1"
 		parameter_removal="0"
 
 		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after},${time_elapsed} >>${SIZE_FILE}
