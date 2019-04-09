@@ -52,7 +52,7 @@ public class JShrinkTest {
 		tamiflex = Optional.empty();
 		useSpark = true;
 		try {
-			jShrink = JShrink.createInstance(simpleTestProjectDir, entryPointProcessor, tamiflex, useSpark);
+			jShrink = JShrink.createInstance(simpleTestProjectDir, entryPointProcessor, tamiflex, useSpark, false);
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -63,7 +63,7 @@ public class JShrinkTest {
 		try {
 			resetSimpleTestProjectDir();
 			this.jShrink = JShrink.resetInstance(this.simpleTestProjectDir,
-				this.entryPointProcessor, this.tamiflex, this.useSpark);
+				this.entryPointProcessor, this.tamiflex, this.useSpark, false);
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);

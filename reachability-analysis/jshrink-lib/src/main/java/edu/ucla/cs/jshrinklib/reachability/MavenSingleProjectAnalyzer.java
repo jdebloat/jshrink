@@ -65,13 +65,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<CallGraph> callgraphs;
 	private final Set<String> classesToIgnore;
 	private final boolean useSpark;
+	private final boolean verbose;
 	private TestOutput testOutput;
 	private SETUP_STATUS setupStatus;
 	private boolean compileProject = true;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex,
-	                                  boolean useSpark) {
+	                                  boolean useSpark, boolean verbose) {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
@@ -107,6 +108,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.callgraphs = new HashSet<CallGraph>();
 		this.classesToIgnore = new HashSet<String>();
 		this.useSpark = useSpark;
+		this.verbose = verbose;
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
@@ -173,6 +175,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			 String line;
 			 int exitValue;
 			 if(this.compileProject) {
+			 	if(this.verbose){
+			 		System.out.println("Compiling project...");
+			    }
 				 // Ensure the project is compiled.
 				 // Prepare the command and its arguments in a String array in case there is a space or special
 				 // character in the pom file path or lib dir path.
@@ -198,8 +203,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					 this.setupStatus = SETUP_STATUS.BUILD_FAILED;
 					 return;
 				 }
+				 if(this.verbose){
+					 System.out.println("Done compiling project!");
+				 }
 			 }
 
+			if(this.verbose){
+				System.out.println("Running project tests...");
+			}
 			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
 				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
 			processBuilder = new ProcessBuilder(cmd);
@@ -225,6 +236,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				return;
 			}
 
+			if(this.verbose){
+				System.out.println("Done running project tests!");
+			}
+
+			if(this.verbose){
+				System.out.println("Getting dependency information...");
+			}
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
 			// call graph in the static analysis later 
 			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
@@ -247,6 +265,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				//throw new IOException("Cannot get dependency information!");
 				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY;
 				return;
+			}
+
+			if(this.verbose){
+				System.out.println("Done getting dependency information!");
+			}
+
+			if(this.verbose){
+				System.out.println("Getting compile scope dependency information...");
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
@@ -271,6 +297,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY_COMPILE_SCOPE;
 				return;
 			}
+
+			if(this.verbose){
+				System.out.println("Done getting compile scope dependency information!");
+			}
+
 		}catch(IOException | InterruptedException e){
 			e.printStackTrace();
 			//TODO: is it really good to handle this here? Should we maybe throw the error further up?
@@ -284,6 +315,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
 			if(classpaths.containsKey(artifact_id)) {
+
+				if(this.verbose){
+					System.out.println("Getting classpath information for module \"" + artifact_id +"\"...");
+				}
 
 				String cp = classpaths.get(artifact_id);
 				File dir = modules.get(artifact_id);
@@ -322,6 +357,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						lib_class_paths.get(artifact_id).add(new File(path));
 					}
 				}
+				if(this.verbose){
+					System.out.println("Done getting classpath information for module \"" + artifact_id +"\"!");
+				}
+
 			}
 		}
 		this.setupStatus = SETUP_STATUS.SUCCESS;
@@ -354,6 +393,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
 			if(classpaths.containsKey(artifact_id)) {
+
+				if(this.verbose){
+					System.out.println("Running callgraph analysis for module \"" + artifact_id +"\"...");
+				}
 				
 				// increment the count of analyzed modules
 				count++;
@@ -438,6 +481,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
+
+				if(this.verbose){
+					System.out.println("Done running callgraph analysis for module \"" + artifact_id +"\"!");
+				}
 			}
 		}
 		
@@ -576,7 +623,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
-			for(String module : new_entry_points.keySet()) {				
+			for(String module : new_entry_points.keySet()) {
+				if(this.verbose){
+					System.out.println("Running Tamiflex callgraph analysis for module \"" + module +"\"...");
+				}
 				HashSet<MethodData> entry_methods = new_entry_points.get(module);
 				
 				List<File> localLibClassPaths =
@@ -626,6 +676,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				
 				// make sure to reset Soot after running reachability analysis
 				G.reset();
+
+				if(this.verbose){
+					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
+				}
 			}
 		}
 		

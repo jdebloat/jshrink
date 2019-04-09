@@ -53,6 +53,8 @@ public class Application {
 		testOutputBefore = null;
 		testOutputAfter = null;
 
+		StringBuilder toLog = new StringBuilder();
+
 		//I just put this in to stop an error.
 		PropertyConfigurator.configure(
 			Application.class.getClassLoader().getResourceAsStream("log4j.properties"));
@@ -89,15 +91,19 @@ public class Application {
 		}
 
 
+		if(commandLineParser.isVerbose()){
+			System.out.println("Creating jShrink instance...");
+		}
+
 		//Initialize the jShrink instance.
 		JShrink jShrink = null;
 		try {
 			if(JShrink.instanceExists()){
 				jShrink = JShrink.resetInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark());
+					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose());
 			} else {
 				jShrink = JShrink.createInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark());
+					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -106,12 +112,19 @@ public class Application {
 
 		assert (jShrink != null);
 
+		if(commandLineParser.isVerbose()){
+			System.out.println("Done creating jShrink instance!");
+			System.out.println("Making \"soot pass\"...");
+		}
+
 		jShrink.makeSootPass();
 
 		if(commandLineParser.isVerbose()){
-			System.out.println("app_size_before," + jShrink.getAppSize(true));
-			System.out.println("libs_size_before," + jShrink.getLibSize(true));
+			System.out.println("Done making \"soot pass\"!");
 		}
+
+		toLog.append("app_size_before," + jShrink.getAppSize(true) + System.lineSeparator());
+		toLog.append("libs_size_before," + jShrink.getLibSize(true) + System.lineSeparator());
 
 		Optional<TestOutput> testOutput = jShrink.getTestOutput();
 
@@ -121,16 +134,10 @@ public class Application {
 		}
 
 		testOutputBefore = jShrink.getTestOutput().get();
-		if(commandLineParser.isTestOutput()){
-			System.out.println("tests_run_before," + testOutputBefore.getRun());
-			System.out.println("tests_errors_before," + testOutputBefore.getErrors());
-			System.out.println("tests_failed_before," + testOutputBefore.getFailures());
-			System.out.println("tests_skipped_before," + testOutputBefore.getSkipped());
-			if(testOutputBefore.getErrors() > 0 || testOutputBefore.getFailures() > 0){
-				System.out.println("Test failure before processing. Output below: ");
-				System.out.println(testOutputBefore.getTestOutputText());
-			}
-		}
+		toLog.append("tests_run_before," + testOutputBefore.getRun() + System.lineSeparator());
+		toLog.append("tests_errors_before," + testOutputBefore.getErrors() + System.lineSeparator());
+		toLog.append("tests_failed_before," + testOutputBefore.getFailures() + System.lineSeparator());
+		toLog.append("tests_skipped_before," + testOutputBefore.getSkipped() + System.lineSeparator());
 
 		//Note the number of library and application methods and fields before and transformations.
 		Set<MethodData> allAppMethodsBefore = jShrink.getAllAppMethods();
@@ -138,12 +145,10 @@ public class Application {
 		Set<FieldData> allAppFieldsBefore = jShrink.getAllAppFields();
 		Set<FieldData> allLibFieldsBefore = jShrink.getAllLibFields();
 
-		if(commandLineParser.isVerbose()){
-			System.out.println("app_num_methods_before," + allAppMethodsBefore.size());
-			System.out.println("libs_num_methods_before," + allLibMethodsBefore.size());
-			System.out.println("app_num_fields_before," + allAppFieldsBefore.size());
-			System.out.println("libs_num_fields_before," + allLibFieldsBefore.size());
-		}
+		toLog.append("app_num_methods_before," + allAppMethodsBefore.size() + System.lineSeparator());
+		toLog.append("libs_num_methods_before," + allLibMethodsBefore.size() + System.lineSeparator());
+		toLog.append("app_num_fields_before," + allAppFieldsBefore.size() + System.lineSeparator());
+		toLog.append("libs_num_fields_before," + allLibFieldsBefore.size() + System.lineSeparator());
 
 		//These two sets will be used to keep track of the application and library methods and fields removed.
 		Set<MethodData> appMethodsRemoved = new HashSet<MethodData>();
@@ -153,6 +158,9 @@ public class Application {
 
 		//Run the method inliner.
 		if (commandLineParser.inlineMethods()) {
+			if(commandLineParser.isVerbose()){
+				System.out.println("Inlining inlinable methods...");
+			}
 			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
 
 			//Remove all the methods that have been inlined
@@ -169,10 +177,16 @@ public class Application {
 
 			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
+			if(commandLineParser.isVerbose()){
+				System.out.println("Done inlining inlinable methods!");
+			}
 		}
 
 		//Run the class collapser.
 		if (commandLineParser.collapseClasses()) {
+			if(commandLineParser.isVerbose()){
+				System.out.println("Collapsing collapsable classes...");
+			}
 			classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true);
 
 			//Update our sets to note what has been removed.
@@ -183,10 +197,16 @@ public class Application {
 
 			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
+			if(commandLineParser.isVerbose()){
+				System.out.println("Done collapsing collapsable classes!");
+			}
 		}
 
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
+			if(commandLineParser.isVerbose()){
+				System.out.println("Removing unused methods...");
+			}
 			Set<MethodData> appMethodsToRemove = new HashSet<MethodData>();
 			Set<MethodData> libMethodsToRemove = new HashSet<MethodData>();
 			libMethodsToRemove.addAll(jShrink.getAllLibMethods());
@@ -219,9 +239,15 @@ public class Application {
 
 			removedClasses.addAll(jShrink.classesToRemove());
 			jShrink.updateClassFiles();
+			if(commandLineParser.isVerbose()){
+				System.out.println("Done removing unused methods!");
+			}
 		}
 
 		if(commandLineParser.removedFields()) {
+			if(commandLineParser.isVerbose()){
+				System.out.println("Removing unused fields...");
+			}
 			Set<FieldData> libFieldsToRemove = new HashSet<FieldData>();
 			libFieldsToRemove.addAll(jShrink.getAllLibFields());
 			libFieldsToRemove.removeAll(jShrink.getUsedLibFields());
@@ -237,25 +263,21 @@ public class Application {
 			}
 
 			jShrink.updateClassFiles();
+			if(commandLineParser.isVerbose()){
+				System.out.println("Done removing unused fields!");
+			}
 		}
 
-		if(commandLineParser.isVerbose()){
-			System.out.println("app_num_methods_after," +
-				(allAppMethodsBefore.size() - appMethodsRemoved.size()));
-			System.out.println("libs_num_methods_after," +
-				(allLibMethodsBefore.size() - libMethodsRemoved.size()));
-			System.out.println("app_num_fields_after," +
-					(allAppFieldsBefore.size() - appFieldsRemoved.size()));
-			System.out.println("libs_num_fields_after," +
-					(allLibFieldsBefore.size() - libFieldsRemoved.size()));
-		}
-
-		if(commandLineParser.isVerbose()){
-			System.out.println("app_size_after," + jShrink.getAppSize(true));
-			System.out.println("libs_size_after," + jShrink.getLibSize(true));
-		}
-
-		//TODO: Stuff like this is quite inefficient if we're not running a JUnit Test or having a verbose output.
+		toLog.append("app_num_methods_after," +
+			(allAppMethodsBefore.size() - appMethodsRemoved.size()) + System.lineSeparator());
+		toLog.append("libs_num_methods_after," +
+			(allLibMethodsBefore.size() - libMethodsRemoved.size()) + System.lineSeparator());
+		toLog.append("app_num_fields_after," +
+				(allAppFieldsBefore.size() - appFieldsRemoved.size()) + System.lineSeparator());
+		toLog.append("libs_num_fields_after," +
+				(allLibFieldsBefore.size() - libFieldsRemoved.size()) + System.lineSeparator());
+		toLog.append("app_size_after," + jShrink.getAppSize(true) + System.lineSeparator());
+		toLog.append("libs_size_after," + jShrink.getLibSize(true) + System.lineSeparator());
 
 		testOutput = jShrink.getTestOutput();
 		if(!testOutput.isPresent()){
@@ -263,26 +285,47 @@ public class Application {
 		} else {
 			testOutputAfter = testOutput.get();
 		}
-		if(commandLineParser.isTestOutput()){
-			System.out.println("tests_run_after," + testOutputAfter.getRun());
-			System.out.println("tests_errors_after," + testOutputAfter.getErrors());
-			System.out.println("tests_failed_after," + testOutputAfter.getFailures());
-			System.out.println("tests_skipped_after," + testOutputAfter.getSkipped());
-			if(testOutputAfter.getErrors() != testOutputBefore.getErrors()
-				|| testOutputAfter.getFailures() != testOutputBefore.getFailures()
-				|| testOutputAfter.getSkipped() != testOutputAfter.getSkipped()
-				|| testOutputBefore.getRun() != testOutputAfter.getRun()){
-				System.out.println("Test differences after processing. Output below: ");
-				System.out.println(testOutputAfter.getTestOutputText());
-			}
-		}
+
+		toLog.append("tests_run_after," + testOutputAfter.getRun() + System.lineSeparator());
+		toLog.append("tests_errors_after," + testOutputAfter.getErrors() + System.lineSeparator());
+		toLog.append("tests_failed_after," + testOutputAfter.getFailures() + System.lineSeparator());
+		toLog.append("tests_skipped_after," + testOutputAfter.getSkipped() + System.lineSeparator());
 
 		removedMethods.addAll(appMethodsRemoved);
 		removedMethods.addAll(libMethodsRemoved);
 
 		long endTime = System.nanoTime();
+		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
+
+		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(),
+			testOutputBefore.getTestOutputText(), testOutputAfter.getTestOutputText());
+
 		if(commandLineParser.isVerbose()){
-			System.out.println("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)));
+			System.out.println("Output logging info to \"" + commandLineParser.getLogDirectory() + "\".");
+		}
+	}
+
+	private static void outputToLogDirectory(File directory, String log,
+	                                         String testOutputBefore, String testOutputAfter){
+
+		try {
+			FileWriter fileWriter =
+				new FileWriter(directory.getAbsolutePath() + File.separator + "log.dat");
+			fileWriter.write(log);
+			fileWriter.close();
+
+			fileWriter =
+				new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_before.dat");
+			fileWriter.write(testOutputBefore);
+			fileWriter.close();
+
+			fileWriter =
+				new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_after.dat");
+			fileWriter.write(testOutputAfter);
+			fileWriter.close();
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 }

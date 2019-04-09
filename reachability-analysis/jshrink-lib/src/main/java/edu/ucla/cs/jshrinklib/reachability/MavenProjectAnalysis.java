@@ -70,7 +70,7 @@ public class MavenProjectAnalysis {
 
 				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path,
 						new EntryPointProcessor(true, false, true, false,
-								new HashSet<MethodData>()), Optional.empty(), false);
+								new HashSet<MethodData>()), Optional.empty(), false, false);
 				runner.run();
 				
 				String record = proj_name + "\t"

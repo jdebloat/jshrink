@@ -28,6 +28,7 @@ public class ApplicationTest {
 	private static Optional<File> classCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
+	private static Optional<File> logDirectory = Optional.empty();
 
 	private static File getOptionalFile(Optional<File> optionalFile, String resources){
 		if(optionalFile.isPresent()){
@@ -78,6 +79,24 @@ public class ApplicationTest {
 		return getOptionalFile(junitProject, "junit4");
 	}
 
+	private File getLogDirectory(){
+		if(logDirectory.isPresent()){
+			return this.getLogDirectory();
+		}
+
+		try {
+			File lDirectory = File.createTempFile("log_directory_", "");
+			lDirectory.delete();
+
+			logDirectory = Optional.of(lDirectory);
+		}catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		return logDirectory.get();
+	}
+
 	private File getClassCollapserDir(){
 		return getOptionalFile(classCollapserProject, "classcollapser"
 			+ File.separator + "simple-collapse-example");
@@ -99,13 +118,14 @@ public class ApplicationTest {
 	}
 
 	@After
-	public void rectifyChanges() throws IOException{
+	public void rectifyChanges() {
 		simpleTestProject = Optional.empty();
 		moduleTestProject = Optional.empty();
 		reflectionTestProject = Optional.empty();
 		junitProject = Optional.empty();
 		classCollapserProject = Optional.empty();
 		lambdaProject = Optional.empty();
+		logDirectory = Optional.empty();
 		G.reset();
 	}
 
@@ -145,6 +165,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -202,6 +223,7 @@ public class ApplicationTest {
 		arguments.append("--use-spark ");
 		arguments.append("--remove-methods ");
 		arguments.append("--remove-classes ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -257,6 +279,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--remove-classes ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -313,6 +336,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--public-entry ");
 		arguments.append("--include-exception ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -365,6 +389,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--include-exception \"message_removed\" ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -423,6 +448,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--include-exception \"message_removed\" ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -476,6 +502,7 @@ public class ApplicationTest {
 		arguments.append("--custom-entry <StandardStuff: public void publicAndTestedButUntouched()> ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -525,6 +552,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -572,6 +600,7 @@ public class ApplicationTest {
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -618,6 +647,7 @@ public class ApplicationTest {
 		arguments.append("--ignore-classes edu.ucla.cs.onr.test.LibraryClass edu.ucla.cs.onr.test.UnusedClass ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		try {
 			Method method = ApplicationTest.class.getMethod("ignoreClassTest");
@@ -670,6 +700,7 @@ public class ApplicationTest {
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -713,6 +744,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -754,9 +786,10 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
+		arguments.append("--test-output ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
 		Application.main(arguments.toString().split("\\s+"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
@@ -766,13 +799,60 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void junit_test_log_in_home_directory(){
+		//This tests ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--test-output ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		File expected = new File(System.getProperty("user.home") + File.separator + "jshrink_output");
+		assertTrue(expected.exists());
+		assertTrue(new File(expected.getAbsolutePath() + File.separator + "log.dat").exists());
+		assertTrue(new File(expected.getAbsolutePath() + File.separator + "test_output_before.dat").exists());
+		assertTrue(new File(expected.getAbsolutePath() + File.separator + "test_output_after.dat").exists());
+
+		expected.delete();
+	}
+
+	@Test
+	public void junit_test_methodinliner(){
+		//This tests ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--inline ");
+		arguments.append("--test-output ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		InlineData inlineData = Application.inlineData;
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+
+	@Test
 	public void test_junit_test_failures() {
 		String junit_project_path = getJunitProjectDir().getAbsolutePath();
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[] {}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false, false);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
@@ -785,8 +865,9 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getDynamicDispatchingProject().getAbsolutePath() + "\" ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
+		arguments.append("--test-output ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> md = Application.removedMethods;
@@ -804,7 +885,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getLambdaAppProject() + "\" ");
 		arguments.append("--main-entry ");
-
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -831,7 +912,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getLambdaAppProject() + "\" ");
 		arguments.append("--main-entry ");
-
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -857,6 +938,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--inline ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -897,6 +979,7 @@ public class ApplicationTest {
 		// no need to enable tamiflex since there are no reflection calls in this simple case
 //		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--class-collapser ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -929,6 +1012,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--class-collapser ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -998,7 +1082,7 @@ public class ApplicationTest {
 		arguments.append("--remove-fields ");
         arguments.append("--skip-method-removal ");
         arguments.append("--test-output ");
-        arguments.append("--verbose");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1030,7 +1114,7 @@ public class ApplicationTest {
 		arguments.append("--remove-fields ");
 		arguments.append("--skip-method-removal ");
 		arguments.append("--test-output ");
-		arguments.append("--verbose");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1058,8 +1142,8 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-fields ");
 		arguments.append("--skip-method-removal ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
+		arguments.append("--test-output ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1085,8 +1169,8 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
         arguments.append("--remove-fields ");
 		arguments.append("--skip-method-removal ");
-		arguments.append("--verbose ");
-        arguments.append("-T ");
+        arguments.append("--test-output ");
+	    arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
         Application.main(arguments.toString().split("\\s+"));
 

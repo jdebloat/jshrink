@@ -36,6 +36,7 @@ public class ApplicationCommandLineParser {
 	private final boolean testOutput;
 	private final boolean skipMethodRemoval;
 	private final boolean removeFields;
+	private final File logDirectory;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -167,6 +168,29 @@ public class ApplicationCommandLineParser {
 		this.testOutput = commandLine.hasOption("T");
 		this.skipMethodRemoval = commandLine.hasOption("S");
 		this.removeFields = commandLine.hasOption("F");
+		if(commandLine.hasOption("L")){
+			File directory = new File(commandLine.getOptionValue("L"));
+			if(!directory.exists()){
+				if(!directory.mkdirs()){
+					throw new ParseException("Specified log directory '"
+						+ directory.getAbsolutePath() + " cannot be created.");
+				}
+			} else if(!directory.isDirectory()){
+				throw new ParseException("Specified log directory '"
+					+ directory.getAbsolutePath() + "' is not a directory.");
+			} else if(!directory.canWrite()){
+				throw new ParseException("Specified log directory '"
+					+ directory.getAbsolutePath() + "' is not writable.");
+			}
+			this.logDirectory = directory;
+		} else {
+			File directory = new File(System.getProperty("user.home") + File.separator + "jshrink_output");
+			if(directory.exists()){
+				directory.delete();
+			}
+			directory.mkdirs();
+			this.logDirectory = directory;
+		}
 	}
 
 	private static List<MethodData> getMethodData(String[] values, CommandLine commandLine) throws ParseException{
@@ -425,6 +449,14 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option logDirectoryOption = Option.builder("L")
+			.desc("The directory to store logging information.")
+			.longOpt("log-directory")
+			.hasArg(true)
+			.required(false)
+			.build();
+
+
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
 		toReturn.addOption(appClassPathOption);
@@ -448,6 +480,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(testOutputOption);
 		toReturn.addOption(skipMethodWiping);
 		toReturn.addOption(removeFieldsOption);
+		toReturn.addOption(logDirectoryOption);
 
 		return toReturn;
 	}
@@ -550,5 +583,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean removedFields() {
 		return this.removeFields;
+	}
+
+	public File getLogDirectory(){
+		return this.logDirectory;
 	}
 }
