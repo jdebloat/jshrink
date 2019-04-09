@@ -177,7 +177,8 @@ public class EntryPointUtil {
 			
 			HashSet<MethodData> ms = methodByClass.get(cls);
 			for(MethodData md : ms) {
-				SootMethod entryMethod = entryClass.getMethod(md.getSubSignature());
+				String subSignature = md.getSubSignature();
+				SootMethod entryMethod = entryClass.getMethod(subSignature);
 				entryPoints.add(entryMethod);
 //				System.out.println("Loading " + entryMethod);
 			}

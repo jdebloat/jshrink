@@ -119,6 +119,10 @@ public class JShrink {
 		return this.getProjectAnalyserRun().getCallGraphs();
 	}
 
+	public Set<MethodData> getAllEntryPoints() {
+		return this.getProjectAnalyserRun().getEntryPoints();
+	}
+
 	private IProjectAnalyser getProjectAnalyser(){
 		//Will return setup, not guaranteed to have been run. Use "getProjectAnalyserRun" for this.
 		if(this.projectAnalyser.isPresent()){
@@ -236,7 +240,7 @@ public class JShrink {
 		}
 
 		ClassCollapserAnalysis classCollapserAnalysis =
-			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.entryPointProcessor.getEntryPoints());
+			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints());
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.run(classCollapserAnalysis);
