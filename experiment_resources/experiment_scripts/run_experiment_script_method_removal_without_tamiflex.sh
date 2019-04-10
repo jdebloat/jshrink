@@ -83,11 +83,13 @@ cat ${WORK_LIST} |  while read item; do
 	elif [[ ${exit_status} == 124 ]];then
 		echo "TIMEOUT!"
 		echo ""
+		rm -rf ${ITEM_LOG_DIR}
 	else
 		echo "Could not properly process "${item}
 		echo "Output the following: "
 		cat ${temp_file}
 		echo ""
+		rm -rf ${ITEM_LOG_DIR}
 	fi
 	rm ${temp_file}
 done
