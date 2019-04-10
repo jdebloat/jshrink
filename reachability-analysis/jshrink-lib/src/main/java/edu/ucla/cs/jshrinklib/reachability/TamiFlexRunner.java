@@ -131,12 +131,18 @@ public class TamiFlexRunner {
 			} else {
 				// avoid false alarms since some modules are not built or do not have java classes
 				// (e.g., resource module)
-				File target_folder = new File(dir.getAbsolutePath() + File.separator + "target");
+
+				/*
+				[Bobby]: I've removed this. I found this code to be pretty secure. The only times this error was
+				triggered was when the project has a "skipTests" flag in the POM file.
+				 */
+
+				/*File target_folder = new File(dir.getAbsolutePath() + File.separator + "target");
 				File test_folder = new File(target_folder.getAbsolutePath() + File.separator + "test-classes");
 				if(target_folder.exists() && test_folder.exists()) {
 					System.err.println("[TamiFlexRunner] Error: TamiFlex does not run successfully. "
 							+ "No output folder exists in " + dir.getAbsolutePath());
-				}
+				}*/
 			}
 		}
 	}
