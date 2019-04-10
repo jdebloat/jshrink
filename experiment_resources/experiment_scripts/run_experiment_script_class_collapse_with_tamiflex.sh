@@ -82,6 +82,8 @@ cat ${WORK_LIST} |  while read item; do
 		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after},${time_elapsed} >>${SIZE_FILE}
 	elif [[ ${exit_status} == 124 ]];then
 		echo "TIMEOUT!"
+		echo "Output the following: "                           
+                cat ${temp_file}
 		echo ""
 		rm -rf ${ITEM_LOG_DIR}
 	else
