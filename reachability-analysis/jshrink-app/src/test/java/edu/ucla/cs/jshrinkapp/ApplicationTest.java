@@ -1095,7 +1095,10 @@ public class ApplicationTest {
         assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "GOODBYE_STRING"));
         assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "x"));
         assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "y"));
-        assertEquals(Application.testOutputBefore, Application.testOutputAfter);
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 
         assertTrue(jarIntact());
 	}
@@ -1124,7 +1127,10 @@ public class ApplicationTest {
 		// though the following fields are referened in the source code, they are inlined by Java compiler in the bytecode
 		// so they are not used in bytecode
 		assertTrue(isFieldPresent(fieldsRemoved, "A", "f3"));
-		assertEquals(Application.testOutputBefore, Application.testOutputAfter);
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 
 		assertTrue(jarIntact());
 	}
