@@ -67,7 +67,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean useSpark;
 	private final boolean verbose;
 	private TestOutput testOutput;
-	private SETUP_STATUS setupStatus;
 	private boolean compileProject = true;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
@@ -112,7 +111,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
-		testOutput = new TestOutput(-1, -1, -1, -1, "");
+		testOutput = new TestOutput(-1, -1, -1, -1, "", true);
 	}
 
 	public void setCompileProject(boolean compileProject) {
@@ -199,9 +198,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				 exitValue = process.waitFor();
 
 				 if (exitValue != 0) {
-					 //throw new IOException("Build failed!");
-					 this.setupStatus = SETUP_STATUS.BUILD_FAILED;
-					 return;
+					 throw new IOException("Build failed!");
 				 }
 				 if(this.verbose){
 					 System.out.println("Done compiling project!");
@@ -231,10 +228,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			// still get test output even in case of test failure
 			this.testOutput = MavenUtils.testOutputFromString(maven_log);
 
-			if(exitValue != 0) {
-				this.setupStatus = SETUP_STATUS.TESTING_CRASH;
-				return;
-			}
+			/*if(exitValue != 0) {
+				throw new IOException("Test crashed!");
+			}*/
 
 			if(this.verbose){
 				System.out.println("Done running project tests!");
@@ -262,9 +258,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process.waitFor();
 			
 			if(exitValue != 0) {
-				//throw new IOException("Cannot get dependency information!");
-				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY;
-				return;
+				throw new IOException("Cannot get dependency information!");
 			}
 
 			if(this.verbose){
@@ -293,9 +287,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process.waitFor();
 
 			if(exitValue != 0) {
-				//throw new IOException("Cannot get dependency information for compile scope!");
-				this.setupStatus = SETUP_STATUS.CANNOT_OBTAIN_DEPENDENCY_COMPILE_SCOPE;
-				return;
+				throw new IOException("Cannot get dependency information for compile scope!");
 			}
 
 			if(this.verbose){
@@ -363,7 +355,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			}
 		}
-		this.setupStatus = SETUP_STATUS.SUCCESS;
 	}
 
 	private static void addToMap(Map<MethodData, Set<MethodData>> map, MethodData key, Collection<MethodData> elements){
@@ -934,11 +925,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public TestOutput getTestOutput(){
 		return this.testOutput;
-	}
-
-	@Override
-	public SETUP_STATUS getSetupStatus(){
-		return this.setupStatus;
 	}
 
 	@Override

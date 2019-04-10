@@ -245,11 +245,10 @@ public class JShrinkTest {
 
 	@Test
 	public void getTestDataTest(){
-		assertTrue(this.jShrink.getTestOutput().isPresent());
-		assertEquals(4, this.jShrink.getTestOutput().get().getRun());
-		assertEquals(0, this.jShrink.getTestOutput().get().getErrors());
-		assertEquals(1, this.jShrink.getTestOutput().get().getFailures());
-		assertEquals(0, this.jShrink.getTestOutput().get().getSkipped());
+		assertEquals(4, this.jShrink.getTestOutput().getRun());
+		assertEquals(0, this.jShrink.getTestOutput().getErrors());
+		assertEquals(1, this.jShrink.getTestOutput().getFailures());
+		assertEquals(0, this.jShrink.getTestOutput().getSkipped());
 	}
 
 	@Test
@@ -390,7 +389,7 @@ public class JShrinkTest {
 		Set<FieldData> toRemove = new HashSet<FieldData>();
 		toRemove.addAll(this.jShrink.getAllAppFields());
 		toRemove.removeAll(this.jShrink.getUsedAppFields());
-		TestOutput before = this.jShrink.getTestOutput().get();
+		TestOutput before = this.jShrink.getTestOutput();
 		Set<FieldData> fieldsRemoved = this.jShrink.removeFields(toRemove);
 		this.jShrink.updateClassFiles();
 
@@ -398,7 +397,7 @@ public class JShrinkTest {
 		for(FieldData removed : fieldsRemoved){
 			assertFalse(this.jShrink.getAllAppFields().contains(removed));
 		}
-		TestOutput after = this.jShrink.getTestOutput().get();
+		TestOutput after = this.jShrink.getTestOutput();
 
 		// make sure the test result is still the same after field removal
 		assertEquals(before.getRun(), after.getRun());
@@ -419,7 +418,7 @@ public class JShrinkTest {
 			assertFalse(this.jShrink.getAllLibFields().contains(removed));
 		}
 
-		after =  this.jShrink.getTestOutput().get();
+		after =  this.jShrink.getTestOutput();
 
 		// check the test result again
 		assertEquals(before.getRun(), after.getRun());

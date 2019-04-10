@@ -142,6 +142,7 @@ public class JShrink {
 
 		this.projectAnalyser.get().setup();
 		this.alreadyCompiled = true;
+		((MavenSingleProjectAnalyzer) this.projectAnalyser.get()).setCompileProject(!alreadyCompiled);
 		updateSizes();
 
 		return this.projectAnalyser.get();
@@ -500,12 +501,8 @@ public class JShrink {
 		}
 	}
 
-	private SETUP_STATUS getSetupStatus(){
-		return this.getProjectAnalyser().getSetupStatus();
-	}
-
-	public Optional<TestOutput> getTestOutput(){
-		return Optional.of(this.getProjectAnalyser().getTestOutput());
+	public TestOutput getTestOutput(){
+		return this.getProjectAnalyser().getTestOutput();
 	}
 
 	/*
@@ -542,6 +539,9 @@ public class JShrink {
 			System.exit(1);
 		}
 		updateSizes();
+
+		//Run setup again to return the tests (They may have been corrupted by the Soot class).
+		this.getProjectAnalyser().setup();
 	}
 
 	/*

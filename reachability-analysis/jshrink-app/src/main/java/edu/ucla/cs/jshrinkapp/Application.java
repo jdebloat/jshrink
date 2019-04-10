@@ -126,14 +126,14 @@ public class Application {
 		toLog.append("app_size_before," + jShrink.getAppSize(true) + System.lineSeparator());
 		toLog.append("libs_size_before," + jShrink.getLibSize(true) + System.lineSeparator());
 
-		Optional<TestOutput> testOutput = jShrink.getTestOutput();
 
-		if(!testOutput.isPresent()){
-			System.err.println("Cannot build/run tests for the target application.");
+		testOutputBefore = jShrink.getTestOutput();
+		if(!testOutputBefore.isTestBuildSuccess()){
+			System.err.println("Cannot build tests for the target application (after \"soot pass\").");
 			System.exit(1);
 		}
 
-		testOutputBefore = jShrink.getTestOutput().get();
+
 		toLog.append("tests_run_before," + testOutputBefore.getRun() + System.lineSeparator());
 		toLog.append("tests_errors_before," + testOutputBefore.getErrors() + System.lineSeparator());
 		toLog.append("tests_failed_before," + testOutputBefore.getFailures() + System.lineSeparator());
@@ -279,12 +279,8 @@ public class Application {
 		toLog.append("app_size_after," + jShrink.getAppSize(true) + System.lineSeparator());
 		toLog.append("libs_size_after," + jShrink.getLibSize(true) + System.lineSeparator());
 
-		testOutput = jShrink.getTestOutput();
-		if(!testOutput.isPresent()){
-			testOutputAfter = new TestOutput(-1,-1,-1,-1, "");
-		} else {
-			testOutputAfter = testOutput.get();
-		}
+		testOutputAfter = jShrink.getTestOutput();
+
 
 		toLog.append("tests_run_after," + testOutputAfter.getRun() + System.lineSeparator());
 		toLog.append("tests_errors_after," + testOutputAfter.getErrors() + System.lineSeparator());

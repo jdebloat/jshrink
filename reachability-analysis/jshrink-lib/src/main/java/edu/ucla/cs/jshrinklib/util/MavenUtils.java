@@ -69,7 +69,9 @@ public class MavenUtils {
 			}
 		}
 
-		return new TestOutput(run, failures, errors, skipped, mavenOutput);
+		boolean buildPass = !mavenOutput.contains("BUILD FAILURE");
+
+		return new TestOutput(run, failures, errors, skipped, mavenOutput, buildPass);
 	}
 
 	public static HashMap<String, String> getClasspathsFromFile(File log_file) {
