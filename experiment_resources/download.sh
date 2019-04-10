@@ -31,7 +31,7 @@ do
 	if [ ! -d "${dest_dir}/${project}" ]; then
 		mkdir "${dest_dir}/${project}"
 		printf "Beginning to clone $line\n"
-		`git clone "https://github.com/${line}.git" "${dest_dir}/${project}" > /dev/null 2>&1` 
+		`git clone "https://github.com/${username}/${reponame}.git" "${dest_dir}/${project}" > /dev/null 2>&1` 
 		printf "Successfully cloned ${username}/${reponame}!\n\n"
 	else
 		printf "$line already cloned. Skipp it.\n"
