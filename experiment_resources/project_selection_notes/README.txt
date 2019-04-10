@@ -1,8 +1,8 @@
 I have processed the projects as listed in
-"sample-maven-projects_original.csv". I copied 
-"sample-maven-projects_original.csv" to "../sample-maven-projects.csv".
-Then, to obtain the projects, "../download.sh" was executed. This 
-downloaded all the projects into the "sample-projects" directory.
+"work_list_original.dat". I copied "work_list_original.dat" to 
+"../work_list.dat". Then, to obtain the projects, "../download.sh" was 
+executed. This downloaded all the projects into the "sample-projects" 
+directory.
 
 Then I checked to see which projects built on my machine. I did this by
 running "../build.sh". This outputs a CSV with the schema
@@ -33,5 +33,5 @@ The generated "compiled_and_working_reports.dat" contains links to
 GitHub repos which contain projects that we can compile and that all
 tests pass.
 
-We then deleted projects in "../sample-maven-projects.csv" which we
+I then deleted projects in "../work_list.dat" which we
 found could not be compiled or contained failing test cases.

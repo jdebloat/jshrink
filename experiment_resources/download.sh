@@ -3,7 +3,7 @@
 PWD=`pwd`
 
 # the list of GitHub repositories built by maven
-project_list="${PWD}/sample-maven-projects.csv"
+project_list="${PWD}/work_list.dat"
 
 # the destination path to the downloaded projects
 dest_dir="${PWD}/sample-projects"
@@ -18,13 +18,13 @@ printf "***************Start downloading the given GitHub projects**************
 while read line
 do
 	#echo "$line"
-	if [[ $line != *"/"* ]]; then
+	if [[ $line != *"_"* ]]; then
 		# incorrect repo name
 		continue
 	fi
 	line=`echo $line | awk -F'\r' '{print $1}'`
-	username=`echo $line | awk -F'/' '{print $1}'`
-	reponame=`echo $line | awk -F'/' '{print $2}'`
+	username=`echo $line | awk -F'_' '{print $1}'`
+	reponame=`echo $line | awk -F'_' '{print $2}'`
 	#echo "Name=${username}; Repo=${reponame}"
 	project="${username}_${reponame}"
 
@@ -32,7 +32,7 @@ do
 		mkdir "${dest_dir}/${project}"
 		printf "Beginning to clone $line\n"
 		`git clone "https://github.com/${line}.git" "${dest_dir}/${project}" > /dev/null 2>&1` 
-		printf "Successfully cloned $line!\n\n"
+		printf "Successfully cloned ${username}/${reponame}!\n\n"
 	else
 		printf "$line already cloned. Skipp it.\n"
 	fi
