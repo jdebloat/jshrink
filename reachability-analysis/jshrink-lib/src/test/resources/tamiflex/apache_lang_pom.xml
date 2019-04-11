@@ -628,7 +628,7 @@
             <includes> <include>**/*Test.java</include> </includes> <argLine>-Djava.security.manager -Djava.security.policy=${basedir}/src/test/resources/java.policy</argLine>
             </configuration> </execution> -->
         </executions>
-      <configuration><argLine>-javaagent:/home/bobbyrbruce/Documents/software_projects/call-graph-analysis/reachability-analysis/jshrink-lib/target/test-classes/tamiflex/poa-2.0.3.jar</argLine></configuration></plugin>
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <configuration>
