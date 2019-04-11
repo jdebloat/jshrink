@@ -485,11 +485,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public SETUP_STATUS getSetupStatus(){
-		return SETUP_STATUS.SUCCESS;
-	}
-
-	@Override
 	public Set<MethodData> getTestMethods(){
 		return this.testMethods;
 	}

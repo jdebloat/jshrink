@@ -131,12 +131,18 @@ public class TamiFlexRunner {
 			} else {
 				// avoid false alarms since some modules are not built or do not have java classes
 				// (e.g., resource module)
-				File target_folder = new File(dir.getAbsolutePath() + File.separator + "target");
+
+				/*
+				[Bobby]: I've removed this. I found this code to be pretty secure. The only times this error was
+				triggered was when the project has a "skipTests" flag in the POM file.
+				 */
+
+				/*File target_folder = new File(dir.getAbsolutePath() + File.separator + "target");
 				File test_folder = new File(target_folder.getAbsolutePath() + File.separator + "test-classes");
 				if(target_folder.exists() && test_folder.exists()) {
 					System.err.println("[TamiFlexRunner] Error: TamiFlex does not run successfully. "
 							+ "No output folder exists in " + dir.getAbsolutePath());
-				}
+				}*/
 			}
 		}
 	}
@@ -153,15 +159,9 @@ public class TamiFlexRunner {
 			if(!propFile.getParentFile().exists()) {
 				Files.createDirectory(propFile.getParentFile().toPath());
 			}
-			
-			// ATTENTION: comment the following two lines of code before packaging our tool to a jar
-			// to avoid the file-not-found error
-			File template = new File(classLoader.getResource("poa.property").getFile());
-			FileUtils.copyFile(template, propFile);
-			// ATTENTION: uncomment the following two lines of code before packaging our tool to a jar
-			// to avoid the file-not-found error
-			//InputStream in = classLoader.getResourceAsStream("poa.property");
-			//Files.copy(in, propFile.toPath());
+
+			InputStream in = classLoader.getResourceAsStream("poa.properties");
+			Files.copy(in, propFile.toPath());
 		} else {
 			// double check if the existing TamiFlex property file has the right configuration
 			List<String> lines = FileUtils.readLines(propFile, Charset.defaultCharset());

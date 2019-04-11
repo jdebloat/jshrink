@@ -3,6 +3,7 @@ package edu.ucla.cs.jshrinklib.reachability;
 import edu.ucla.cs.jshrinklib.util.MavenUtils;
 import org.junit.Test;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 public class TestOutputTest {
@@ -51,6 +52,7 @@ public class TestOutputTest {
 		assertEquals(0, output.getErrors());
 		assertEquals(2, output.getSkipped());
 		assertEquals(toProcess, output.getTestOutputText());
+		assertTrue(output.isTestBuildSuccess());
 	}
 
 	@Test
@@ -106,6 +108,7 @@ public class TestOutputTest {
 		assertEquals(0, output.getErrors());
 		assertEquals(0, output.getSkipped());
 		assertEquals(toProcess, output.getTestOutputText());
+		assertTrue(output.isTestBuildSuccess());
 	}
 
 	@Test
@@ -124,5 +127,6 @@ public class TestOutputTest {
 		assertEquals(0, output.getErrors());
 		assertEquals(0, output.getSkipped());
 		assertEquals(toProcess, output.getTestOutputText());
+		assertTrue(output.isTestBuildSuccess());
 	}
 }
