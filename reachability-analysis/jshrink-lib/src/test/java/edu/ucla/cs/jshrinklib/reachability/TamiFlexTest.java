@@ -54,11 +54,12 @@ public class TamiFlexTest {
 		tamiflex.injectTamiFlex(pom_file);
 		content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
 		int count = StringUtils.countMatches(content, "<argLine>-javaagent:" + tamiflex_jar_path + "</argLine>");
-		assertEquals(1, count);
-		
-		// restore the pom file
+
+		// restore the pom file in case of test failures
 		FileUtils.copyFile(copy, file);
 		copy.delete();
+
+		assertEquals(1, count);
 	}
 	
 	/**
@@ -82,13 +83,14 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
-		assertTrue(content.contains("<configuration>"
-				+ "<argLine>-javaagent:src/test/resources/tamiflex/poa-2.0.3.jar</argLine>"
-				+ "</configuration>"));
 				
-		// restore the pom file
+		// restore the pom file first in case of test failure
 		FileUtils.copyFile(copy, file);
 		copy.delete();
+
+		assertTrue(content.contains("<configuration>"
+				+ "<argLine>-javaagent:" + tamiflex_jar_path + "</argLine>"
+				+ "</configuration>"));
 	}
 	
 	/**
@@ -175,16 +177,17 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, null, false);
 		tamiflex.injectTamiFlex(pom_file);
 		String content = FileUtils.readFileToString(new File(pom_file), Charset.defaultCharset());
+
+		// restore the pom file first in case of test failure
+		FileUtils.copyFile(copy, file);
+		copy.delete();
+
 		assertTrue(content.contains("<build><plugins><plugin>"
 				+ "<groupId>org.apache.maven.plugins</groupId>"
 				+ "<artifactId>maven-surefire-plugin</artifactId>"
 				+ "<version>2.20.1</version>"
 				+ "<configuration><argLine>-javaagent:" + tamiflex_jar_path + "</argLine></configuration>"
 				+ "</plugin></plugins></build>"));
-		
-		// restore the pom file
-		FileUtils.copyFile(copy, file);
-		copy.delete();
 	}
 	
 	@Test
@@ -194,7 +197,7 @@ public class TamiFlexTest {
 			.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
 		boolean result = tamiflex.runMavenTest();
-		assertTrue(result);
+		assertFalse(result);
 	}
 	
 	@Test @Ignore //This just takes too long...

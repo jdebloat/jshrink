@@ -25,6 +25,7 @@ public class ApplicationTest {
 	private static Optional<File> moduleTestProject = Optional.empty();
 	private static Optional<File> reflectionTestProject = Optional.empty();
 	private static Optional<File> junitProject = Optional.empty();
+	private static Optional<File> nettySocketIOProject = Optional.empty();
 	private static Optional<File> classCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
@@ -77,6 +78,10 @@ public class ApplicationTest {
 
 	private File getJunitProjectDir(){
 		return getOptionalFile(junitProject, "junit4");
+	}
+
+	private File getNettySocketIOProjectDir() {
+		return getOptionalFile(nettySocketIOProject, "netty-socketio");
 	}
 
 	private File getLogDirectory(){
@@ -1187,4 +1192,21 @@ public class ApplicationTest {
 
 		assertTrue(jarIntact());
     }
+
+    @Test
+	public void runClassCollapsingOnNettySocketIO() {
+    	// the test is
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getNettySocketIOProjectDir() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+	}
 }
