@@ -192,13 +192,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				 isr = new InputStreamReader(stdout);
 				 br = new BufferedReader(isr);
 
-				 while ((line = br.readLine()) != null) {}
+				 String output = "";
+				 while ((line = br.readLine()) != null) {
+				 	output += line + System.lineSeparator();
+				 }
 				 br.close();
 
 				 exitValue = process.waitFor();
 
 				 if (exitValue != 0) {
-					 throw new IOException("Build failed!");
+					 throw new IOException("Build failed! Output the following " + System.lineSeparator() + output);
 				 }
 				 if(this.verbose){
 					 System.out.println("Done compiling project!");
@@ -258,7 +261,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process.waitFor();
 			
 			if(exitValue != 0) {
-				throw new IOException("Cannot get dependency information!");
+				throw new IOException("Cannot get dependency information! The following was output:"
+					+ System.lineSeparator() + classpathInfo);
 			}
 
 			if(this.verbose){
@@ -287,7 +291,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			exitValue = process.waitFor();
 
 			if(exitValue != 0) {
-				throw new IOException("Cannot get dependency information for compile scope!");
+				throw new IOException("Cannot get dependency information for compile scope! The following was output:"
+					+ System.lineSeparator() + classpathInfo_compile_only);
 			}
 
 			if(this.verbose){
