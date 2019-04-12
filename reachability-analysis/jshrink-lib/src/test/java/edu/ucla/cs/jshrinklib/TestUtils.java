@@ -71,9 +71,13 @@ public class TestUtils {
 
     public static String runClass(SootClass sootClass){
         File classFile = createClass(sootClass);
+        String classPath = classFile.getParentFile().getAbsolutePath();
+        String className = classFile.getName().replaceAll(".class","");
+        return runClass(classPath, className);
+    }
 
-        String cmd = "java -cp "+classFile.getParentFile().getAbsolutePath() + " "
-            + classFile.getName().replaceAll(".class","");
+    public static String runClass(String classPath, String className) {
+        String cmd = "java -cp "+ classPath + " " + className;
 
         Process p =null;
         StringBuilder output = new StringBuilder();

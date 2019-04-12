@@ -84,6 +84,10 @@ public class ApplicationTest {
 		return getOptionalFile(nettySocketIOProject, "netty-socketio");
 	}
 
+	private File getGeccoProjectDir() {
+		return getOptionalFile(nettySocketIOProject, "gecco");
+	}
+
 	private File getLogDirectory(){
 		if(logDirectory.isPresent()){
 			return this.getLogDirectory();
@@ -1195,10 +1199,29 @@ public class ApplicationTest {
 
     @Test
 	public void runClassCollapsingOnNettySocketIO() {
-    	// the test is
+    	// the test case tests the bug in issue#38
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getNettySocketIOProjectDir() + "\" ");
+		arguments.append("--public-entry ");
+//		arguments.append("--main-entry ");
+//		arguments.append("--test-entry ");
+//		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+	}
+
+	@Test
+	public void runClassCollapsingOnGecco() {
+		// the test case tests the bug in issue#39
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getGeccoProjectDir() + "\" ");
+//		arguments.append("--public-entry ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");

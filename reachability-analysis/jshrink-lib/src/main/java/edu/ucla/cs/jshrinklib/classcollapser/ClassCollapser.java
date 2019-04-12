@@ -5,6 +5,7 @@ import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.spark.ondemand.pautil.SootUtil;
+import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.jimple.toolkits.invoke.SiteInliner;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class ClassCollapser {
     public void run(ClassCollapserAnalysis classCollapserAnalysis){
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
+        LinkedList<ArrayList<String>> unsuccessCollapsedClasses = new LinkedList<ArrayList<String>>();
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
             String fromName = collapse.get(0);
             String toName = collapse.get(1);
@@ -38,14 +40,28 @@ public class ClassCollapser {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
 
-            this.removedMethods.addAll(
-                    ClassCollapser.mergeTwoClasses(from, to,
-                            ((ClassCollapserAnalysis) classCollapserAnalysis).getProcessedUsedMethods()));
+            Set<MethodData> removedMethods =
+                    ClassCollapser.mergeTwoClasses(from, to, ((ClassCollapserAnalysis) classCollapserAnalysis).getProcessedUsedMethods());
 
-            this.classesToRewrite.add(to.getName());
-            this.classesToRemove.add(from.getName());
-            for(SootMethod method : from.getMethods()){
-                this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
+            if(removedMethods == null) {
+                // class merge failure
+                unsuccessCollapsedClasses.add(collapse);
+
+                // We have made some modifications to the SootClass objects in the class collapsing process thought the
+                // merging failed eventually. Therefore, we need to remove the modified SootClass and reload it from
+                // bytecode
+                Scene.v().removeClass(from);
+                Scene.v().loadClassAndSupport(from.getName());
+                Scene.v().removeClass(to);
+                Scene.v().loadClassAndSupport(to.getName());
+            } else {
+                this.removedMethods.addAll(removedMethods);
+
+                this.classesToRewrite.add(to.getName());
+                this.classesToRemove.add(from.getName());
+                for(SootMethod method : from.getMethods()){
+                    this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
+                }
             }
         }
 
@@ -84,13 +100,14 @@ public class ClassCollapser {
         for (SootField field : to.getFields()) {
             originalFields.put(field.getName(), field);
         }
+        // reset modifiers
         to.setModifiers(from.getModifiers());
 
         for (SootField field : from.getFields()) {
             if (originalFields.containsKey(field.getName())) {
                 to.getFields().remove(originalFields.get(field.getName()));
             }
-            to.getFields().add(field);
+            to.getFields().addLast(field);
         }
 
         HashMap<String, SootMethod> originalMethods = new HashMap<String, SootMethod>();
@@ -98,6 +115,7 @@ public class ClassCollapser {
             originalMethods.put(method.getSubSignature(), method);
         }
         for (SootMethod method : from.getMethods()) {
+            // find the super constructor calls in a constructor of a subclass
             Stmt toInLine = null;
             SootMethod inlinee = null;
             if (method.getName().equals("<init>")) {
@@ -115,6 +133,7 @@ public class ClassCollapser {
             }
             if (inlinee != null && toInLine != null) {
                 inlinee.retrieveActiveBody();
+                // inline the constructor
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));

@@ -241,4 +241,35 @@ public class ClassCollapserTest {
         SootMethod saySomething = A.getMethodByName("saySomething");
         assertTrue(saySomething.retrieveActiveBody().toString().contains("\"I am class B\""));
     }
+
+    @Test(expected = RuntimeException.class)
+    public void testIssue38() {
+        // Issue#38: https://github.com/tianyi-zhang/call-graph-analysis/issues/38
+        // this test reproduces issue#38 in a much simpler scenario
+        // the bug is not fixed yet
+        String classPath
+                = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser" + File.separator + "issue38").getFile()).getAbsolutePath();
+
+        String before = TestUtils.runClass(classPath, "Main");
+
+        SootClass B = TestUtils.getSootClass(classPath, "B");
+        SootClass A = TestUtils.getSootClass(classPath, "A");
+
+        SootClass Implementation = TestUtils.getSootClass(classPath, "SomeInterfaceImplementation");
+        SootClass Interface = TestUtils.getSootClass(classPath, "SomeInterface");
+
+        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
+        usedMethods.put("B", new HashSet<String>());
+        for (SootMethod m : B.getMethods()) {
+            usedMethods.get("B").add(m.getSubSignature());
+        }
+        usedMethods.put("SomeInterfaceImplementation", new HashSet<String>());
+        for(SootMethod m : Implementation.getMethods()) {
+            usedMethods.get("SomeInterfaceImplementation").add(m.getSubSignature());
+        }
+
+        ClassCollapser.mergeTwoClasses(Implementation, Interface, usedMethods);
+        ClassCollapser.mergeTwoClasses(B, A, usedMethods);
+    }
 }
