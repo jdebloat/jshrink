@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
 import soot.Scene;
 import soot.SootClass;
@@ -103,6 +104,9 @@ public class ClassCollapserAnalysis {
                 if (cont) {
                     continue;
                 }
+
+
+
                 SootClass fromClass = Scene.v().loadClassAndSupport(child);
                 SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
                 if (collapsable(child, singleParent, fromClass, toClass)) {
@@ -226,6 +230,18 @@ public class ClassCollapserAnalysis {
 
         if (fromClass.isStatic() || toClass.isStatic()) {
             return false;
+        }
+        if(!SootUtils.modifiableSootClass(fromClass)){
+        	return false;
+        }
+        if(!SootUtils.modifiableSootClass(toClass)){
+        	return false;
+        }
+        if(fromClass.getName().startsWith("access$")){
+        	return false;
+        }
+        if(toClass.getName().startsWith("access$")){
+        	return false;
         }
 
         int numUsedChildren = 0;
