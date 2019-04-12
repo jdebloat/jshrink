@@ -231,16 +231,11 @@ public class ClassCollapserAnalysis {
         if (fromClass.isStatic() || toClass.isStatic()) {
             return false;
         }
+
         if(!SootUtils.modifiableSootClass(fromClass)){
         	return false;
         }
         if(!SootUtils.modifiableSootClass(toClass)){
-        	return false;
-        }
-        if(fromClass.getName().startsWith("access$")){
-        	return false;
-        }
-        if(toClass.getName().startsWith("access$")){
         	return false;
         }
 
