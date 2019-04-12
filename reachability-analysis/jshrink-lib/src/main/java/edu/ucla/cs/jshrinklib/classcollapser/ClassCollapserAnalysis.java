@@ -6,6 +6,7 @@ import soot.SootClass;
 
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import soot.SootMethod;
+import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.util.EmptyChain;
 
 
@@ -209,9 +210,20 @@ public class ClassCollapserAnalysis {
         if (fromClass.isEnum() || toClass.isEnum()) {
             return false;
         }
-        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain)) || (!(fromClass.getFields() instanceof EmptyChain) && toClass.getFields() instanceof EmptyChain)) {
+
+        if(toClass.isInterface() && !fromClass.isInterface()) {
+            // do not merge a class to an interface
             return false;
         }
+
+//        if ((toClass.isInterface() && !fromClass.isInterface() && (fromClass.getFields() instanceof EmptyChain))) {
+//            return false;
+//        }
+
+        if (!(fromClass.getFields() instanceof EmptyChain) && (toClass.getFields() instanceof EmptyChain)) {
+            return false;
+        }
+
         if (fromClass.isStatic() || toClass.isStatic()) {
             return false;
         }
