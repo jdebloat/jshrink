@@ -26,6 +26,8 @@ public class ApplicationTest {
 	private static Optional<File> reflectionTestProject = Optional.empty();
 	private static Optional<File> junitProject = Optional.empty();
 	private static Optional<File> nettySocketIOProject = Optional.empty();
+    private static Optional<File> geccoProject = Optional.empty();
+    private static Optional<File> fragmentArgsProject = Optional.empty();
 	private static Optional<File> classCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
@@ -85,7 +87,11 @@ public class ApplicationTest {
 	}
 
 	private File getGeccoProjectDir() {
-		return getOptionalFile(nettySocketIOProject, "gecco");
+		return getOptionalFile(geccoProject, "gecco");
+	}
+
+	private File getFragmentArgsProjectDir() {
+		return getOptionalFile(fragmentArgsProject, "fragmentargs");
 	}
 
 	private File getLogDirectory(){
@@ -868,7 +874,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void reproduce_junit_test_failure(){
+	public void test_handling_virtually_invoked_methods(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getDynamicDispatchingProject().getAbsolutePath() + "\" ");
@@ -880,8 +886,9 @@ public class ApplicationTest {
 		Application.main(arguments.toString().split("\\s+"));
 
 		Set<MethodData> md = Application.removedMethods;
-		assertEquals(1, md.size());
-		assertTrue(isPresent(md, "A", "unused"));
+		assertEquals(2, md.size());
+		assertTrue(isPresent(md, "A", "unused")); // A.usused() is not used at all
+		assertTrue(isPresent(md, "A", "m")); // A.m() is virtually invoked in test cases
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
 		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
@@ -1221,7 +1228,7 @@ public class ApplicationTest {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getGeccoProjectDir() + "\" ");
-//		arguments.append("--public-entry ");
+		arguments.append("--public-entry ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
@@ -1232,4 +1239,22 @@ public class ApplicationTest {
 
 		Application.main(arguments.toString().split("\\s+"));
 	}
+
+	@Test
+    public void runClassCollapsingOnFragmentArgs() {
+        // the test case tests the bug in issue#39
+        StringBuilder arguments = new StringBuilder();
+        arguments.append("--prune-app ");
+        arguments.append("--maven-project \"" + getFragmentArgsProjectDir() + "\" ");
+        arguments.append("--public-entry ");
+        arguments.append("--main-entry ");
+        arguments.append("--test-entry ");
+        arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+        arguments.append("--skip-method-removal ");
+        arguments.append("--class-collapser ");
+        arguments.append("--verbose ");
+        arguments.append("-T ");
+
+        Application.main(arguments.toString().split("\\s+"));
+    }
 }

@@ -216,16 +216,48 @@ public class Application {
 				appMethodsToRemove.removeAll(jShrink.getUsedAppMethods());
 			}
 
+			// find all virtually invoked methods
+			Set<MethodData> appVirtualMethodsToWipe = new HashSet<MethodData>();
+			Set<MethodData> libVirtualMethodsToWipe = new HashSet<MethodData>();
+			Set<MethodData> entryPoints = jShrink.getAllEntryPoints();
+			Map<MethodData, Set<MethodData>> callGraph = jShrink.getSimplifiedCallGraph();
+			for(MethodData m : jShrink.getUsedLibMethods()) {
+				Set<MethodData> callers = callGraph.get(m);
+				if(callers.isEmpty() && !entryPoints.contains(m)) {
+					// this method is only invoked virtually
+					libVirtualMethodsToWipe.add(m);
+				}
+			}
+			if(commandLineParser.isPruneAppInstance()) {
+				for(MethodData m : jShrink.getUsedAppMethods()) {
+					Set<MethodData> callers = callGraph.get(m);
+					if(callers.isEmpty() && !entryPoints.contains(m)) {
+						// this method is only invoked virtually
+						appVirtualMethodsToWipe.add(m);
+					}
+				}
+			}
 
 			if (commandLineParser.removeMethods()) {
 				appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove, commandLineParser.removeClasses()));
 				libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove, commandLineParser.removeClasses()));
+
+				// wipe the body of virtually invoked methods, keep their method headers
+				appMethodsRemoved.addAll(jShrink.wipeMethods(appVirtualMethodsToWipe));
+				appMethodsRemoved.addAll(jShrink.wipeMethods(libVirtualMethodsToWipe));
+
 				removedMethod = true;
 			} else if (commandLineParser.includeException()) {
 				appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(appMethodsToRemove,
 					commandLineParser.getExceptionMessage()));
 				libMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(libMethodsToRemove,
 					commandLineParser.getExceptionMessage()));
+
+				appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(appVirtualMethodsToWipe,
+						commandLineParser.getExceptionMessage()));
+				appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(libVirtualMethodsToWipe,
+						commandLineParser.getExceptionMessage()));
+
 				if (commandLineParser.getExceptionMessage().isPresent()) {
 					wipedMethodBodyWithExceptionAndMessage = true;
 				} else {
@@ -234,6 +266,10 @@ public class Application {
 			} else {
 				appMethodsRemoved.addAll(jShrink.wipeMethods(appMethodsToRemove));
 				libMethodsRemoved.addAll(jShrink.wipeMethods(libMethodsToRemove));
+
+				appMethodsRemoved.addAll(jShrink.wipeMethods(appVirtualMethodsToWipe));
+				appMethodsRemoved.addAll(jShrink.wipeMethods(libVirtualMethodsToWipe));
+
 				wipedMethodBody = true;
 			}
 

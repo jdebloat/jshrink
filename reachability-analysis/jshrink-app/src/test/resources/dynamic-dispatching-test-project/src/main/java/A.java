@@ -1,9 +1,11 @@
 public class A{
 	protected void m() {
-		// do nothing
+		int i = 0;
+		i++;
 	}
 
 	public void unused() {
-		// do nothing
+		int i = 0;
+		i++;
 	}
 }
