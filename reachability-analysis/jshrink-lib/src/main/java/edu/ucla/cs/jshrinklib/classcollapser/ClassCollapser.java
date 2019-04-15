@@ -225,7 +225,7 @@ public class ClassCollapser {
             changed = true;
         }
 
-        if (!isAbstract) {
+        if (!isAbstract && !m.isNative()) {
             Body b = m.retrieveActiveBody();
             for (Local l : b.getLocals()) {
                 if (l.getType() == Scene.v().getType(changeFrom.getName())) {
