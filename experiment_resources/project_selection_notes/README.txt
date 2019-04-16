@@ -54,4 +54,4 @@ of this script (and my manual alterations) can be found in
 With the info in "../project_status.csv", I removed projects from
 "../work_list.dat" which timed-out or exited with a known issue (all
 exits that were not timeouts are known). The old "../work_list.dat" was 
-copied to "../work_list.dat_full" for preservation purposed. 
+copied to "work_list.dat_full" for preservation purposed. 
