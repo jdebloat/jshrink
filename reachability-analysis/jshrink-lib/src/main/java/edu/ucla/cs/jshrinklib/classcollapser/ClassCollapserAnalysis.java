@@ -211,6 +211,17 @@ public class ClassCollapserAnalysis {
         if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
             return false;
         }
+
+        if(isInnerClass(from) && isInnerClass(to)) {
+            // A temporary fix for merging two inner classes
+            // Merging two inner classes is very tricky because inner classes have a field called this$0 to reference
+            // to the outer classes. In our current implementation, the this$0 field in the super inner class is removed
+            // but it is actually used in the <init> method of the super inner class, causing a " resolved field is null"
+            // exception in FieldRefValidator.java in Soot when writing out the merged class to bytecode.
+            return false;
+        }
+
+
         if (fromClass.isEnum() || toClass.isEnum()) {
             return false;
         }
@@ -279,6 +290,10 @@ public class ClassCollapserAnalysis {
             }
         }
         return true;
+    }
+
+    private boolean isInnerClass(String name) {
+        return name.contains("$");
     }
 
     private void initLeaves() {
