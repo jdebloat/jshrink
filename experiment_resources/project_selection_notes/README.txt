@@ -7,7 +7,7 @@ directory.
 Then I checked to see which projects built on my machine. I did this by
 running "../build.sh". This outputs a CSV with the schema
 "<project>,<build_return_code>". Therefore, a "<build_return_code>" of
-"0" means the project built sucessfully. It should be noted that some of
+"0" means the project built successfully. It should be noted that some of
 the projects crashed during building and this ripples up to crash the
 script (I don't know why). Therefore, "build.sh" was executed
 several times to fully populate the CSV. Within this directory, the
