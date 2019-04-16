@@ -39,7 +39,8 @@ do
 
 	#Checkout to a particular date (this keeps experiments constant across time)
 	cd ${dest_dir}/${project}
-    	git checkout `git rev-list -n 1 --before="2018-10-15 12:00" master` >/dev/null 2>&1
+    	current_branch=$(git branch | grep \* | cut -d ' ' -f2)
+	git checkout `git rev-list -n 1 --before="2018-10-15 12:00" ${current_branch}` >/dev/null 2>&1
 	cd ${PWD}
 
 done < $project_list
