@@ -4,6 +4,8 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.*;
 import soot.jimple.*;
+import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.spark.ondemand.pautil.SootUtil;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.jimple.toolkits.invoke.SiteInliner;
@@ -43,25 +45,12 @@ public class ClassCollapser {
             Set<MethodData> removedMethods =
                     ClassCollapser.mergeTwoClasses(from, to, ((ClassCollapserAnalysis) classCollapserAnalysis).getProcessedUsedMethods());
 
-            if(removedMethods == null) {
-                // class merge failure
-                unsuccessCollapsedClasses.add(collapse);
+            this.removedMethods.addAll(removedMethods);
 
-                // We have made some modifications to the SootClass objects in the class collapsing process thought the
-                // merging failed eventually. Therefore, we need to remove the modified SootClass and reload it from
-                // bytecode
-                Scene.v().removeClass(from);
-                Scene.v().loadClassAndSupport(from.getName());
-                Scene.v().removeClass(to);
-                Scene.v().loadClassAndSupport(to.getName());
-            } else {
-                this.removedMethods.addAll(removedMethods);
-
-                this.classesToRewrite.add(to.getName());
-                this.classesToRemove.add(from.getName());
-                for(SootMethod method : from.getMethods()){
-                    this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
-                }
+            this.classesToRewrite.add(to.getName());
+            this.classesToRemove.add(from.getName());
+            for(SootMethod method : from.getMethods()){
+                this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
             }
         }
 
@@ -179,8 +168,13 @@ public class ClassCollapser {
                 changed = true;
             }
         }
-        for (SootMethod m: c.getMethods()) {
-            changed = changed || changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
+        List<SootMethod> sootMethods = c.getMethods();
+        for (int i = 0; i < sootMethods.size(); i++) {
+            SootMethod m = sootMethods.get(i);
+            boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
+            // do not inline change2 since Java do short circuit evaluation
+            // we still want to make sure type references in each method body is updated correctly
+            changed = changed || changed2;
         }
 
         return changed;
@@ -244,15 +238,45 @@ public class ClassCollapser {
                                 originalMethodRef.isStatic()));
                         ((InvokeStmt) u).setInvokeExpr(expr);
                         changed = true;
+                        continue;
                     }
                 } else if (u instanceof DefinitionStmt) {
                     Value rightOp = ((DefinitionStmt) u).getRightOp();
+
                     if (rightOp instanceof NewExpr && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
                         ((NewExpr) rightOp).setBaseType((RefType) Scene.v().getType(changeTo.getName()));
                         changed = true;
+                        continue;
                     }
-                } else if (u instanceof ReturnStmt) {
 
+                    if(u instanceof JIdentityStmt) {
+                        JIdentityStmt stmt = (JIdentityStmt) u;
+                        if(rightOp instanceof ParameterRef && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
+                            ParameterRef oldRef = (ParameterRef) rightOp;
+                            ParameterRef newRef = new ParameterRef(Scene.v().getType(changeTo.getName()), oldRef.getIndex());
+                            stmt.setRightOp(newRef);
+                            changed = true;
+                            continue;
+                        }
+                    }  else if (u instanceof JAssignStmt) {
+                        JAssignStmt stmt = (JAssignStmt) u;
+                        if (stmt.containsFieldRef()) {
+                            FieldRef fr = stmt.getFieldRef();
+                            if (fr instanceof InstanceFieldRef) {
+                                InstanceFieldRef v = (InstanceFieldRef) fr;
+                                if (v.getType().toString().equals(changeFrom.getName())) {
+                                    // the referenced field is in the type of a removed class/interface
+                                    SootFieldRef oldFieldRef = v.getFieldRef();
+                                    AbstractSootFieldRef newFieldRef =
+                                            new AbstractSootFieldRef(oldFieldRef.declaringClass(), oldFieldRef.name(),
+                                                    Scene.v().getType(changeTo.getName()), oldFieldRef.isStatic());
+                                    v.setFieldRef(newFieldRef);
+                                    changed = true;
+                                    continue;
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
