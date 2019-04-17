@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     override.ssh.private_key_path = 'xxxxxxxxxxxxxxxx'
 
     config.vm.provider "aws" do |aws|
-      aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 120 }]
+      aws.block_device_mapping = [{ 'DeviceName' => '/dev/sda1', 'Ebs.VolumeSize' => 50 }]
     end
 
   end
