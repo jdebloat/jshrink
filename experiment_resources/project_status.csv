@@ -100,7 +100,7 @@ consulo_consulo,ISSUE_#29
 stanford-futuredata_macrobase,TIMEOUT
 google_truth,ISSUE_#30
 relayrides_pushy,ISSUE_#36
-greenrobot_essentials,DONE
+greenrobot_essentials,BUILD_FAILURE
 google_google-http-java-client,ISSUE_#32
 tomighty_tomighty,DONE
 datastax_java-driver,ISSUE_#34
