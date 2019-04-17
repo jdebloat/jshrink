@@ -5,8 +5,12 @@ import soot.SootClass;
 import soot.SootField;
 
 public class FieldWiper {
-    public static void removeField(SootField field) {
+    public static boolean removeField(SootField field) {
         SootClass owningClass = field.getDeclaringClass();
-        owningClass.removeField(field);
+        if(SootUtils.modifiableSootClass(owningClass)) {
+            owningClass.removeField(field);
+            return true;
+        }
+        return false;
     }
 }
