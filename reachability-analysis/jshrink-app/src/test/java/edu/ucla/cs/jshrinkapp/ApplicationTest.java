@@ -28,7 +28,9 @@ public class ApplicationTest {
 	private static Optional<File> nettySocketIOProject = Optional.empty();
     private static Optional<File> geccoProject = Optional.empty();
     private static Optional<File> fragmentArgsProject = Optional.empty();
-	private static Optional<File> classCollapserProject = Optional.empty();
+    private static Optional<File> apacheCommonsLangProject = Optional.empty();
+	private static Optional<File> simpleClassCollapserProject = Optional.empty();
+	private static Optional<File> overridenFieldClassCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
 	private static Optional<File> logDirectory = Optional.empty();
@@ -94,6 +96,10 @@ public class ApplicationTest {
 		return getOptionalFile(fragmentArgsProject, "fragmentargs");
 	}
 
+	private File getApacheCommonsLangProjectDir() {
+		return getOptionalFile(apacheCommonsLangProject, "apache-commons-lang");
+	}
+
 	private File getLogDirectory(){
 		if(logDirectory.isPresent()){
 			return this.getLogDirectory();
@@ -112,9 +118,14 @@ public class ApplicationTest {
 		return logDirectory.get();
 	}
 
-	private File getClassCollapserDir(){
-		return getOptionalFile(classCollapserProject, "classcollapser"
+	private File getSimpleClassCollapserDir(){
+		return getOptionalFile(simpleClassCollapserProject, "classcollapser"
 			+ File.separator + "simple-collapse-example");
+	}
+
+	private File getOverriddenFieldClassCollapserDir(){
+		return getOptionalFile(overridenFieldClassCollapserProject, "classcollapser"
+				+ File.separator + "override-field-example");
 	}
 
 	private File getLambdaAppProject(){
@@ -138,7 +149,7 @@ public class ApplicationTest {
 		moduleTestProject = Optional.empty();
 		reflectionTestProject = Optional.empty();
 		junitProject = Optional.empty();
-		classCollapserProject = Optional.empty();
+		simpleClassCollapserProject = Optional.empty();
 		lambdaProject = Optional.empty();
 		logDirectory = Optional.empty();
 		G.reset();
@@ -861,6 +872,33 @@ public class ApplicationTest {
 
 
 	@Test
+	public void junit_test_class_collapser() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--test-output ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		System.out.println(classCollapseResult.getRemovedMethods().size());
+		System.out.println(classCollapseResult.getClassesToRemove().size());
+		System.out.println(classCollapseResult.getClassesToRewrite().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
 	public void test_junit_test_failures() {
 		String junit_project_path = getJunitProjectDir().getAbsolutePath();
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
@@ -989,7 +1027,7 @@ public class ApplicationTest {
 	public void classCollapserTest(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getClassCollapserDir().getAbsolutePath() + "\" ");
+		arguments.append("--maven-project \"" + getSimpleClassCollapserDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--remove-methods ");
 		// no need to enable tamiflex since there are no reflection calls in this simple case
@@ -999,8 +1037,6 @@ public class ApplicationTest {
 
 		Application.main(arguments.toString().split("\\s+"));
 
-		Set<MethodData> methodsRemoved = Application.removedMethods;
-		Set<String> classesRemoved = Application.removedClasses;
 		ClassCollapserData classCollapserData = Application.classCollapserData;
 
 		assertEquals(1, classCollapserData.getClassesToRemove().size());
@@ -1019,6 +1055,30 @@ public class ApplicationTest {
 		// A.saySomething is replaced by B.saySomething.
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "saySomething"));
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "getClassType"));
+	}
+
+	@Test
+	public void classCollapserTestOnClassesWithOverriddenFields() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getOverriddenFieldClassCollapserDir().getAbsolutePath() + "\" ");
+		arguments.append("--test-entry ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapserData = Application.classCollapserData;
+
+		assertEquals(1, classCollapserData.getClassesToRemove().size());
+		assertTrue(classCollapserData.getClassesToRemove().contains("SubA"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
 	@Test
@@ -1231,7 +1291,7 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
-		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+//		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--skip-method-removal ");
 		arguments.append("--class-collapser ");
 		arguments.append("--verbose ");
@@ -1249,7 +1309,7 @@ public class ApplicationTest {
         arguments.append("--public-entry ");
         arguments.append("--main-entry ");
         arguments.append("--test-entry ");
-        arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+//        arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
         arguments.append("--skip-method-removal ");
         arguments.append("--class-collapser ");
         arguments.append("--verbose ");
@@ -1257,4 +1317,21 @@ public class ApplicationTest {
 
         Application.main(arguments.toString().split("\\s+"));
     }
+
+    @Test
+	public void runClassCollapsingOnApacheCommonsLang() {
+		// the test case tests the bug in issue#40
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getApacheCommonsLangProjectDir() + "\" ");
+		arguments.append("--public-entry ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+	}
 }
