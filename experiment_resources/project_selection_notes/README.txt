@@ -7,7 +7,7 @@ directory.
 Then I checked to see which projects built on my machine. I did this by
 running "../build.sh". This outputs a CSV with the schema
 "<project>,<build_return_code>". Therefore, a "<build_return_code>" of
-"0" means the project built sucessfully. It should be noted that some of
+"0" means the project built successfully. It should be noted that some of
 the projects crashed during building and this ripples up to crash the
 script (I don't know why). Therefore, "build.sh" was executed
 several times to fully populate the CSV. Within this directory, the
@@ -20,7 +20,7 @@ script outputs a CSV with a schema of "<project>,<test_return_code>",
 with a "<test_return_code>" of "0" meaning all tests have passed. We
 recorded this output CSV to "test_output.csv".
 
-We then ran the following script:
+I then ran the following script:
 
 `cat tests_output.csv | awk -F, '($2==0){print $1}' | while read x; do 
 	dir=$(echo $(basename ${x}) | cut -d_ -f1)
@@ -35,3 +35,23 @@ tests pass.
 
 I then deleted projects in "../work_list.dat" which we
 found could not be compiled or contained failing test cases.
+
+JShrink is not issue-free, and some projects are simply too large to 
+process within an acceptable time period (a 3 hour timeout was set).
+I therefore ran 
+"../experiment_scripts/run_experiment_script_method_removal_with_tamiflex.sh"
+and then ran "../script_output_categorizer.sh" on 
+"../../results/method_removal_with_tamiflex_20190415/script_output.dat"
+(the output of "run_experiment_script_method_removal_with_tamiflex.sh").
+The "script_output_categorized.sh" categorizes the projects as either
+"DONE", "TIMEOUT", and "ISSUE_#*" (i.e., a known issue was found, with 
+the issue number as recorded on the project's GitHub page) for the most
+common issues. The script will leave a projects categorization blank if 
+this cannot be determined; which I later determined manually. The output
+of this script (and my manual alterations) can be found in 
+"../project_status.csv".
+
+With the info in "../project_status.csv", I removed projects from
+"../work_list.dat" which timed-out or exited with a known issue (all
+exits that were not timeouts are known). The old "../work_list.dat" was 
+copied to "work_list.dat_full" for preservation purposed. 

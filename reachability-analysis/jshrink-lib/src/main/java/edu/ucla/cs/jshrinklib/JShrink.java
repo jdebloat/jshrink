@@ -619,8 +619,7 @@ public class JShrink {
 					}
 				}
 
-				if(sootField != null) {
-					FieldWiper.removeField(sootField);
+				if(sootField != null && FieldWiper.removeField(sootField)) {
 					removedFields.add(unusedField);
 					this.classesToModify.add(sootClass);
 				}
