@@ -34,7 +34,7 @@ fi
 
 cat ${WORK_LIST} |  while read entry; do
 	item=$(echo $entry | cut -d, -f1)
-	entry_points=$(echo $entry | cut -d, -f2)
+	entry_point=$(echo $entry | cut -d, -f2)
 	item_dir="${PROJECT_DIR}/${item}"
 	cd "${item_dir}"
 
