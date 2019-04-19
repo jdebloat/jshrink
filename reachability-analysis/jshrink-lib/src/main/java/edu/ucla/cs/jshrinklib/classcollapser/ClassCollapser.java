@@ -66,12 +66,16 @@ public class ClassCollapser {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
             for (String className : classCollapserAnalysis.appClasses) {
+                if(className.equals(fromName)) {
+                    // no need to handle the collapsed class, since this class will be removed at the end
+                    continue;
+                }
                 if (!nameToSootClass.containsKey(className)) {
                     nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
-                    SootClass sootClass = nameToSootClass.get(className);
-                    if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
-                        classesToRewrite.add(sootClass.getName());
-                    }
+                }
+                SootClass sootClass = nameToSootClass.get(className);
+                if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
+                    classesToRewrite.add(sootClass.getName());
                 }
             }
         }
@@ -92,10 +96,38 @@ public class ClassCollapser {
         // reset modifiers
         to.setModifiers(from.getModifiers());
 
-        for (SootField field : from.getFields()) {
-            if (originalFields.containsKey(field.getName())) {
-                to.getFields().remove(originalFields.get(field.getName()));
+        // find fields that are used in super class constructors
+        HashSet<String> fieldsUsedInConstructor = new HashSet<String>();
+        for(SootMethod method : to.getMethods()) {
+            if(method.getName().equals("<init>")) {
+                Body b = method.retrieveActiveBody();
+                for(Unit u : b.getUnits()) {
+                    Stmt s = (Stmt) u;
+                    if(!s.containsFieldRef()) {
+                        continue;
+                    }
+                    FieldRef fr = s.getFieldRef();
+                    fieldsUsedInConstructor.add(fr.getField().getName());
+                }
             }
+        }
+
+        HashSet<String> renamedFields = new HashSet<String>();
+        for (SootField field : from.getFields()) {
+            String fieldName = field.getName();
+            if (originalFields.containsKey(fieldName)) {
+                // overridden field
+                if(fieldsUsedInConstructor.contains(fieldName)) {
+                    // must keep this field and rename
+                    renamedFields.add(fieldName);
+                    originalFields.get(fieldName).setName("super" + fieldName);
+                } else {
+                    // safely remove
+                    to.getFields().remove(originalFields.get(fieldName));
+                }
+            }
+            // reset the declaring class
+            field.setDeclaringClass(to);
             to.getFields().addLast(field);
         }
 
@@ -121,13 +153,34 @@ public class ClassCollapser {
                 }
             }
             if (inlinee != null && toInLine != null) {
-                inlinee.retrieveActiveBody();
+                Body b = inlinee.retrieveActiveBody();
+                // update the references to the renamed fields before inlining
+                for(Unit u : b.getUnits()) {
+                   Stmt s = (Stmt) u;
+                   if(!s.containsFieldRef()) {
+                       continue;
+                   }
+
+                   FieldRef fr = s.getFieldRef();
+                   SootFieldRef sfr = fr.getFieldRef();
+                   if(renamedFields.contains(sfr.name())) {
+                       // the original field has been renamed
+                       AbstractSootFieldRef new_sfr = new AbstractSootFieldRef(sfr.declaringClass(),
+                               "super" + sfr.name(), sfr.type(), sfr.isStatic());
+                       fr.setFieldRef(new_sfr);
+                    }
+                }
+
                 // inline the constructor
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));
                     toReturn.add(SootUtils.sootMethodToMethodData(method));
                 }
+                // remove the constructor in the super class since now it is inlined
+                to.getMethods().remove(inlinee);
+                // reset the declaring class
+//                method.setDeclaringClass(to);
                 to.getMethods().add(method);
             } else {
                 if (!originalMethods.containsKey(method.getSubSignature())) {
@@ -136,6 +189,8 @@ public class ClassCollapser {
                     if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
                         to.getMethods().remove(originalMethods.get(method.getSubSignature()));
                         toReturn.add(SootUtils.sootMethodToMethodData(method));
+                        // reset the declaring class
+//                        method.setDeclaringClass(to);
                         to.getMethods().add(method);
                     }
                 }
@@ -151,7 +206,8 @@ public class ClassCollapser {
      * @param changeTo The new name of the class to be changed
     **/
     /*package*/ static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
-        assert c != changeFrom && c != changeTo;
+        assert c != changeFrom;
+
         boolean changed = false;
         if (c.hasSuperclass() && c.getSuperclass().getName().equals(changeFrom.getName())) {
             c.setSuperclass(changeTo);
@@ -257,6 +313,11 @@ public class ClassCollapser {
                             stmt.setRightOp(newRef);
                             changed = true;
                             continue;
+                        } else if (rightOp instanceof ThisRef && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
+                            ThisRef newRef = new ThisRef(RefType.v(changeTo.getName()));
+                            stmt.setRightOp(newRef);
+                            changed = true;
+                            continue;
                         }
                     }  else if (u instanceof JAssignStmt) {
                         JAssignStmt stmt = (JAssignStmt) u;
@@ -270,6 +331,16 @@ public class ClassCollapser {
                                     AbstractSootFieldRef newFieldRef =
                                             new AbstractSootFieldRef(oldFieldRef.declaringClass(), oldFieldRef.name(),
                                                     Scene.v().getType(changeTo.getName()), oldFieldRef.isStatic());
+                                    v.setFieldRef(newFieldRef);
+                                    changed = true;
+                                    continue;
+                                } else if (fr.getFieldRef().declaringClass().getName().equals(changeFrom.getName())) {
+                                    // use a field from the collapsed class
+                                    // reset the declaring class of this field reference to the collapse-to class
+                                    SootFieldRef oldFieldRef = v.getFieldRef();
+                                    AbstractSootFieldRef newFieldRef =
+                                            new AbstractSootFieldRef(changeTo, oldFieldRef.name(),
+                                                    oldFieldRef.type(), oldFieldRef.isStatic());
                                     v.setFieldRef(newFieldRef);
                                     changed = true;
                                     continue;

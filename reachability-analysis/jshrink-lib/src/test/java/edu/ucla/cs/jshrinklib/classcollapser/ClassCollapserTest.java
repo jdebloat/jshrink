@@ -2,6 +2,7 @@ package edu.ucla.cs.jshrinklib.classcollapser;
 
 import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
+import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import org.junit.After;
 import org.junit.Test;
 import soot.*;
@@ -99,8 +100,6 @@ public class ClassCollapserTest {
             usedMethods.get("B").add(m.getSubSignature());
         }
 
-        System.out.println(usedMethods);
-
         ClassCollapser.mergeTwoClasses(B, A, usedMethods);
 
         assertEquals(2, A.getMethodCount());
@@ -147,6 +146,34 @@ public class ClassCollapserTest {
                 assertNotEquals("B", l.getType().toString());
             }
         }
+    }
+
+    @Test
+    public void mergeTwoClassesWithOverridenFields() throws IOException {
+        // This is a special case where a superclass and its sublcass have a field with the same name, and the field
+        // is referenced by the class constructor in both classes. It will cause a "Resolved field is null" exception
+        // when Soot writes out the merged class to a class file
+        String classPath = new File(ClassCollapser.class.getClassLoader()
+                .getResource("classcollapser" + File.separator
+                        + "overrideField").getFile()).getAbsolutePath();
+
+        SootClass A = TestUtils.getSootClass(classPath, "A");
+        SootClass SubA = TestUtils.getSootClass(classPath, "SubA");
+
+        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
+        usedMethods.put("SubA", new HashSet<String>());
+        for (SootMethod m : SubA.getMethods()) {
+            usedMethods.get("SubA").add(m.getSubSignature());
+        }
+
+        ClassCollapser.mergeTwoClasses(SubA, A, usedMethods);
+
+        File dir = new File(classPath + File.separator + "collapse");
+        if(dir.exists()) {
+            dir.delete();
+        }
+        dir.mkdir();
+        ClassFileUtils.writeClass(A, new File(dir.getAbsolutePath() + File.separator + "A.class"));
     }
 
     @Test
