@@ -6,6 +6,7 @@ import soot.*;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
+import soot.jimple.internal.JAssignStmt;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.jimple.toolkits.invoke.SiteInliner;
 
@@ -27,8 +28,6 @@ public class MethodInliner {
 
 		InlineData toReturn = new InlineData();
 		Set<SootMethod> methodsRemoved = new HashSet<SootMethod>();
-
-
 
 		boolean callgraphChanged = false;
 
@@ -99,18 +98,8 @@ public class MethodInliner {
 					continue;
 				}
 
-				List<Stmt> toInline = new ArrayList<Stmt>();
 				Body b = caller.retrieveActiveBody();
-
-				for (Unit u : b.getUnits()) {
-					if (u instanceof InvokeStmt) {
-						InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
-						SootMethod sootMethod = expr.getMethod();
-						if (sootMethod.equals(callee)) {
-							toInline.add((InvokeStmt) u);
-						}
-					}
-				}
+				List<Stmt> toInline = toInline(b, callee);
 
 				// There must be exactly 1 inline site in the caller method.
 				if (toInline.size() != 1) {
@@ -154,18 +143,8 @@ public class MethodInliner {
 
 
 				//I don't know why I have to do this again, but I get errors otherwise.
-				toInline = new ArrayList<Stmt>();
 				b = caller.retrieveActiveBody();
-
-				for (Unit u : b.getUnits()) {
-					if (u instanceof InvokeStmt) {
-						InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
-						SootMethod sootMethod = expr.getMethod();
-						if (sootMethod.equals(callee)) {
-							toInline.add((InvokeStmt) u);
-						}
-					}
-				}
+				toInline = toInline(b, callee);
 				site = toInline.iterator().next();
 
 
@@ -186,6 +165,11 @@ public class MethodInliner {
 					}
 				}
 
+				if(callgraph.containsKey(callee)) {
+					callgraph.remove(callee);
+					callgraphChanged=true;
+				}
+
 				if(debug){
 					System.out.println("SUCCESS!");
 				}
@@ -197,6 +181,26 @@ public class MethodInliner {
 			callgraph.remove(sootMethod);
 		}
 
+		return toReturn;
+	}
+
+	private static List<Stmt> toInline(Body b, SootMethod callee){
+		List<Stmt> toReturn = new ArrayList<Stmt>();
+		for (Unit u : b.getUnits()) {
+			InvokeExpr invokeExpr = null;
+			if(u instanceof InvokeStmt){
+				invokeExpr = ((InvokeStmt)u).getInvokeExpr();
+			} else if(u instanceof JAssignStmt && ((JAssignStmt)u).containsInvokeExpr()){
+				invokeExpr = ((JAssignStmt) u).getInvokeExpr();
+			}
+
+			if(invokeExpr != null){
+				SootMethod sootMethod = invokeExpr.getMethod();
+				if(sootMethod.equals(callee)){
+					toReturn.add((Stmt) u);
+				}
+			}
+		}
 		return toReturn;
 	}
 
