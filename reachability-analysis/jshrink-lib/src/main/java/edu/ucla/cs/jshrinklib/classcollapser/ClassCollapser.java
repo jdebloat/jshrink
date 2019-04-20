@@ -8,11 +8,9 @@ import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JIdentityStmt;
-import soot.jimple.spark.ondemand.pautil.SootUtil;
-import soot.jimple.toolkits.invoke.InlinerSafetyManager;
+import soot.jimple.internal.JInstanceOfExpr;
 import soot.jimple.toolkits.invoke.SiteInliner;
 
-import java.io.IOException;
 import java.util.*;
 
 public class ClassCollapser {
@@ -67,6 +65,10 @@ public class ClassCollapser {
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
+                }
+
+                if(className.equals("org.junit.internal.runners.ErrorReportingRunner")) {
+                    System.out.println("caught you!");
                 }
 
                 if (!nameToSootClass.containsKey(className)) {
@@ -232,7 +234,7 @@ public class ClassCollapser {
         List<SootMethod> sootMethods = c.getMethods();
         for (int i = 0; i < sootMethods.size(); i++) {
             SootMethod m = sootMethods.get(i);
-            boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
+            boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo);
             // do not inline change2 since Java do short circuit evaluation
             // we still want to make sure type references in each method body is updated correctly
             changed = changed || changed2;
@@ -243,7 +245,7 @@ public class ClassCollapser {
 
 
     //Supporting method for changeClassNameInClass
-    private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo, boolean isAbstract) {
+    private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo) {
         boolean changed = false;
         if (m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
             m.setReturnType(Scene.v().getType(changeTo.getName()));
@@ -280,7 +282,7 @@ public class ClassCollapser {
             changed = true;
         }
 
-        if (!isAbstract && !m.isNative()) {
+        if (!m.isAbstract() && !m.isNative()) {
             Body b = m.retrieveActiveBody();
             for (Local l : b.getLocals()) {
                 if (l.getType() == Scene.v().getType(changeFrom.getName())) {
@@ -311,8 +313,8 @@ public class ClassCollapser {
                         JCastExpr expr = (JCastExpr) rightOp;
                         if (expr.getType() == Scene.v().getType(changeFrom.getName())) {
                             expr.setCastType(Scene.v().getType(changeTo.getName()));
+                            changed = true;
                         }
-                        changed = true;
                     } else if (rightOp instanceof InvokeExpr) {
                         InvokeExpr expr = (InvokeExpr) rightOp;
                         SootMethodRef originalMethodRef = expr.getMethodRef();
@@ -321,8 +323,14 @@ public class ClassCollapser {
                                     originalMethodRef.parameterTypes(),
                                     originalMethodRef.returnType(),
                                     originalMethodRef.isStatic()));
+                            changed = true;
                         }
-                        changed = true;
+                    } else if (rightOp instanceof JInstanceOfExpr) {
+                        JInstanceOfExpr expr = (JInstanceOfExpr) rightOp;
+                        if(expr.getCheckType() == Scene.v().getType(changeFrom.getName())) {
+                            expr.setCheckType(Scene.v().getType(changeTo.getName()));
+                            changed = true;
+                        }
                     }
 
                     // handle field references
