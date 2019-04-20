@@ -4,14 +4,17 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
 import soot.*;
+import soot.JastAddJ.Annotation;
 import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.internal.JInstanceOfExpr;
 import soot.jimple.toolkits.invoke.SiteInliner;
+import soot.tagkit.*;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class ClassCollapser {
 
@@ -69,10 +72,6 @@ public class ClassCollapser {
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
-                }
-
-                if(className.equals("org.junit.internal.runners.ErrorReportingRunner")) {
-                    System.out.println("caught you!");
                 }
 
                 if (!nameToSootClass.containsKey(className)) {
@@ -233,6 +232,63 @@ public class ClassCollapser {
             if (f.getType() == Scene.v().getType(changeFrom.getName())) {
                 f.setType(Scene.v().getType(changeTo.getName()));
                 changed = true;
+            }
+        }
+
+        List<Tag> tags  = c.getTags();
+        for(int i = 0; i < tags.size(); i++) {
+            Tag tag = tags.get(i);
+            if(tag instanceof VisibilityAnnotationTag) {
+                ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
+                for(AnnotationTag annotation : annotations) {
+                    String type = annotation.getType();
+                    Collection<AnnotationElem> values = annotation.getElems();
+                    List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
+                    for(AnnotationElem annotationElem: values) {
+                        if(annotationElem instanceof AnnotationClassElem) {
+                            String desc = ((AnnotationClassElem) annotationElem).getDesc();
+                            if(desc.startsWith("L") && desc.endsWith(";")) {
+                                String typeName = desc.substring(1, desc.length() - 1);
+                                typeName = typeName.replaceAll(Pattern.quote("/"), ".");
+                                if(typeName.equals(changeFrom.getName())) {
+                                    AnnotationClassElem classElem = new AnnotationClassElem(
+                                            "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                            annotationElem.getKind(), annotationElem.getName());
+                                    newValues.add(classElem);
+                                    changed = true;
+                                    continue;
+                                }
+                            }
+                            newValues.add(annotationElem);
+                        } else if (annotationElem instanceof AnnotationArrayElem) {
+                            AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
+                            ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
+                            for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
+                                if(annotationElem2 instanceof AnnotationClassElem) {
+                                    String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
+                                    if(desc2.startsWith("L") && desc2.endsWith(";")) {
+                                        String typeName2 = desc2.substring(1, desc2.length() - 1);
+                                        typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
+                                        if(typeName2.equals(changeFrom.getName())) {
+                                            AnnotationClassElem classElem2 = new AnnotationClassElem(
+                                                    "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                    annotationElem2.getKind(), annotationElem2.getName());
+                                            newValues2.add(classElem2);
+                                            changed = true;
+                                            continue;
+                                        }
+                                    }
+                                }
+                                newValues2.add(annotationElem2);
+                            }
+                            AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
+                            newValues.add(newArrayElem);
+                        } else {
+                            newValues.add(annotationElem);
+                        }
+                    }
+                    annotation.setElems(newValues);
+                }
             }
         }
         List<SootMethod> sootMethods = c.getMethods();
