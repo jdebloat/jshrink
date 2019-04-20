@@ -74,7 +74,7 @@ public class ClassCollapserTest {
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
-        classCollapser.run(classCollapserAnalysis);
+        classCollapser.run(classCollapserAnalysis, new HashSet<String>());
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
         assertTrue(classCollapserData.getClassesToRemove().contains("B"));
@@ -249,7 +249,7 @@ public class ClassCollapserTest {
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
-        classCollapser.run(classCollapserAnalysis);
+        classCollapser.run(classCollapserAnalysis, new HashSet<String>());
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 

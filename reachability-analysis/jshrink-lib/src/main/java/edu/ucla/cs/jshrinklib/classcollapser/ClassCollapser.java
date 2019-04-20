@@ -26,7 +26,7 @@ public class ClassCollapser {
         this.removedMethods = new HashSet<MethodData>();
     }
 
-    public void run(ClassCollapserAnalysis classCollapserAnalysis){
+    public void run(ClassCollapserAnalysis classCollapserAnalysis, Set<String> testClasses){
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
@@ -50,6 +50,10 @@ public class ClassCollapser {
             this.classesToRemove.add(from.getName());
         }
 
+        Set<String> allClasses = new HashSet<String>();
+        allClasses.addAll(classCollapserAnalysis.appClasses);
+        allClasses.addAll(testClasses);
+
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
@@ -61,7 +65,7 @@ public class ClassCollapser {
             }
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
-            for (String className : classCollapserAnalysis.appClasses) {
+            for (String className : allClasses) {
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;

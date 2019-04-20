@@ -1078,6 +1078,9 @@ public class ApplicationTest {
 
 		assertEquals(1, classCollapserData.getClassesToRemove().size());
 		assertTrue(classCollapserData.getClassesToRemove().contains("SubA"));
+		assertEquals(2, classCollapserData.getClassesToRewrite().size());
+		assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
+		assertTrue(classCollapserData.getClassesToRewrite().contains("SimpleTest"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());

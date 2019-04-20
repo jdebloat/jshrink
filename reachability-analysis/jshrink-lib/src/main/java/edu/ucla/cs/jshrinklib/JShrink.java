@@ -248,7 +248,7 @@ public class JShrink {
 			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints());
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
-		classCollapser.run(classCollapserAnalysis);
+		classCollapser.run(classCollapserAnalysis, this.getTestClasses());
 
 		ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 		for(String classToRewrite : classCollapserData.getClassesToRewrite()){
