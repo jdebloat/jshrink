@@ -2,9 +2,11 @@ package edu.ucla.cs.jshrinklib.classcollapser;
 
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
+import fj.P;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.spark.ondemand.pautil.SootUtil;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
@@ -29,7 +31,6 @@ public class ClassCollapser {
     public void run(ClassCollapserAnalysis classCollapserAnalysis){
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
-        LinkedList<ArrayList<String>> unsuccessCollapsedClasses = new LinkedList<ArrayList<String>>();
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
             String fromName = collapse.get(0);
             String toName = collapse.get(1);
@@ -49,9 +50,6 @@ public class ClassCollapser {
 
             this.classesToRewrite.add(to.getName());
             this.classesToRemove.add(from.getName());
-            for(SootMethod method : from.getMethods()){
-                this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
-            }
         }
 
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
@@ -70,6 +68,7 @@ public class ClassCollapser {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
                 }
+
                 if (!nameToSootClass.containsKey(className)) {
                     nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
                 }
@@ -135,6 +134,7 @@ public class ClassCollapser {
         for (SootMethod method : to.getMethods()) {
             originalMethods.put(method.getSubSignature(), method);
         }
+        HashSet<SootMethod> methodsToMove = new HashSet<SootMethod>();
         for (SootMethod method : from.getMethods()) {
             // find the super constructor calls in a constructor of a subclass
             Stmt toInLine = null;
@@ -175,27 +175,32 @@ public class ClassCollapser {
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                    toReturn.add(SootUtils.sootMethodToMethodData(method));
                 }
                 // remove the constructor in the super class since now it is inlined
-                to.getMethods().remove(inlinee);
-                // reset the declaring class
-//                method.setDeclaringClass(to);
-                to.getMethods().add(method);
+                to.removeMethod(inlinee);
+                // add this method to the methodsToMove list
+                methodsToMove.add(method);
             } else {
                 if (!originalMethods.containsKey(method.getSubSignature())) {
-                    to.getMethods().add(method);
+                    // add this method to the methodsToMove list
+                    methodsToMove.add(method);
                 } else {
                     if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
-                        to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                        toReturn.add(SootUtils.sootMethodToMethodData(method));
-                        // reset the declaring class
-//                        method.setDeclaringClass(to);
-                        to.getMethods().add(method);
+                        to.removeMethod(originalMethods.get(method.getSubSignature()));
+                        // add this method to the methodsToMove list
+                        methodsToMove.add(method);
                     }
                 }
             }
         }
+
+        // move methods from the subclass to the superclass
+        for(SootMethod m : methodsToMove) {
+            toReturn.add(SootUtils.sootMethodToMethodData(m));
+            from.removeMethod(m);
+            to.addMethod(m);
+        }
+
         return toReturn;
     }
 
@@ -302,9 +307,25 @@ public class ClassCollapser {
                     if (rightOp instanceof NewExpr && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
                         ((NewExpr) rightOp).setBaseType((RefType) Scene.v().getType(changeTo.getName()));
                         changed = true;
-                        continue;
+                    } else if (rightOp instanceof JCastExpr) {
+                        JCastExpr expr = (JCastExpr) rightOp;
+                        if (expr.getType() == Scene.v().getType(changeFrom.getName())) {
+                            expr.setCastType(Scene.v().getType(changeTo.getName()));
+                        }
+                        changed = true;
+                    } else if (rightOp instanceof InvokeExpr) {
+                        InvokeExpr expr = (InvokeExpr) rightOp;
+                        SootMethodRef originalMethodRef = expr.getMethodRef();
+                        if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
+                            expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
+                                    originalMethodRef.parameterTypes(),
+                                    originalMethodRef.returnType(),
+                                    originalMethodRef.isStatic()));
+                        }
+                        changed = true;
                     }
 
+                    // handle field references
                     if(u instanceof JIdentityStmt) {
                         JIdentityStmt stmt = (JIdentityStmt) u;
                         if(rightOp instanceof ParameterRef && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
@@ -321,6 +342,7 @@ public class ClassCollapser {
                         }
                     }  else if (u instanceof JAssignStmt) {
                         JAssignStmt stmt = (JAssignStmt) u;
+
                         if (stmt.containsFieldRef()) {
                             FieldRef fr = stmt.getFieldRef();
                             if (fr instanceof InstanceFieldRef) {

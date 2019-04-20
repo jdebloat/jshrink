@@ -195,7 +195,9 @@ public class ClassFileUtils {
 		//I don't fully understand why, but you need to retrieve the methods before writing to the file
 		for (SootMethod sootMethod : sootClass.getMethods()) {
 			if(sootMethod.isConcrete()){
-				sootMethod.retrieveActiveBody();
+				if(!sootMethod.hasActiveBody()) {
+					sootMethod.retrieveActiveBody();
+				}
 			}
 		}
 
