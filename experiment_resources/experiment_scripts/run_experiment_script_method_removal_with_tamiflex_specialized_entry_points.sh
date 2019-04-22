@@ -46,7 +46,7 @@ cat ${WORK_LIST} |  while read entry; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	PUBLIC_ENTRY=0
-	MAIN_ENTRY=-
+	MAIN_ENTRY=0
 
 	#A 3 hour timeout
 	if [[ "${entry_point}" == "PUBLIC" ]]; then
