@@ -2,16 +2,19 @@ package edu.ucla.cs.jshrinklib.classcollapser;
 
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
+import fj.P;
 import soot.*;
+import soot.JastAddJ.Annotation;
 import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
+import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JIdentityStmt;
-import soot.jimple.spark.ondemand.pautil.SootUtil;
-import soot.jimple.toolkits.invoke.InlinerSafetyManager;
+import soot.jimple.internal.JInstanceOfExpr;
 import soot.jimple.toolkits.invoke.SiteInliner;
+import soot.tagkit.*;
 
-import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class ClassCollapser {
 
@@ -26,10 +29,9 @@ public class ClassCollapser {
         this.removedMethods = new HashSet<MethodData>();
     }
 
-    public void run(ClassCollapserAnalysis classCollapserAnalysis){
+    public void run(ClassCollapserAnalysis classCollapserAnalysis, Set<String> testClasses){
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
-        LinkedList<ArrayList<String>> unsuccessCollapsedClasses = new LinkedList<ArrayList<String>>();
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
             String fromName = collapse.get(0);
             String toName = collapse.get(1);
@@ -49,10 +51,11 @@ public class ClassCollapser {
 
             this.classesToRewrite.add(to.getName());
             this.classesToRemove.add(from.getName());
-            for(SootMethod method : from.getMethods()){
-                this.removedMethods.add(SootUtils.sootMethodToMethodData(method));
-            }
         }
+
+        Set<String> allClasses = new HashSet<String>();
+        allClasses.addAll(classCollapserAnalysis.appClasses);
+        allClasses.addAll(testClasses);
 
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
         for(String fromName: nameChangeList.keySet()) {
@@ -65,11 +68,12 @@ public class ClassCollapser {
             }
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
-            for (String className : classCollapserAnalysis.appClasses) {
+            for (String className : allClasses) {
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
                 }
+
                 if (!nameToSootClass.containsKey(className)) {
                     nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
                 }
@@ -135,6 +139,7 @@ public class ClassCollapser {
         for (SootMethod method : to.getMethods()) {
             originalMethods.put(method.getSubSignature(), method);
         }
+        HashSet<SootMethod> methodsToMove = new HashSet<SootMethod>();
         for (SootMethod method : from.getMethods()) {
             // find the super constructor calls in a constructor of a subclass
             Stmt toInLine = null;
@@ -175,27 +180,32 @@ public class ClassCollapser {
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
                     to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                    toReturn.add(SootUtils.sootMethodToMethodData(method));
                 }
                 // remove the constructor in the super class since now it is inlined
-                to.getMethods().remove(inlinee);
-                // reset the declaring class
-//                method.setDeclaringClass(to);
-                to.getMethods().add(method);
+                to.removeMethod(inlinee);
+                // add this method to the methodsToMove list
+                methodsToMove.add(method);
             } else {
                 if (!originalMethods.containsKey(method.getSubSignature())) {
-                    to.getMethods().add(method);
+                    // add this method to the methodsToMove list
+                    methodsToMove.add(method);
                 } else {
                     if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
-                        to.getMethods().remove(originalMethods.get(method.getSubSignature()));
-                        toReturn.add(SootUtils.sootMethodToMethodData(method));
-                        // reset the declaring class
-//                        method.setDeclaringClass(to);
-                        to.getMethods().add(method);
+                        to.removeMethod(originalMethods.get(method.getSubSignature()));
+                        // add this method to the methodsToMove list
+                        methodsToMove.add(method);
                     }
                 }
             }
         }
+
+        // move methods from the subclass to the superclass
+        for(SootMethod m : methodsToMove) {
+            toReturn.add(SootUtils.sootMethodToMethodData(m));
+            from.removeMethod(m);
+            to.addMethod(m);
+        }
+
         return toReturn;
     }
 
@@ -224,10 +234,67 @@ public class ClassCollapser {
                 changed = true;
             }
         }
+
+        List<Tag> tags  = c.getTags();
+        for(int i = 0; i < tags.size(); i++) {
+            Tag tag = tags.get(i);
+            if(tag instanceof VisibilityAnnotationTag) {
+                ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
+                for(AnnotationTag annotation : annotations) {
+                    String type = annotation.getType();
+                    Collection<AnnotationElem> values = annotation.getElems();
+                    List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
+                    for(AnnotationElem annotationElem: values) {
+                        if(annotationElem instanceof AnnotationClassElem) {
+                            String desc = ((AnnotationClassElem) annotationElem).getDesc();
+                            if(desc.startsWith("L") && desc.endsWith(";")) {
+                                String typeName = desc.substring(1, desc.length() - 1);
+                                typeName = typeName.replaceAll(Pattern.quote("/"), ".");
+                                if(typeName.equals(changeFrom.getName())) {
+                                    AnnotationClassElem classElem = new AnnotationClassElem(
+                                            "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                            annotationElem.getKind(), annotationElem.getName());
+                                    newValues.add(classElem);
+                                    changed = true;
+                                    continue;
+                                }
+                            }
+                            newValues.add(annotationElem);
+                        } else if (annotationElem instanceof AnnotationArrayElem) {
+                            AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
+                            ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
+                            for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
+                                if(annotationElem2 instanceof AnnotationClassElem) {
+                                    String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
+                                    if(desc2.startsWith("L") && desc2.endsWith(";")) {
+                                        String typeName2 = desc2.substring(1, desc2.length() - 1);
+                                        typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
+                                        if(typeName2.equals(changeFrom.getName())) {
+                                            AnnotationClassElem classElem2 = new AnnotationClassElem(
+                                                    "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                    annotationElem2.getKind(), annotationElem2.getName());
+                                            newValues2.add(classElem2);
+                                            changed = true;
+                                            continue;
+                                        }
+                                    }
+                                }
+                                newValues2.add(annotationElem2);
+                            }
+                            AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
+                            newValues.add(newArrayElem);
+                        } else {
+                            newValues.add(annotationElem);
+                        }
+                    }
+                    annotation.setElems(newValues);
+                }
+            }
+        }
         List<SootMethod> sootMethods = c.getMethods();
         for (int i = 0; i < sootMethods.size(); i++) {
             SootMethod m = sootMethods.get(i);
-            boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo, c.isAbstract());
+            boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo);
             // do not inline change2 since Java do short circuit evaluation
             // we still want to make sure type references in each method body is updated correctly
             changed = changed || changed2;
@@ -238,7 +305,7 @@ public class ClassCollapser {
 
 
     //Supporting method for changeClassNameInClass
-    private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo, boolean isAbstract) {
+    private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo) {
         boolean changed = false;
         if (m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
             m.setReturnType(Scene.v().getType(changeTo.getName()));
@@ -275,7 +342,7 @@ public class ClassCollapser {
             changed = true;
         }
 
-        if (!isAbstract && !m.isNative()) {
+        if (!m.isAbstract() && !m.isNative()) {
             Body b = m.retrieveActiveBody();
             for (Local l : b.getLocals()) {
                 if (l.getType() == Scene.v().getType(changeFrom.getName())) {
@@ -302,9 +369,31 @@ public class ClassCollapser {
                     if (rightOp instanceof NewExpr && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
                         ((NewExpr) rightOp).setBaseType((RefType) Scene.v().getType(changeTo.getName()));
                         changed = true;
-                        continue;
+                    } else if (rightOp instanceof JCastExpr) {
+                        JCastExpr expr = (JCastExpr) rightOp;
+                        if (expr.getType() == Scene.v().getType(changeFrom.getName())) {
+                            expr.setCastType(Scene.v().getType(changeTo.getName()));
+                            changed = true;
+                        }
+                    } else if (rightOp instanceof InvokeExpr) {
+                        InvokeExpr expr = (InvokeExpr) rightOp;
+                        SootMethodRef originalMethodRef = expr.getMethodRef();
+                        if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
+                            expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
+                                    originalMethodRef.parameterTypes(),
+                                    originalMethodRef.returnType(),
+                                    originalMethodRef.isStatic()));
+                            changed = true;
+                        }
+                    } else if (rightOp instanceof JInstanceOfExpr) {
+                        JInstanceOfExpr expr = (JInstanceOfExpr) rightOp;
+                        if(expr.getCheckType() == Scene.v().getType(changeFrom.getName())) {
+                            expr.setCheckType(Scene.v().getType(changeTo.getName()));
+                            changed = true;
+                        }
                     }
 
+                    // handle field references
                     if(u instanceof JIdentityStmt) {
                         JIdentityStmt stmt = (JIdentityStmt) u;
                         if(rightOp instanceof ParameterRef && rightOp.getType() == Scene.v().getType(changeFrom.getName())) {
@@ -321,6 +410,7 @@ public class ClassCollapser {
                         }
                     }  else if (u instanceof JAssignStmt) {
                         JAssignStmt stmt = (JAssignStmt) u;
+
                         if (stmt.containsFieldRef()) {
                             FieldRef fr = stmt.getFieldRef();
                             if (fr instanceof InstanceFieldRef) {

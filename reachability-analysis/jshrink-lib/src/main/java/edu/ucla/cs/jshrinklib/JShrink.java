@@ -248,7 +248,7 @@ public class JShrink {
 			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints());
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
-		classCollapser.run(classCollapserAnalysis);
+		classCollapser.run(classCollapserAnalysis, this.getTestClasses());
 
 		ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 		for(String classToRewrite : classCollapserData.getClassesToRewrite()){
@@ -434,7 +434,7 @@ public class JShrink {
 			 */
 			TimeUnit.SECONDS.sleep(1);
 			this.classesToRemove.clear();
-			JShrink.modifyClasses(this.classesToModify, classPaths);
+            modifyClasses(this.classesToModify, classPaths);
 			ClassFileUtils.compressJars(decompressedJars);
 			this.classesToModify.clear();
 			updateSizes();
@@ -570,7 +570,7 @@ public class JShrink {
 		return Collections.unmodifiableSet(toReturn);
 	}
 
-	private static void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
+	private void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
 		for (SootClass sootClass : classesToRewrite) {
 			try {
 				ClassFileUtils.writeClass(sootClass, classPaths);

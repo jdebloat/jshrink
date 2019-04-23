@@ -870,7 +870,6 @@ public class ApplicationTest {
 		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
-
 	@Test
 	public void junit_test_class_collapser() {
 		StringBuilder arguments = new StringBuilder();
@@ -1055,6 +1054,11 @@ public class ApplicationTest {
 		// A.saySomething is replaced by B.saySomething.
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "saySomething"));
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "getClassType"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
 	@Test
@@ -1074,6 +1078,9 @@ public class ApplicationTest {
 
 		assertEquals(1, classCollapserData.getClassesToRemove().size());
 		assertTrue(classCollapserData.getClassesToRemove().contains("SubA"));
+		assertEquals(2, classCollapserData.getClassesToRewrite().size());
+		assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
+		assertTrue(classCollapserData.getClassesToRewrite().contains("SimpleTest"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());

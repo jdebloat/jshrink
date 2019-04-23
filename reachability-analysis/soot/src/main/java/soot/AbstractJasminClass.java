@@ -605,11 +605,20 @@ public abstract class AbstractJasminClass {
 
     // Emit the methods
     {
-      Iterator<SootMethod> methodIt = sootClass.methodIterator();
+//      Iterator<SootMethod> methodIt = sootClass.methodIterator();
+//
+//      while (methodIt.hasNext()) {
+//        emitMethod(methodIt.next());
+//        emit("");
+//      }
 
-      while (methodIt.hasNext()) {
-        emitMethod(methodIt.next());
-        emit("");
+      sootClass.checkLevel(sootClass.SIGNATURES);
+      List<SootMethod> methods = sootClass.getMethods();
+      if (methods != null) {
+        for(int i = 0; i < methods.size(); i++) {
+          emitMethod(methods.get(i));
+          emit("");
+        }
       }
     }
 

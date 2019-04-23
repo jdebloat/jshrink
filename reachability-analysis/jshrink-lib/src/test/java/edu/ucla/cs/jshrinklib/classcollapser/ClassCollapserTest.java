@@ -3,6 +3,7 @@ package edu.ucla.cs.jshrinklib.classcollapser;
 import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
 import soot.*;
@@ -73,7 +74,7 @@ public class ClassCollapserTest {
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
-        classCollapser.run(classCollapserAnalysis);
+        classCollapser.run(classCollapserAnalysis, new HashSet<String>());
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
         assertTrue(classCollapserData.getClassesToRemove().contains("B"));
@@ -157,6 +158,12 @@ public class ClassCollapserTest {
                 .getResource("classcollapser" + File.separator
                         + "overrideField").getFile()).getAbsolutePath();
 
+        File dir = new File(classPath + File.separator + "collapse");
+        if(dir.exists()) {
+            FileUtils.deleteDirectory(dir);
+        }
+        dir.mkdir();
+
         SootClass A = TestUtils.getSootClass(classPath, "A");
         SootClass SubA = TestUtils.getSootClass(classPath, "SubA");
 
@@ -168,11 +175,6 @@ public class ClassCollapserTest {
 
         ClassCollapser.mergeTwoClasses(SubA, A, usedMethods);
 
-        File dir = new File(classPath + File.separator + "collapse");
-        if(dir.exists()) {
-            dir.delete();
-        }
-        dir.mkdir();
         ClassFileUtils.writeClass(A, new File(dir.getAbsolutePath() + File.separator + "A.class"));
     }
 
@@ -247,7 +249,7 @@ public class ClassCollapserTest {
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
-        classCollapser.run(classCollapserAnalysis);
+        classCollapser.run(classCollapserAnalysis, new HashSet<String>());
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 
