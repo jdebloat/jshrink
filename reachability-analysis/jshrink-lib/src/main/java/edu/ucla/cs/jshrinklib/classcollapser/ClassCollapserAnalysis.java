@@ -105,8 +105,6 @@ public class ClassCollapserAnalysis {
                     continue;
                 }
 
-
-
                 SootClass fromClass = Scene.v().loadClassAndSupport(child);
                 SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
                 if (collapsable(child, singleParent, fromClass, toClass)) {
@@ -263,9 +261,22 @@ public class ClassCollapserAnalysis {
         }
         if (numUsedChildren <= 1) {
             for (SootMethod m: fromClass.getMethods()) {
-                if (usedAppMethods.containsKey(to)
-                        && usedAppMethods.get(to).contains(m.getSubSignature())) {
-                    return false;
+                if (usedAppMethods.containsKey(to)) {
+                    String signature = m.getSubSignature();
+                    Set<String> usedMethodsInSuperClass = usedAppMethods.get(to);
+                    if(usedMethodsInSuperClass.contains(signature)) {
+                        // if there is a method with the same signature in the super class is used,
+                        // then we cannot merge the sub class into the super class
+                        return false;
+                    } else if(m.getReturnType().toString().equals(from)) {
+                        // I saw a case like A m() and B m() where A is the subtype of B
+                        // When merging A to B, we need to rename the return type of m from A to B
+                        // This causes a conflict if A m() and B m() are both used.
+                        String signature2 = to + " " + signature.substring(signature.indexOf(' ') + 1);
+                        if(usedMethodsInSuperClass.contains(signature2)) {
+                            return false;
+                        }
+                    }
                 }
             }
         } else {
