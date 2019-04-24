@@ -2,6 +2,7 @@ package edu.ucla.cs.jshrinklib.methodinliner;
 
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
+import fj.P;
 import soot.*;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
@@ -63,6 +64,18 @@ public class MethodInliner {
 					|| !ClassFileUtils.classInPath(caller.getDeclaringClass().getName(), classpaths)) {
 					if(debug){
 						System.out.println("FAILED: Caller or Callee not within the current classpath");
+					}
+					continue;
+				}
+
+				/*
+				We do not consider inner-classes at this time. They are complex corner-cases that are not handled well
+				by Soot's inliner.
+				 */
+				if(caller.getDeclaringClass().getName().contains("$")
+					&& callee.getDeclaringClass().getName().contains("$")){
+					if(debug){
+						System.out.println("FAILED: Caller or Callee class is an inner class.");
 					}
 					continue;
 				}

@@ -292,7 +292,13 @@ public class JShrink {
 			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(simplifiedCallGraph).entrySet()){
 			callgraph.put(entry.getKey(), entry.getValue());
 		}
-		InlineData output = MethodInliner.inlineMethods(callgraph, this.getClassPaths());
+
+		Set<File> classPaths = new HashSet<File>();
+
+		classPaths.addAll(this.getProjectAnalyser().getAppClasspaths());
+		classPaths.addAll(this.getProjectAnalyser().getLibClasspaths());
+
+		InlineData output = MethodInliner.inlineMethods(callgraph, classPaths);
 		this.classesToModify.addAll(output.getClassesModified());
 
 		return output;
