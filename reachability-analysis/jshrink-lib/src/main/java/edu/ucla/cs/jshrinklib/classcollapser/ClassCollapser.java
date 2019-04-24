@@ -73,7 +73,6 @@ public class ClassCollapser {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
                 }
-
                 if (!nameToSootClass.containsKey(className)) {
                     nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
                 }
@@ -135,12 +134,36 @@ public class ClassCollapser {
             to.getFields().addLast(field);
         }
 
+        // update references to all renamed fields if any
+        for(SootMethod method : to.getMethods()) {
+            if(method.isAbstract() || method.isNative()) continue;
+            Body b = method.retrieveActiveBody();
+            for(Unit u : b.getUnits()) {
+                Stmt s = (Stmt) u;
+                if(!s.containsFieldRef()) {
+                    continue;
+                }
+
+                FieldRef fr = s.getFieldRef();
+                SootFieldRef sfr = fr.getFieldRef();
+                if(renamedFields.contains(sfr.name())) {
+                    // the original field has been renamed
+                    AbstractSootFieldRef new_sfr = new AbstractSootFieldRef(sfr.declaringClass(),
+                            "super" + sfr.name(), sfr.type(), sfr.isStatic());
+                    fr.setFieldRef(new_sfr);
+                }
+            }
+        }
+
         HashMap<String, SootMethod> originalMethods = new HashMap<String, SootMethod>();
         for (SootMethod method : to.getMethods()) {
             originalMethods.put(method.getSubSignature(), method);
         }
         HashSet<SootMethod> methodsToMove = new HashSet<SootMethod>();
-        for (SootMethod method : from.getMethods()) {
+        HashSet<SootMethod> methodsToRemoveInSuperClass = new HashSet<SootMethod>();
+        List<SootMethod> fromMethods = from.getMethods();
+        for (int i = 0; i < fromMethods.size(); i++) {
+            SootMethod method = fromMethods.get(i);
             // find the super constructor calls in a constructor of a subclass
             Stmt toInLine = null;
             SootMethod inlinee = null;
@@ -159,43 +182,38 @@ public class ClassCollapser {
             }
             if (inlinee != null && toInLine != null) {
                 Body b = inlinee.retrieveActiveBody();
-                // update the references to the renamed fields before inlining
-                for(Unit u : b.getUnits()) {
-                   Stmt s = (Stmt) u;
-                   if(!s.containsFieldRef()) {
-                       continue;
-                   }
-
-                   FieldRef fr = s.getFieldRef();
-                   SootFieldRef sfr = fr.getFieldRef();
-                   if(renamedFields.contains(sfr.name())) {
-                       // the original field has been renamed
-                       AbstractSootFieldRef new_sfr = new AbstractSootFieldRef(sfr.declaringClass(),
-                               "super" + sfr.name(), sfr.type(), sfr.isStatic());
-                       fr.setFieldRef(new_sfr);
-                    }
-                }
-
                 // inline the constructor
                 SiteInliner.inlineSite(inlinee, toInLine, method);
                 if (originalMethods.containsKey(method.getSubSignature())) {
-                    to.getMethods().remove(originalMethods.get(method.getSubSignature()));
+                    methodsToRemoveInSuperClass.add(originalMethods.get(method.getSubSignature()));
                 }
-                // remove the constructor in the super class since now it is inlined
-                to.removeMethod(inlinee);
                 // add this method to the methodsToMove list
                 methodsToMove.add(method);
             } else {
-                if (!originalMethods.containsKey(method.getSubSignature())) {
-                    // add this method to the methodsToMove list
-                    methodsToMove.add(method);
-                } else {
-                    if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
-                        to.removeMethod(originalMethods.get(method.getSubSignature()));
+                if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
+                    if (!originalMethods.containsKey(method.getSubSignature())) {
+                        // add this method to the methodsToMove list
+                        methodsToMove.add(method);
+                    } else {
                         // add this method to the methodsToMove list
                         methodsToMove.add(method);
                     }
                 }
+            }
+        }
+
+        // remove the unused methods in super class
+        if(usedMethods.containsKey(to.getName())) {
+            Set<String> usedMethodsInSuperClass = usedMethods.get(to.getName());
+            for(String subSign : originalMethods.keySet()) {
+                if(!usedMethodsInSuperClass.contains(subSign)) {
+                    to.removeMethod(originalMethods.get(subSign));
+                }
+            }
+        } else {
+            // no methods in the super class is used
+            for(SootMethod m : originalMethods.values()) {
+                to.removeMethod(m);
             }
         }
 
@@ -294,6 +312,28 @@ public class ClassCollapser {
         List<SootMethod> sootMethods = c.getMethods();
         for (int i = 0; i < sootMethods.size(); i++) {
             SootMethod m = sootMethods.get(i);
+            // I saw a case in android.jar where one method in a class has the return type of changeFrom and the other method
+            // in the same class has the return type of changeTo. In Java, two methods in the same class can never have return
+            // types with inheritance relationship. But Android allows this on purpose to generate stub methods which will be
+            // interpreted by Android emulator. So resetting the return of the first method from changeFrom to changeTo will
+            // cause a naming conflict. Nevertheless, keep one of these methods to avoid errors.
+            if(m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
+                // check if there is another method that has the same name and the return type is changeTo
+                boolean flag = false;
+                for(int j = 0; j < sootMethods.size(); j++) {
+                    SootMethod m2 = sootMethods.get(j);
+                    if(m2.getName().equals(m.getName()) && m2.getReturnType() == Scene.v().getType(changeTo.getName())) {
+                        // this is not allowed in Java but saw this case in android.jar
+                        // remove m from class and continue
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    c.removeMethod(m);
+                    continue;
+                }
+            }
             boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo);
             // do not inline change2 since Java do short circuit evaluation
             // we still want to make sure type references in each method body is updated correctly
@@ -302,7 +342,6 @@ public class ClassCollapser {
 
         return changed;
     }
-
 
     //Supporting method for changeClassNameInClass
     private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo) {
@@ -413,25 +452,24 @@ public class ClassCollapser {
 
                         if (stmt.containsFieldRef()) {
                             FieldRef fr = stmt.getFieldRef();
-                            if (fr instanceof InstanceFieldRef) {
-                                InstanceFieldRef v = (InstanceFieldRef) fr;
-                                if (v.getType().toString().equals(changeFrom.getName())) {
+                            if (fr instanceof InstanceFieldRef || fr instanceof StaticFieldRef) {
+                                if (fr.getType().toString().equals(changeFrom.getName())) {
                                     // the referenced field is in the type of a removed class/interface
-                                    SootFieldRef oldFieldRef = v.getFieldRef();
+                                    SootFieldRef oldFieldRef = fr.getFieldRef();
                                     AbstractSootFieldRef newFieldRef =
                                             new AbstractSootFieldRef(oldFieldRef.declaringClass(), oldFieldRef.name(),
                                                     Scene.v().getType(changeTo.getName()), oldFieldRef.isStatic());
-                                    v.setFieldRef(newFieldRef);
+                                    fr.setFieldRef(newFieldRef);
                                     changed = true;
                                     continue;
                                 } else if (fr.getFieldRef().declaringClass().getName().equals(changeFrom.getName())) {
                                     // use a field from the collapsed class
                                     // reset the declaring class of this field reference to the collapse-to class
-                                    SootFieldRef oldFieldRef = v.getFieldRef();
+                                    SootFieldRef oldFieldRef = fr.getFieldRef();
                                     AbstractSootFieldRef newFieldRef =
                                             new AbstractSootFieldRef(changeTo, oldFieldRef.name(),
                                                     oldFieldRef.type(), oldFieldRef.isStatic());
-                                    v.setFieldRef(newFieldRef);
+                                    fr.setFieldRef(newFieldRef);
                                     changed = true;
                                     continue;
                                 }
