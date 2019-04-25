@@ -5,12 +5,14 @@ public class A {
 
 	public int toInline(){
 		int toReturn = 0;
-		toReturn += packagePrivateMethod();
-		toReturn += packagePrivateMethod();
+		toReturn += Inner.packagePrivateMethod();
+		toReturn += Inner.packagePrivateMethod();
 		return toReturn;
 	}
 
-	/*package*/ int packagePrivateMethod(){
-		return 1;
+	private static class Inner {
+		public static int packagePrivateMethod() {
+			return 1;
+		}
 	}
 }
