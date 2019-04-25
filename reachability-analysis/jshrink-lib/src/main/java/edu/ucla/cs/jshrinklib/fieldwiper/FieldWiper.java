@@ -11,6 +11,7 @@ public class FieldWiper {
             owningClass.removeField(field);
             if(!SootUtils.modifiableSootClass(owningClass)){
                 owningClass.addField(field);
+                return false;
             }
             return true;
         }
