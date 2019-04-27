@@ -170,7 +170,7 @@ public class ClassFileUtils {
 	public static void removeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
 		List<File> filesToReturn = getClassFile(sootClass, classPath);
 
-		if(!filesToReturn.isEmpty()){
+		if(filesToReturn.isEmpty()){
 			throw new IOException("Cannot find file for class '" +  sootClass.getName() + "'");
 		}
 
@@ -184,7 +184,7 @@ public class ClassFileUtils {
 
 		List<File> filesToReturn = getClassFile(sootClass, classPath);
 
-		if(!filesToReturn.isEmpty()){
+		if(filesToReturn.isEmpty()){
 			throw new IOException("Cannot find file for class '" + sootClass.getName() + "'");
 		}
 
