@@ -177,7 +177,7 @@ public class ClassFileUtils {
 		for(File f :filesToReturn) {
 			FileUtils.forceDelete(f);
 		}
-		assert(!getClassFile(sootClass, classPath).isEmpty());
+		assert(getClassFile(sootClass, classPath).isEmpty());
 	}
 
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
