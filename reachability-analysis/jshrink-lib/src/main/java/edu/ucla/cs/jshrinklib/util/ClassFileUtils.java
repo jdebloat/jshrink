@@ -41,16 +41,18 @@ public class ClassFileUtils {
 	}
 
 	//SPECIAL NOTE!!!! : This assumes all jars in the classpaths are decompressed!
-	public static Optional<File> getClassFile(SootClass sootClass, Collection<File> paths) {
+	public static List<File> getClassFile(SootClass sootClass, Collection<File> paths) {
 		String classPath = sootClass.getName().replaceAll("\\.", File.separator) + ".class";
 
+		ArrayList<File> files = new ArrayList<>();
 		for (File p : paths) {
 			File test = new File(p + File.separator + classPath);
 			if (test.exists()) {
-				return Optional.of(test);
+				files.add(test);
 			}
 		}
-		return Optional.empty();
+
+		return files;
 	}
 
 	public static boolean classInPath(String qualifiedClassName, Collection<File> paths){
@@ -166,28 +168,29 @@ public class ClassFileUtils {
 	(assuming jars are contained within the classpaths).
 	*/
 	public static void removeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
-		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
+		List<File> filesToReturn = getClassFile(sootClass, classPath);
 
-		if(!fileToReturn.isPresent()){
+		if(!filesToReturn.isEmpty()){
 			throw new IOException("Cannot find file for class '" +  sootClass.getName() + "'");
 		}
 
-		assert(fileToReturn.isPresent());
-		FileUtils.forceDelete(fileToReturn.get());
-		assert(!getClassFile(sootClass, classPath).isPresent());
+		for(File f :filesToReturn) {
+			FileUtils.forceDelete(f);
+		}
+		assert(!getClassFile(sootClass, classPath).isEmpty());
 	}
 
 	public static void writeClass(SootClass sootClass, Collection<File> classPath) throws IOException{
 
-		Optional<File> fileToReturn = getClassFile(sootClass, classPath);
+		List<File> filesToReturn = getClassFile(sootClass, classPath);
 
-		if(!fileToReturn.isPresent()){
+		if(!filesToReturn.isEmpty()){
 			throw new IOException("Cannot find file for class '" + sootClass.getName() + "'");
 		}
 
-		assert(fileToReturn.isPresent());
-
-		writeClass(sootClass, fileToReturn.get());
+		for(File f : filesToReturn) {
+			writeClass(sootClass, f);
+		}
 	}
 
 	public static void writeClass(SootClass sootClass, File outputFile) throws IOException {
