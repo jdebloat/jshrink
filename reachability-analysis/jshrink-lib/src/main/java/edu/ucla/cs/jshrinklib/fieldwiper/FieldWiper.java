@@ -9,6 +9,10 @@ public class FieldWiper {
         SootClass owningClass = field.getDeclaringClass();
         if(SootUtils.modifiableSootClass(owningClass)) {
             owningClass.removeField(field);
+            if(!SootUtils.modifiableSootClass(owningClass)){
+                owningClass.addField(field);
+                return false;
+            }
             return true;
         }
         return false;
