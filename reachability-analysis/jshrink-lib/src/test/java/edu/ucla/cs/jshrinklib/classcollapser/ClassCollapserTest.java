@@ -140,7 +140,8 @@ public class ClassCollapserTest {
         SootClass B = TestUtils.getSootClass(overridePath,"B");
         SootClass main = TestUtils.getSootClass(overridePath, "Main");
 
-        ClassCollapser.changeClassNamesInClass(main, B, A);
+        ClassCollapser classCollapser = new ClassCollapser();
+        classCollapser.changeClassNamesInClass(main, B, A);
         for (SootMethod m: main.getMethods()) {
             Body body = m.retrieveActiveBody();
             for (Local l: body.getLocals()) {
