@@ -211,8 +211,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(this.verbose){
 				System.out.println("Running project tests...");
 			}
-			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
-				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
+			if(this.compileProject) {
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
+			}else {
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "--offline", "-fn"};
+			}
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
@@ -243,9 +248,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				System.out.println("Getting dependency information...");
 			}
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
-			// call graph in the static analysis later 
-			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode"};
+			// call graph in the static analysis later
+			if(compileProject) {
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(),  "--batch-mode"};
+			} else {
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--offline", "--batch-mode"};
+			}
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
@@ -274,8 +284,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
-			cmd = new String[] {"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+			if(compileProject) {
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
 					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
+			}else{
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--offline", "--batch-mode"};
+			}
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
