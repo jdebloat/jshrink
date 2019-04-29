@@ -12,6 +12,7 @@ import soot.util.EmptyChain;
 
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class ClassCollapserAnalysis {
     public Set<String> appClasses;
@@ -269,9 +270,9 @@ public class ClassCollapserAnalysis {
                         // then we cannot merge the sub class into the super class
                         return false;
                     } else if(m.getReturnType().toString().equals(from)) {
-                        // I saw a case like A m() and B m() where A is the subtype of B
-                        // When merging A to B, we need to rename the return type of m from A to B
-                        // This causes a conflict if A m() and B m() are both used.
+                        // covariant return type is allowed in an overriding method
+                        // if a overriding method with a covariant return type and the overridden method in
+                        // the super class are both used. We cannot merge them.
                         String signature2 = to + " " + signature.substring(signature.indexOf(' ') + 1);
                         if(usedMethodsInSuperClass.contains(signature2)) {
                             return false;

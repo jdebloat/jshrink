@@ -22,14 +22,16 @@ public class ClassCollapser {
     private final Set<String> classesToRemove;
     private final Set<MethodData> removedMethods;
 
+    private HashMap<String, SootMethod> renamedMethods;
 
     public ClassCollapser() {
         this.classesToRemove = new HashSet<String>();
         this.classesToRewrite = new HashSet<String>();
         this.removedMethods = new HashSet<MethodData>();
+        this.renamedMethods = new HashMap<String, SootMethod>();
     }
 
-    public void run(ClassCollapserAnalysis classCollapserAnalysis, Set<String> testClasses){
+    public void run(ClassCollapserAnalysis classCollapserAnalysis, Set<String> testClasses) {
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
@@ -57,6 +59,7 @@ public class ClassCollapser {
         allClasses.addAll(classCollapserAnalysis.appClasses);
         allClasses.addAll(testClasses);
 
+        // update any references to collapsed classes
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
@@ -73,12 +76,128 @@ public class ClassCollapser {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
                 }
+
                 if (!nameToSootClass.containsKey(className)) {
                     nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
                 }
                 SootClass sootClass = nameToSootClass.get(className);
-                if (ClassCollapser.changeClassNamesInClass(sootClass, from, to)) {
+                if (changeClassNamesInClass(sootClass, from, to)) {
                     classesToRewrite.add(sootClass.getName());
+                }
+            }
+        }
+
+        // update method call targets whose return types, parameter types, or even names have been changed
+        for(String className : allClasses ) {
+            if(nameChangeList.containsKey(className)) {
+                // no need to update any merged classes since they will be deleted anyway
+                continue;
+            }
+
+            if(!nameToSootClass.containsKey(className)) {
+                nameToSootClass.put(className, Scene.v().loadClassAndSupport(className));
+            }
+            SootClass sootClass = nameToSootClass.get(className);
+            ArrayList<SootMethod> sootMethods = new ArrayList<SootMethod>(sootClass.getMethods());
+            for(int i = 0; i < sootMethods.size(); i++) {
+                SootMethod m = sootMethods.get(i);
+                if(m.isNative() || m.isAbstract()) continue;
+
+                Body b = m.getActiveBody();
+                for(Unit unit : b.getUnits()) {
+                    Stmt stmt = (Stmt) unit;
+                    if(stmt.containsInvokeExpr()) {
+                        InvokeExpr callExpr = stmt.getInvokeExpr();
+                        SootMethodRef smf = callExpr.getMethodRef();
+                        boolean updated = false;
+                        String signature = SootMethod.getSubSignature(smf.getName(), smf.getParameterTypes(), smf.getReturnType());
+                        if(renamedMethods.containsKey(signature)) {
+                            SootMethod renamed_method = renamedMethods.get(signature);
+                            if (renamed_method.getName().equals("<init>")) {
+                                // update the callsite by adding a dummy argument
+                                if(stmt instanceof InvokeStmt && callExpr instanceof SpecialInvokeExpr) {
+                                    SpecialInvokeExpr specialInvokeExpr = (SpecialInvokeExpr) callExpr;
+                                    InvokeStmt invokeStmt = (InvokeStmt) stmt;
+                                    invokeStmt.setInvokeExpr(callExpr);
+                                    Local base = (Local) specialInvokeExpr.getBase();
+                                    List<Type> paramTypes = new ArrayList<Type>(smf.getParameterTypes());
+                                    paramTypes.add(Scene.v().getType("int"));
+                                    SootMethodRef new_smf = Scene.v().makeMethodRef(smf.getDeclaringClass(),
+                                            smf.getName(),
+                                            paramTypes,
+                                            smf.getReturnType(),
+                                            smf.isStatic());
+                                    List<Value> args = callExpr.getArgs();
+                                    args.add(IntConstant.v(1));
+                                    SpecialInvokeExpr new_specialInvokeExpr = Jimple.v().newSpecialInvokeExpr(base, new_smf, args);
+                                    invokeStmt.setInvokeExpr(new_specialInvokeExpr);
+                                    callExpr = new_specialInvokeExpr;
+                                } else {
+                                    // constructor call should always be in InvokeStatement
+                                    throw new RuntimeException("Unsupported method invocation type: " + callExpr);
+                                }
+                            } else {
+                                // update the method target name in the callsite
+                                SootMethodRef new_smf = Scene.v().makeMethodRef(renamed_method.getDeclaringClass(),
+                                        renamed_method.getName(),
+                                        renamed_method.getParameterTypes(),
+                                        renamed_method.getReturnType(),
+                                        renamed_method.isStatic());
+                                callExpr.setMethodRef(new_smf);
+                            }
+
+                            updated = true;
+                        }
+
+                        // check each merged class
+                        for(String fromClassName : nameChangeList.keySet()) {
+                            String toClassName = nameChangeList.get(fromClassName);
+
+                            // get the smf again in case it is updated in the previous step
+                            smf = callExpr.getMethodRef();
+                            if(smf.getReturnType() == Scene.v().getType(fromClassName)) {
+                                SootMethodRef new_smf = Scene.v().makeMethodRef(smf.getDeclaringClass(),
+                                        smf.getName(),
+                                        smf.getParameterTypes(),
+                                        Scene.v().getType(toClassName),
+                                        smf.isStatic());
+                                callExpr.setMethodRef(new_smf);
+                                updated = true;
+                                smf = new_smf;
+                            }
+
+                            boolean paramUpdated = false;
+                            List<Type> paramTypes = new ArrayList<Type>(smf.getParameterTypes());
+                            for(int j = 0; j < paramTypes.size(); j++) {
+                                Type paramT = paramTypes.get(j);
+                                if(paramT == Scene.v().getType(fromClassName)) {
+                                    paramTypes.remove(j);
+                                    paramTypes.add(j, Scene.v().getType(toClassName));
+                                    paramUpdated = true;
+                                }
+                            }
+
+                            if(paramUpdated) {
+                                SootMethodRef new_smf = Scene.v().makeMethodRef(smf.getDeclaringClass(),
+                                        smf.getName(),
+                                        paramTypes,
+                                        smf.getReturnType(),
+                                        smf.isStatic());
+                                callExpr.setMethodRef(new_smf);
+                                updated = true;
+                            }
+                        }
+
+                        // double check whether this method call target is updated correctly
+                        if(updated) {
+                            try {
+                                SootMethod sootMethod = callExpr.getMethod();
+                                classesToRewrite.add(className);
+                            } catch (SootMethodRefImpl.ClassResolutionFailedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -233,7 +352,7 @@ public class ClassCollapser {
      * @param changeFrom The original name of the class to be changed
      * @param changeTo The new name of the class to be changed
     **/
-    /*package*/ static boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
+    boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
         assert c != changeFrom;
 
         boolean changed = false;
@@ -259,7 +378,6 @@ public class ClassCollapser {
             if(tag instanceof VisibilityAnnotationTag) {
                 ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
                 for(AnnotationTag annotation : annotations) {
-                    String type = annotation.getType();
                     Collection<AnnotationElem> values = annotation.getElems();
                     List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
                     for(AnnotationElem annotationElem: values) {
@@ -309,32 +427,100 @@ public class ClassCollapser {
                 }
             }
         }
+
         List<SootMethod> sootMethods = c.getMethods();
-        for (int i = 0; i < sootMethods.size(); i++) {
-            SootMethod m = sootMethods.get(i);
+        // In the Gecco project, the order of the methods is changed in the middle of the loop. It is very strange. adw
+        List<SootMethod> sootMethodsCopy = new ArrayList<SootMethod>(sootMethods);
+        for (int i = 0; i < sootMethodsCopy.size(); i++) {
+            SootMethod m = sootMethodsCopy.get(i);
             // I saw a case in android.jar where one method in a class has the return type of changeFrom and the other method
             // in the same class has the return type of changeTo. In Java, two methods in the same class can never have return
             // types with inheritance relationship. But Android allows this on purpose to generate stub methods which will be
             // interpreted by Android emulator. So resetting the return of the first method from changeFrom to changeTo will
             // cause a naming conflict. Nevertheless, keep one of these methods to avoid errors.
-            if(m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
-                // check if there is another method that has the same name and the return type is changeTo
-                boolean flag = false;
-                for(int j = 0; j < sootMethods.size(); j++) {
-                    SootMethod m2 = sootMethods.get(j);
-                    if(m2.getName().equals(m.getName()) && m2.getReturnType() == Scene.v().getType(changeTo.getName())) {
-                        // this is not allowed in Java but saw this case in android.jar
-                        // remove m from class and continue
-                        flag = true;
-                        break;
+            String signature = m.getSubSignature();
+            boolean name_conflict = false;
+            String original_method = null;
+            if(signature.contains(changeFrom.getName())) {
+                // the signature of this method is very likely to be updated
+
+                // generate the new method signature after update type references in the signature
+                Type retType = m.getReturnType();
+                if(retType == changeFrom.getType()) {
+                    retType = changeTo.getType();
+                }
+                List<Type> paramTypes = new ArrayList<Type>(m.getParameterTypes());
+                for(int j = 0; j < paramTypes.size(); j++) {
+                    Type paramT = paramTypes.get(j);
+                    if(paramT == changeFrom.getType()) {
+                        paramTypes.remove(j);
+                        paramTypes.add(j, changeTo.getType());
                     }
                 }
-                if (flag) {
-                    c.removeMethod(m);
-                    continue;
+                String renamed_signature = SootMethod.getSubSignature(m.getName(), paramTypes, retType);
+
+                // double check if this method signature is indeed updated
+                if(!renamed_signature.equals(signature)) {
+                    // check whether there is a method that has the same signature after updating
+                    for(int j = 0; j < sootMethodsCopy.size(); j++) {
+                        SootMethod m2 = sootMethodsCopy.get(j);
+                        if(m2.getSubSignature().equals(renamed_signature)) {
+                            // this is not allowed in Java but saw this case in android.jar
+                            // remove m from class and continue
+                            name_conflict = true;
+                            break;
+                        }
+                    }
+
+                    if (name_conflict) {
+                        original_method = m.getSubSignature();
+                        c.removeMethod(m);
+                        // rename it
+                        if(!m.getName().equals("<init>")) {
+                            m.setName(m.getName() + "_sub");
+                        } else {
+                            // cannot rename a class constructor
+                            // add a dummy parameter instead
+                            ArrayList<Type> params = new ArrayList<Type>(m.getParameterTypes());
+                            Type intT = Scene.v().getType("int");
+                            params.add(intT);
+                            m.setParameterTypes(params);
+
+                            Body b = m.retrieveActiveBody();
+                            // initialize the newly added parameter
+                            Local arg = Jimple.v().newLocal("i" + (params.size()-1), intT);
+                            b.getLocals().addLast(arg);
+                            Unit paramIdentifyStatement = Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(intT, params.size()-1));
+                            // We cannot insert at the end since the last statement is often a return statement
+                            // find the last identify statement
+                            Unit lastIdentityStmt = null;
+                            for(Unit unit : b.getUnits()) {
+                                if(unit instanceof IdentityStmt) {
+                                    lastIdentityStmt = unit;
+                                } else {
+                                    break;
+                                }
+                            }
+                            if(lastIdentityStmt == null) {
+                                // no local variable?
+                                Unit first = b.getUnits().getFirst();
+                                b.getUnits().insertBefore(paramIdentifyStatement, first);
+                            } else {
+                                b.getUnits().insertAfter(paramIdentifyStatement, lastIdentityStmt);
+                            }
+                        }
+
+                        c.addMethod(m);
+                    }
                 }
             }
+
             boolean changed2 = changeClassNamesInMethod(m, changeFrom, changeTo);
+
+            if(name_conflict) {
+                assert original_method != null;
+                renamedMethods.put(original_method, m);
+            }
             // do not inline change2 since Java do short circuit evaluation
             // we still want to make sure type references in each method body is updated correctly
             changed = changed || changed2;
@@ -347,6 +533,7 @@ public class ClassCollapser {
     private static boolean changeClassNamesInMethod(SootMethod m, SootClass changeFrom, SootClass changeTo) {
         boolean changed = false;
         if (m.getReturnType() == Scene.v().getType(changeFrom.getName())) {
+            // the following method call changes the order of methods in methodList
             m.setReturnType(Scene.v().getType(changeTo.getName()));
             changed = true;
         }
@@ -362,6 +549,7 @@ public class ClassCollapser {
             }
         }
         if (changeTypes) {
+            // the following method call also changes the order of methods in methodList
             m.setParameterTypes(newTypes);
             changed = true;
         }
@@ -377,6 +565,7 @@ public class ClassCollapser {
             }
         }
         if (changeExceptions) {
+            // same here, the following method call also changes the order of methods in methodList
             m.setExceptions(newExceptions);
             changed = true;
         }
@@ -393,6 +582,7 @@ public class ClassCollapser {
                 if (u instanceof InvokeStmt) {
                     InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
                     SootMethodRef originalMethodRef = expr.getMethodRef();
+                    // check whether the method target is declared in the changeFrom class
                     if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
                         expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
                                 originalMethodRef.parameterTypes(),
@@ -400,7 +590,6 @@ public class ClassCollapser {
                                 originalMethodRef.isStatic()));
                         ((InvokeStmt) u).setInvokeExpr(expr);
                         changed = true;
-                        continue;
                     }
                 } else if (u instanceof DefinitionStmt) {
                     Value rightOp = ((DefinitionStmt) u).getRightOp();

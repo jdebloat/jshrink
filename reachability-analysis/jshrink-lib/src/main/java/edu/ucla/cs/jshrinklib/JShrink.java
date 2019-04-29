@@ -33,6 +33,7 @@ public class JShrink {
 	private long libSizeDecompressed = -1;
 	private long appSizeCompressed = -1;
 	private long appSizeDecompressed = -1;
+	private Set<String> unmodifiableClasses = new HashSet<String>();
 
 	/*
 	Regardless of whether "reset()" is run, the project, if compiled, remains so. We do not want to recompile, thus
@@ -226,6 +227,10 @@ public class JShrink {
 
 	public Set<String> getUsedTestClasses(){
 		return this.getProjectAnalyserRun().getUsedTestClasses();
+	}
+
+	public Set<String> getUnmodifiableClasses() {
+		return this.unmodifiableClasses;
 	}
 
 	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses){
@@ -524,6 +529,7 @@ public class JShrink {
 		for(String className : this.getProjectAnalyserRun().getAppClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
+				unmodifiableClasses.add(className);
 				continue;
 			}
 			classesToRewrite.add(sootClass);
@@ -531,6 +537,7 @@ public class JShrink {
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
+				unmodifiableClasses.add(className);
 				continue;
 			}
 			classesToRewrite.add(sootClass);
@@ -573,7 +580,15 @@ public class JShrink {
 	private void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
 		for (SootClass sootClass : classesToRewrite) {
 			try {
-				ClassFileUtils.writeClass(sootClass, classPaths);
+				if(unmodifiableClasses.contains(sootClass.getName())) {
+					if(verbose) {
+						// we will not update the class since it will cause exceptions when writing out to bytecode based on
+						// the first soot pass. But this may cause a problem when loading or running the unmodified class.
+						System.out.println("Attempting to update an unmodifiable class, " + sootClass.getName() + " in class collapsing.");
+					}
+				} else {
+					ClassFileUtils.writeClass(sootClass, classPaths);
+				}
 			} catch (IOException e) {
 				System.err.println("An exception was thrown when attempting to rewrite a class:");
 				e.printStackTrace();
