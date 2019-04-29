@@ -211,12 +211,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(this.verbose){
 				System.out.println("Running project tests...");
 			}
+
 			if(this.compileProject) {
-				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
 					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
 			}else {
-				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "test",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "--offline", "-fn"};
+				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode" ,"--offline", "-fn"};
 			}
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
