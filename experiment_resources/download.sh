@@ -32,7 +32,7 @@ do
 		mkdir "${dest_dir}/${project}"
 		printf "Beginning to clone $line\n"
 		`git clone "https://github.com/${username}/${reponame}.git" "${dest_dir}/${project}" > /dev/null 2>&1` 
-		printf "Successfully cloned ${username}/${reponame}!\n\n"
+		printf "Successfully cloned ${line}!\n\n"
 	else
 		printf "$line already cloned. Skipp it.\n"
 	fi
