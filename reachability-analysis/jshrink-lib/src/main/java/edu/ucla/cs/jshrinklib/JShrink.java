@@ -542,6 +542,18 @@ public class JShrink {
 			}
 			classesToRewrite.add(sootClass);
 		}
+		// We need to update class name references in test classes in class collapsing
+		// So we need to make sure they are modifiable.
+		// I saw a case in the disunity project where a test class has lambda expressions which
+		// crashes the write-out process
+		for(String className : this.getProjectAnalyserRun().getTestClasses()) {
+			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				unmodifiableClasses.add(className);
+			}
+			// no need to rewrite since we do not measure the size of test code
+//			classesToRewrite.add(sootClass);
+		}
 		try {
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
