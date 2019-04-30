@@ -25,17 +25,14 @@ public class ApplicationTest {
 	private static Optional<File> moduleTestProject = Optional.empty();
 	private static Optional<File> reflectionTestProject = Optional.empty();
 	private static Optional<File> junitProject = Optional.empty();
-	private static Optional<File> nettySocketIOProject = Optional.empty();
-    private static Optional<File> geccoProject = Optional.empty();
-    private static Optional<File> fragmentArgsProject = Optional.empty();
-    private static Optional<File> apacheCommonsLangProject = Optional.empty();
 	private static Optional<File> simpleClassCollapserProject = Optional.empty();
 	private static Optional<File> overridenFieldClassCollapserProject = Optional.empty();
+	private static Optional<File> methodNameConflictClassCollapserProject = Optional.empty();
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
 	private static Optional<File> logDirectory = Optional.empty();
 
-	private static File getOptionalFile(Optional<File> optionalFile, String resources){
+	protected static File getOptionalFile(Optional<File> optionalFile, String resources){
 		if(optionalFile.isPresent()){
 			return optionalFile.get();
 		}
@@ -56,6 +53,13 @@ public class ApplicationTest {
 		}
 
 		return optionalFile.get();
+	}
+
+	protected File getTamiFlexJar(){
+		File toReturn = new File(
+				ApplicationTest.class.getClassLoader().getResource(
+						"tamiflex" + File.separator + "poa-2.0.3.jar").getFile());
+		return toReturn;
 	}
 
 	private static File getSimpleTestProjectDir(){
@@ -82,22 +86,6 @@ public class ApplicationTest {
 
 	private File getJunitProjectDir(){
 		return getOptionalFile(junitProject, "junit4");
-	}
-
-	private File getNettySocketIOProjectDir() {
-		return getOptionalFile(nettySocketIOProject, "netty-socketio");
-	}
-
-	private File getGeccoProjectDir() {
-		return getOptionalFile(geccoProject, "gecco");
-	}
-
-	private File getFragmentArgsProjectDir() {
-		return getOptionalFile(fragmentArgsProject, "fragmentargs");
-	}
-
-	private File getApacheCommonsLangProjectDir() {
-		return getOptionalFile(apacheCommonsLangProject, "apache-commons-lang");
 	}
 
 	private File getLogDirectory(){
@@ -128,19 +116,17 @@ public class ApplicationTest {
 				+ File.separator + "override-field-example");
 	}
 
+	private File getMethodNameConflictClassCollapserDir() {
+		return getOptionalFile(methodNameConflictClassCollapserProject, "classcollapser"
+				+ File.separator + "method-name-conflict-example");
+	}
+
 	private File getLambdaAppProject(){
 		return getOptionalFile(lambdaProject, "lambda-test-project");
 	}
 
 	private File getDynamicDispatchingProject(){
 		return getOptionalFile(dynamicDispatchingProject, "dynamic-dispatching-test-project");
-	}
-
-	private File getTamiFlexJar(){
-		File toReturn = new File(
-				ApplicationTest.class.getClassLoader().getResource(
-					"tamiflex" + File.separator + "poa-2.0.3.jar").getFile());
-		return toReturn;
 	}
 
 	@After
@@ -1089,6 +1075,34 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void classCollapserTestOnMethodNameConflicts() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getMethodNameConflictClassCollapserDir().getAbsolutePath() + "\" ");
+		arguments.append("--test-entry ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapserData = Application.classCollapserData;
+
+		assertEquals(1, classCollapserData.getClassesToRemove().size());
+		assertTrue(classCollapserData.getClassesToRemove().contains("SubA"));
+		assertEquals(3, classCollapserData.getClassesToRewrite().size());
+		assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
+		assertTrue(classCollapserData.getClassesToRewrite().contains("B"));
+		assertTrue(classCollapserData.getClassesToRewrite().contains("SimpleTest"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
 	public void mainTest_targetMainEntryPoint_classCollapser(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -1270,75 +1284,4 @@ public class ApplicationTest {
 
 		assertTrue(jarIntact());
     }
-
-    @Test
-	public void runClassCollapsingOnNettySocketIO() {
-    	// the test case tests the bug in issue#38
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getNettySocketIOProjectDir() + "\" ");
-		arguments.append("--public-entry ");
-//		arguments.append("--main-entry ");
-//		arguments.append("--test-entry ");
-//		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--skip-method-removal ");
-		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
-
-		Application.main(arguments.toString().split("\\s+"));
-	}
-
-	@Test
-	public void runClassCollapsingOnGecco() {
-		// the test case tests the bug in issue#39
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getGeccoProjectDir() + "\" ");
-		arguments.append("--public-entry ");
-		arguments.append("--main-entry ");
-		arguments.append("--test-entry ");
-//		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--skip-method-removal ");
-		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
-
-		Application.main(arguments.toString().split("\\s+"));
-	}
-
-	@Test
-    public void runClassCollapsingOnFragmentArgs() {
-        // the test case tests the bug in issue#39
-        StringBuilder arguments = new StringBuilder();
-        arguments.append("--prune-app ");
-        arguments.append("--maven-project \"" + getFragmentArgsProjectDir() + "\" ");
-        arguments.append("--public-entry ");
-        arguments.append("--main-entry ");
-        arguments.append("--test-entry ");
-//        arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-        arguments.append("--skip-method-removal ");
-        arguments.append("--class-collapser ");
-        arguments.append("--verbose ");
-        arguments.append("-T ");
-
-        Application.main(arguments.toString().split("\\s+"));
-    }
-
-    @Test
-	public void runClassCollapsingOnApacheCommonsLang() {
-		// the test case tests the bug in issue#40
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getApacheCommonsLangProjectDir() + "\" ");
-		arguments.append("--public-entry ");
-		arguments.append("--main-entry ");
-		arguments.append("--test-entry ");
-		arguments.append("--skip-method-removal ");
-		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
-		arguments.append("-T ");
-
-		Application.main(arguments.toString().split("\\s+"));
-	}
 }
