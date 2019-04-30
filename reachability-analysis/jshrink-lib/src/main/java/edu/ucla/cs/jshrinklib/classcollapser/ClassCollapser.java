@@ -37,6 +37,9 @@ public class ClassCollapser {
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
             String fromName = collapse.get(0);
             String toName = collapse.get(1);
+            if(toName.equals("org.reactivestreams.Subscriber")) {
+                System.out.println("caught you!");
+            }
             if (!nameToSootClass.containsKey(fromName)) {
                 nameToSootClass.put(fromName, Scene.v().loadClassAndSupport(fromName));
             }
@@ -121,14 +124,19 @@ public class ClassCollapser {
                                     invokeStmt.setInvokeExpr(callExpr);
                                     Local base = (Local) specialInvokeExpr.getBase();
                                     List<Type> paramTypes = new ArrayList<Type>(smf.getParameterTypes());
-                                    paramTypes.add(Scene.v().getType("int"));
+                                    int numOfDummyVariales = renamed_method.getParameterTypes().size() - smf.getParameterTypes().size();
+                                    for(int j = 0; j < numOfDummyVariales; j++) {
+                                        paramTypes.add(Scene.v().getType("int"));
+                                    }
                                     SootMethodRef new_smf = Scene.v().makeMethodRef(smf.getDeclaringClass(),
                                             smf.getName(),
                                             paramTypes,
                                             smf.getReturnType(),
                                             smf.isStatic());
                                     List<Value> args = callExpr.getArgs();
-                                    args.add(IntConstant.v(1));
+                                    for(int j = 0; j < numOfDummyVariales; j++) {
+                                        args.add(IntConstant.v(1));
+                                    }
                                     SpecialInvokeExpr new_specialInvokeExpr = Jimple.v().newSpecialInvokeExpr(base, new_smf, args);
                                     invokeStmt.setInvokeExpr(new_specialInvokeExpr);
                                     callExpr = new_specialInvokeExpr;
@@ -315,26 +323,31 @@ public class ClassCollapser {
                         methodsToMove.add(method);
                     } else {
                         // add this method to the methodsToMove list
+                        methodsToRemoveInSuperClass.add(originalMethods.get(method.getSubSignature()));
                         methodsToMove.add(method);
                     }
                 }
             }
         }
 
-        // remove the unused methods in super class
-        if(usedMethods.containsKey(to.getName())) {
-            Set<String> usedMethodsInSuperClass = usedMethods.get(to.getName());
-            for(String subSign : originalMethods.keySet()) {
-                if(!usedMethodsInSuperClass.contains(subSign)) {
-                    to.removeMethod(originalMethods.get(subSign));
-                }
-            }
-        } else {
-            // no methods in the super class is used
-            for(SootMethod m : originalMethods.values()) {
-                to.removeMethod(m);
-            }
+        for(SootMethod method : methodsToRemoveInSuperClass) {
+            to.removeMethod(method);
         }
+
+        // remove the unused methods in super class
+//        if(usedMethods.containsKey(to.getName())) {
+//            Set<String> usedMethodsInSuperClass = usedMethods.get(to.getName());
+//            for(String subSign : originalMethods.keySet()) {
+//                if(!usedMethodsInSuperClass.contains(subSign)) {
+//                    to.removeMethod(originalMethods.get(subSign));
+//                }
+//            }
+//        } else {
+//            // no methods in the super class is used
+//            for(SootMethod m : originalMethods.values()) {
+//                to.removeMethod(m);
+//            }
+//        }
 
         // move methods from the subclass to the superclass
         for(SootMethod m : methodsToMove) {
@@ -354,6 +367,10 @@ public class ClassCollapser {
     **/
     boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
         assert c != changeFrom;
+
+        if(c.getName().equals("com.fasterxml.jackson.databind.DeserializationContext") && changeFrom.getName().equals("com.fasterxml.jackson.databind.deser.DefaultDeserializationContext")) {
+            System.out.println("Caught you");
+        }
 
         boolean changed = false;
         if (c.hasSuperclass() && c.getSuperclass().getName().equals(changeFrom.getName())) {
@@ -457,60 +474,69 @@ public class ClassCollapser {
                         paramTypes.add(j, changeTo.getType());
                     }
                 }
-                String renamed_signature = SootMethod.getSubSignature(m.getName(), paramTypes, retType);
+                String methodName = m.getName();
+                String renamed_signature = SootMethod.getSubSignature(methodName, paramTypes, retType);
 
                 // double check if this method signature is indeed updated
                 if(!renamed_signature.equals(signature)) {
-                    // check whether there is a method that has the same signature after updating
-                    for(int j = 0; j < sootMethodsCopy.size(); j++) {
-                        SootMethod m2 = sootMethodsCopy.get(j);
-                        if(m2.getSubSignature().equals(renamed_signature)) {
-                            // this is not allowed in Java but saw this case in android.jar
-                            // remove m from class and continue
-                            name_conflict = true;
-                            break;
-                        }
-                    }
 
-                    if (name_conflict) {
+                    if(hasNameConflict(sootMethodsCopy, renamed_signature)) {
+                        // there is a name conflict
+                        name_conflict = true;
+
+                        // record the original method signature before renaming the method
                         original_method = m.getSubSignature();
-                        c.removeMethod(m);
-                        // rename it
-                        if(!m.getName().equals("<init>")) {
-                            m.setName(m.getName() + "_sub");
-                        } else {
-                            // cannot rename a class constructor
-                            // add a dummy parameter instead
-                            ArrayList<Type> params = new ArrayList<Type>(m.getParameterTypes());
-                            Type intT = Scene.v().getType("int");
-                            params.add(intT);
-                            m.setParameterTypes(params);
 
-                            Body b = m.retrieveActiveBody();
-                            // initialize the newly added parameter
-                            Local arg = Jimple.v().newLocal("i" + (params.size()-1), intT);
-                            b.getLocals().addLast(arg);
-                            Unit paramIdentifyStatement = Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(intT, params.size()-1));
-                            // We cannot insert at the end since the last statement is often a return statement
-                            // find the last identify statement
-                            Unit lastIdentityStmt = null;
-                            for(Unit unit : b.getUnits()) {
-                                if(unit instanceof IdentityStmt) {
-                                    lastIdentityStmt = unit;
+                        do {
+                            // rename it
+                            if(!methodName.equals("<init>")) {
+                                methodName += "_sub";
+                            } else {
+                                // cannot rename a class constructor
+                                // add a dummy parameter instead
+                                Type intT = Scene.v().getType("int");
+                                paramTypes.add(intT);
+
+                                // add a new local variable for the newly
+                                Body b = m.retrieveActiveBody();
+                                // initialize the newly added parameter
+                                Local arg = Jimple.v().newLocal("i" + (paramTypes.size()-1), intT);
+                                b.getLocals().addLast(arg);
+                                Unit paramIdentifyStatement = Jimple.v().newIdentityStmt(arg, Jimple.v().newParameterRef(intT, paramTypes.size()-1));
+                                // We cannot insert at the end since the last statement is often a return statement
+                                // find the last identify statement
+                                Unit lastIdentityStmt = null;
+                                for(Unit unit : b.getUnits()) {
+                                    if(unit instanceof IdentityStmt) {
+                                        lastIdentityStmt = unit;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                                if(lastIdentityStmt == null) {
+                                    // no local variable?
+                                    Unit first = b.getUnits().getFirst();
+                                    b.getUnits().insertBefore(paramIdentifyStatement, first);
                                 } else {
-                                    break;
+                                    b.getUnits().insertAfter(paramIdentifyStatement, lastIdentityStmt);
                                 }
                             }
-                            if(lastIdentityStmt == null) {
-                                // no local variable?
-                                Unit first = b.getUnits().getFirst();
-                                b.getUnits().insertBefore(paramIdentifyStatement, first);
-                            } else {
-                                b.getUnits().insertAfter(paramIdentifyStatement, lastIdentityStmt);
-                            }
-                        }
 
+                            renamed_signature = SootMethod.getSubSignature(methodName, paramTypes, retType);
+                        } while (hasNameConflict(sootMethodsCopy, renamed_signature));
+
+
+                        // remove the original method before updating its signature
+                        c.removeMethod(m);
+
+                        m.setName(methodName);
+                        m.setParameterTypes(paramTypes);
+                        m.setReturnType(retType);
+
+                        // add it back to update the internal method signature map in the Soot class
                         c.addMethod(m);
+
+                        changed = true;
                     }
                 }
             }
@@ -527,6 +553,22 @@ public class ClassCollapser {
         }
 
         return changed;
+    }
+
+    private boolean hasNameConflict(List<SootMethod> methods, String renamed_signature) {
+        boolean hasConflict = false;
+
+        for(int j = 0; j < methods.size(); j++) {
+            SootMethod m2 = methods.get(j);
+            if(m2.getSubSignature().equals(renamed_signature)) {
+                // this is not allowed in Java but saw this case in android.jar
+                // remove m from class and continue
+                hasConflict = true;
+                break;
+            }
+        }
+
+        return hasConflict;
     }
 
     //Supporting method for changeClassNameInClass
