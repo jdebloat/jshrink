@@ -3,9 +3,7 @@ package edu.ucla.cs.jshrinklib.reachability;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,7 +38,7 @@ public class TamiFlexRunner {
 	// fields that are referenced or accessed via Java reflection
 	public HashMap<String, HashSet<String>> accessed_fields;
 	// methods that are referenced or invoked via Java reflection
-	public HashMap<String, HashSet<String>> used_methods;
+	public HashMap<String, Map<String, Set<String>>> used_methods;
 	
 	public TamiFlexRunner(String tamiflexJarPath, String mavenProjectPath, boolean rerunTamiFlex) {
 		this.tamiflex_path = tamiflexJarPath;
@@ -48,7 +46,7 @@ public class TamiFlexRunner {
 		this.rerun = rerunTamiFlex;
 		accessed_classes = new HashMap<String, HashSet<String>>();
 		accessed_fields = new HashMap<String, HashSet<String>>();
-		used_methods = new HashMap<String, HashSet<String>>();
+		used_methods = new HashMap<String, Map<String, Set<String>>>();
 	}
 	
 	public void run() throws IOException {
@@ -234,13 +232,20 @@ public class TamiFlexRunner {
 						String class_member = reference.split(": ")[1];
 						if(class_member.contains("(") && class_member.contains(")")) {
 							// this is a method in the format of "return_type method_subsignature"
-							HashSet<String> set;
+							Map<String, Set<String>> set;
 							if(used_methods.containsKey(module)) {
 								set = used_methods.get(module);
 							} else {
-								set = new HashSet<String>();
+								set = new HashMap<String, Set<String>>();
 							}
-							set.add(reference);
+
+							if(!set.containsKey(reference)){
+								set.put(reference, new HashSet<String>());
+							}
+
+							if(!containing_method.isEmpty()){
+								set.get(reference).add(containing_method);
+							}
 							used_methods.put(module, set);
 						} else {
 							// this is a field in the format of "field_type field_name"

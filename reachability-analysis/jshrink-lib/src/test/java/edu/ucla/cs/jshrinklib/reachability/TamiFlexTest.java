@@ -363,7 +363,7 @@ public class TamiFlexTest {
 			assertEquals(37, all_accessed_fields.size());
 			HashSet<String> all_used_methods = new HashSet<String>();
 			for(String module : tamiflex.used_methods.keySet()) {
-				all_used_methods.addAll(tamiflex.used_methods.get(module));
+				all_used_methods.addAll(tamiflex.used_methods.get(module).keySet());
 			}
 			// flaky
 			assertEquals(391, all_used_methods.size());

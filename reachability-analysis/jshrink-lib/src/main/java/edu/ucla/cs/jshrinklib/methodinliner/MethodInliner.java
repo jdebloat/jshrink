@@ -4,6 +4,7 @@ import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
 import soot.*;
+import soot.jimple.FieldRef;
 import soot.jimple.InvokeExpr;
 import soot.jimple.InvokeStmt;
 import soot.jimple.Stmt;
@@ -68,16 +69,62 @@ public class MethodInliner {
 					continue;
 				}
 
+				if(callee.getDeclaringClass().isEnum() || caller.getDeclaringClass().isEnum()){
+					if(debug){
+						System.out.println("FAILED: Caller or Callee is an ENUM.");
+					}
+					continue;
+				}
+
 				/*
 				We do not consider inner-classes at this time. They are complex corner-cases that are not handled well
 				by Soot's inliner.
 				 */
-				if(caller.getDeclaringClass().getName().contains("$")
-					&& callee.getDeclaringClass().getName().contains("$")){
+				if(!callee.getDeclaringClass().getName().equals(caller.getDeclaringClass().getName())
+					&& (caller.getDeclaringClass().getName().contains("$")
+					|| callee.getDeclaringClass().getName().contains("$"))){
 					if(debug){
 						System.out.println("FAILED: Caller or Callee class is an inner class.");
 					}
 					continue;
+				}
+
+
+				try {
+					callee.retrieveActiveBody();
+					caller.retrieveActiveBody();
+				} catch (Exception e) {
+					//This is a catch all --- if the methods can't be retrieved, we can't inline them.
+					if(debug){
+						System.out.println("FAILED: Cannot retrieve active body for caller or callee.");
+					}
+					continue;
+				}
+
+				/*
+				This checks that if the callee comes from a different class, that it contains no references to inner
+				classes.
+				 */
+
+				if(caller.getDeclaringClass().getName().endsWith(".HandlerList")){
+					System.out.println();
+				}
+
+				if(!caller.getDeclaringClass().equals(callee.getDeclaringClass())) {
+					Set<String> classRefs = classesReferenced(callee.retrieveActiveBody());
+					boolean incompatableRef = false;
+					for (String classRef : classRefs) {
+						if (classRef.startsWith(callee.getDeclaringClass().getName() + "$")) {
+							if (debug) {
+								System.out.println("FAILED: Callee contains reference to inner class field/method.");
+							}
+							incompatableRef = true;
+							break;
+						}
+					}
+					if (incompatableRef) {
+						continue;
+					}
 				}
 
 
@@ -118,17 +165,6 @@ public class MethodInliner {
 				if (toInline.size() != 1) {
 					if(debug){
 						System.out.println("FAILED: More than 1 inline site.");
-					}
-					continue;
-				}
-
-				try {
-					callee.retrieveActiveBody();
-					caller.retrieveActiveBody();
-				} catch (Exception e) {
-					//This is a catch all --- if the methods can't be retrieved, we can't inline them.
-					if(debug){
-						System.out.println("FAILED: Cannot retrieve active body for caller or callee.");
 					}
 					continue;
 				}
@@ -212,6 +248,33 @@ public class MethodInliner {
 				if(sootMethod.equals(callee)){
 					toReturn.add((Stmt) u);
 				}
+			}
+		}
+		return toReturn;
+	}
+
+	private static Set<String> classesReferenced(Body b){
+		Set<String> toReturn = new HashSet<String>();
+		for (Unit u : b.getUnits()) {
+			InvokeExpr invokeExpr = null;
+			if(u instanceof InvokeStmt){
+				invokeExpr = ((InvokeStmt)u).getInvokeExpr();
+			} else if(u instanceof JAssignStmt && ((JAssignStmt)u).containsInvokeExpr()){
+				invokeExpr = ((JAssignStmt) u).getInvokeExpr();
+			}
+
+			if(invokeExpr != null){
+				SootMethod sootMethod = invokeExpr.getMethod();
+				toReturn.add(sootMethod.getDeclaringClass().getName());
+			}
+
+			Stmt s = (Stmt) u;
+			if(s.containsFieldRef()) {
+				FieldRef fr = s.getFieldRef();
+				if(fr.getField().getDeclaringClass().getName().contains("JsonFactory$")){
+					System.out.println();
+				}
+				toReturn.add(fr.getField().getDeclaringClass().getName());
 			}
 		}
 		return toReturn;
