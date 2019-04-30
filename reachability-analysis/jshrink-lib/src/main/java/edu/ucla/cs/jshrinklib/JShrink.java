@@ -553,8 +553,22 @@ public class JShrink {
 		}
 		updateSizes();
 
+		long appSizeBefore = this.getAppSize(true);
+		long libSizeBefore = this.getLibSize(true);
+
 		//Run setup again to return the tests (They may have been corrupted by the Soot class).
 		this.getProjectAnalyser().setup();
+
+		long appSizeAfter = this.getAppSize(true);
+		long libSizeAfter = this.getLibSize(true);
+
+		if(appSizeAfter != appSizeBefore){
+			System.out.println("WARNING: App Size Differs before and after running 'setup'");
+		}
+
+		if(libSizeAfter != libSizeBefore){
+			System.out.println("WARNING: Lib Size Differs before and after running 'setup'");
+		}
 	}
 
 	/*
