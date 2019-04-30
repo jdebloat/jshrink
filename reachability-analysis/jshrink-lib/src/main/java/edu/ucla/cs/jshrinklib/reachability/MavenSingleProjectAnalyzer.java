@@ -526,10 +526,36 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			HashMap<String, HashSet<MethodData>> new_entry_points = new HashMap<String, HashSet<MethodData>>();
 			for(String module : tamiflex.used_methods.keySet()) {
 				HashSet<MethodData> set = new HashSet<MethodData>();
-				for(String record : tamiflex.used_methods.get(module)) {
+				for(Map.Entry<String, Set<String>> entry : tamiflex.used_methods.get(module).entrySet()) {
+					String record = entry.getKey();
 					String[] ss = record.split(": ");
 					String class_name1 = ss[0];
 					String method_signature1 = ss[1];
+
+					Set<MethodData> allMethods = new HashSet<MethodData>();
+					allMethods.addAll(testMethods);
+					allMethods.addAll(appMethods);
+					allMethods.addAll(libMethods);
+
+					Set<MethodData> calledFromMethodData = new HashSet<MethodData>();
+					for(String calledFrom : entry.getValue()){
+						//System.out.println("CALLED FROM: " + calledFrom);
+						String[] calledFromSplit = calledFrom.split("\\.");
+						String calledFromClass = "";
+						for(int i=0; i<calledFromSplit.length -1 ; i++){
+							calledFromClass += calledFromSplit[i];
+							if(i != (calledFromSplit.length -2)){
+								calledFromClass += ".";
+							}
+						}
+						String calledFromMethodName = calledFromSplit[calledFromSplit.length-1];
+						for(MethodData md: allMethods){
+							if(calledFromClass.equals(md.getClassName())
+								&& calledFromMethodName.equals(md.getName())){
+								calledFromMethodData.add(md);
+							}
+						}
+					}
 					
 					boolean foundInApp = false;
 					for(MethodData md : appMethods) {
@@ -544,11 +570,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 								set.add(md);
 								usedAppMethods.put(md, new HashSet<MethodData>());
 								usedAppClasses.add(md.getClassName());
-								foundInApp = true;
-								break;
 							}
+
+							usedAppMethods.get(md).addAll(calledFromMethodData);
+
+							foundInApp = true;
+							break;
 						}
 					}
+
 					
 					if(!foundInApp) {
 						for(MethodData md : libMethods) {
@@ -569,9 +599,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 										usedLibMethodsCompileOnly.put(md, new HashSet<MethodData>());
 										usedLibClasses.add(md.getClassName());
 									}
-									foundInApp = true;
-									break;
 								}
+
+								usedLibMethods.get(md).addAll(calledFromMethodData);
+								if(usedLibMethodsCompileOnly.containsKey(md)){
+									usedLibMethodsCompileOnly.get(md).addAll(calledFromMethodData);
+								}
+
+								foundInApp = true;
+								break;
+
 							}
 						}
 					}
@@ -584,6 +621,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 									usedTestMethods.put(md, new HashSet<MethodData>());
 									usedTestClasses.add(md.getClassName());
 								}
+
+								usedTestMethods.get(md).addAll(calledFromMethodData);
 								foundInApp = true;
 								break;
 							}
