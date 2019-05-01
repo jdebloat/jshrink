@@ -1250,9 +1250,8 @@ public class ApplicationTest {
 
 		Application.main(arguments.toString().split("\\s+"));
 
-		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(0, Application.testOutputBefore.getErrors());
-		assertEquals(10, Application.testOutputAfter.getErrors());
+		assertEquals(7, Application.testOutputAfter.getErrors());
 
 		assertTrue(jarIntact());
 	}

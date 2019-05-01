@@ -610,7 +610,7 @@ public class JShrink {
 					if(verbose) {
 						// we will not update the class since it will cause exceptions when writing out to bytecode based on
 						// the first soot pass. But this may cause a problem when loading or running the unmodified class.
-						System.out.println("Attempting to update an unmodifiable class, " + sootClass.getName() + " in class collapsing.");
+						System.out.println("Attempting to update an unmodifiable class " + sootClass.getName());
 					}
 				} else {
 					ClassFileUtils.writeClass(sootClass, classPaths);
@@ -655,11 +655,19 @@ public class JShrink {
 
 		// modify each Soot class
 		for(String className : toRemoveByClassName.keySet()) {
+			if(unmodifiableClasses.contains(className)) {
+				System.out.println("Attempting to remove a field in an unmodifialbe class " + className);
+			}
 			SootClass sootClass = Scene.v().getSootClass(className);
 			Set<FieldData> unusedFields = toRemoveByClassName.get(className);
 			for(FieldData unusedField : unusedFields) {
 				SootField sootField = null;
 				for(SootField field : sootClass.getFields()) {
+					// comment out the check on serialVersionUID since Tamiflex can detect it
+//					if(field.getName().equals("serialVersionUID")) {
+//						// keep this field since JVM needs this field for serialization and validating serialized objects
+//						continue;
+//					}
 					if(field.getName().equals(unusedField.getName()) && field.getType().toString().equals(unusedField.getType())) {
 						sootField = field;
 						break;
