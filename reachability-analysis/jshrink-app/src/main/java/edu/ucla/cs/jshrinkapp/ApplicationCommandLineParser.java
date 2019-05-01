@@ -168,6 +168,15 @@ public class ApplicationCommandLineParser {
 		this.testOutput = commandLine.hasOption("T");
 		this.skipMethodRemoval = commandLine.hasOption("S");
 		this.removeFields = commandLine.hasOption("F");
+
+		if(this.removeFields && this.skipMethodRemoval){
+			throw new ParseException("Cannot Remove fields while skipping method removal.");
+		}
+
+		if(this.classCollapse && this.skipMethodRemoval){
+			throw new ParseException("Cannot Collapse classes while skipping method removal.");
+		}
+
 		if(commandLine.hasOption("L")){
 			File directory = new File(commandLine.getOptionValue("L"));
 			if(!directory.exists()){

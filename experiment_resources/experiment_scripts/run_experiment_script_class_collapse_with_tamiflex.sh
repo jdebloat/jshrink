@@ -44,7 +44,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 3 hour timeout
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --skip-method-removal --class-collapser --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --class-collapser --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -74,7 +74,7 @@ cat ${WORK_LIST} |  while read item; do
 		custom_entry=""
 		is_app_prune="1"
 		tamiflex="1"
-		remove_methods="0"
+		remove_methods="1"
 		method_inliner="0"
 		class_collapser="1"
 		parameter_removal="0"

@@ -156,52 +156,6 @@ public class Application {
 		Set<FieldData> appFieldsRemoved = new HashSet<FieldData>();
 		Set<FieldData> libFieldsRemoved = new HashSet<FieldData>();
 
-		//Run the method inliner.
-		if (commandLineParser.inlineMethods()) {
-			if(commandLineParser.isVerbose()){
-				System.out.println("Inlining inlinable methods...");
-			}
-			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
-
-			//Remove all the methods that have been inlined
-			for(MethodData methodInlined : inlineData.getInlineLocations().keySet()){
-				if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(methodInlined))
-					,commandLineParser.removeClasses()).isEmpty()) {
-					if (allAppMethodsBefore.contains(methodInlined)) {
-						appMethodsRemoved.add(methodInlined);
-					} else if (allLibMethodsBefore.contains(methodInlined)) {
-						libMethodsRemoved.add(methodInlined);
-					}
-				}
-			}
-
-			removedClasses.addAll(jShrink.classesToRemove());
-			jShrink.updateClassFiles();
-			if(commandLineParser.isVerbose()){
-				System.out.println("Done inlining inlinable methods!");
-			}
-		}
-
-		//Run the class collapser.
-		if (commandLineParser.collapseClasses()) {
-			if(commandLineParser.isVerbose()){
-				System.out.println("Collapsing collapsable classes...");
-			}
-			classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true);
-
-			//Update our sets to note what has been removed.
-			appMethodsRemoved.addAll(classCollapserData.getRemovedMethods());
-			libMethodsRemoved.addAll(classCollapserData.getRemovedMethods());
-			appMethodsRemoved.retainAll(allAppMethodsBefore);
-			libMethodsRemoved.retainAll(allLibMethodsBefore);
-
-			removedClasses.addAll(jShrink.classesToRemove());
-			jShrink.updateClassFiles();
-			if(commandLineParser.isVerbose()){
-				System.out.println("Done collapsing collapsable classes!");
-			}
-		}
-
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
 			if(commandLineParser.isVerbose()){
@@ -274,34 +228,81 @@ public class Application {
 			}
 
 			removedClasses.addAll(jShrink.classesToRemove());
-			jShrink.updateClassFiles();
+
 			if(commandLineParser.isVerbose()){
 				System.out.println("Done removing unused methods!");
 			}
+
+			//Run the field removal
+			if(commandLineParser.removedFields()) {
+				if(commandLineParser.isVerbose()){
+					System.out.println("Removing unused fields...");
+				}
+				Set<FieldData> libFieldsToRemove = new HashSet<FieldData>();
+				libFieldsToRemove.addAll(jShrink.getAllLibFields());
+				libFieldsToRemove.removeAll(jShrink.getUsedLibFields());
+				libFieldsRemoved.addAll(jShrink.removeFields(libFieldsToRemove));
+				removedFields.addAll(libFieldsRemoved);
+
+				if(commandLineParser.isPruneAppInstance()) {
+					Set<FieldData> appFieldsToRemove = new HashSet<FieldData>();
+					appFieldsToRemove.addAll(jShrink.getAllAppFields());
+					appFieldsToRemove.removeAll(jShrink.getUsedAppFields());
+					appFieldsRemoved.addAll(jShrink.removeFields(appFieldsToRemove));
+					removedFields.addAll(appFieldsRemoved);
+				}
+
+				if(commandLineParser.isVerbose()){
+					System.out.println("Done removing unused fields!");
+				}
+			}
+
+			//Run the class collapser.
+			if (commandLineParser.collapseClasses()) {
+				if(commandLineParser.isVerbose()){
+					System.out.println("Collapsing collapsable classes...");
+				}
+				classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true);
+
+				//Update our sets to note what has been removed.
+				appMethodsRemoved.addAll(classCollapserData.getRemovedMethods());
+				libMethodsRemoved.addAll(classCollapserData.getRemovedMethods());
+				appMethodsRemoved.retainAll(allAppMethodsBefore);
+				libMethodsRemoved.retainAll(allLibMethodsBefore);
+
+				removedClasses.addAll(jShrink.classesToRemove());
+				if(commandLineParser.isVerbose()){
+					System.out.println("Done collapsing collapsable classes!");
+				}
+			}
+			jShrink.updateClassFiles();
 		}
 
-		if(commandLineParser.removedFields()) {
+
+		//Run the method inliner.
+		if (commandLineParser.inlineMethods()) {
 			if(commandLineParser.isVerbose()){
-				System.out.println("Removing unused fields...");
+				System.out.println("Inlining inlinable methods...");
 			}
-			Set<FieldData> libFieldsToRemove = new HashSet<FieldData>();
-			libFieldsToRemove.addAll(jShrink.getAllLibFields());
-			libFieldsToRemove.removeAll(jShrink.getUsedLibFields());
-			libFieldsRemoved.addAll(jShrink.removeFields(libFieldsToRemove));
-			removedFields.addAll(libFieldsRemoved);
+			inlineData = jShrink.inlineMethods(commandLineParser.isPruneAppInstance(), true);
 
-			if(commandLineParser.isPruneAppInstance()) {
-				Set<FieldData> appFieldsToRemove = new HashSet<FieldData>();
-				appFieldsToRemove.addAll(jShrink.getAllAppFields());
-				appFieldsToRemove.removeAll(jShrink.getUsedAppFields());
-				appFieldsRemoved.addAll(jShrink.removeFields(appFieldsToRemove));
-				removedFields.addAll(appFieldsRemoved);
+			//Remove all the methods that have been inlined
+			for(MethodData methodInlined : inlineData.getInlineLocations().keySet()){
+				if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(methodInlined))
+					,commandLineParser.removeClasses()).isEmpty()) {
+					if (allAppMethodsBefore.contains(methodInlined)) {
+						appMethodsRemoved.add(methodInlined);
+					} else if (allLibMethodsBefore.contains(methodInlined)) {
+						libMethodsRemoved.add(methodInlined);
+					}
+				}
 			}
 
+			removedClasses.addAll(jShrink.classesToRemove());
+			if(commandLineParser.isVerbose()){
+				System.out.println("Done inlining inlinable methods!");
+			}
 			jShrink.updateClassFiles();
-			if(commandLineParser.isVerbose()){
-				System.out.println("Done removing unused fields!");
-			}
 		}
 
 		toLog.append("app_num_methods_after," +
