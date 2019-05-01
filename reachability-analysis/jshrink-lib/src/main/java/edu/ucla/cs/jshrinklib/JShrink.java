@@ -663,10 +663,11 @@ public class JShrink {
 			for(FieldData unusedField : unusedFields) {
 				SootField sootField = null;
 				for(SootField field : sootClass.getFields()) {
-					if(field.getName().equals("serialVersionUID")) {
-						// keep this field since JVM needs this field for serialization and validating serialized objects
-						continue;
-					}
+					// comment out the check on serialVersionUID since Tamiflex can detect it
+//					if(field.getName().equals("serialVersionUID")) {
+//						// keep this field since JVM needs this field for serialization and validating serialized objects
+//						continue;
+//					}
 					if(field.getName().equals(unusedField.getName()) && field.getType().toString().equals(unusedField.getType())) {
 						sootField = field;
 						break;
