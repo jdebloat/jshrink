@@ -1243,16 +1243,17 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
-		arguments.append("--remove-fields ");
 		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--test-output ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
-		assertEquals(0, Application.testOutputBefore.getErrors());
-		assertEquals(10, Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 
 		assertTrue(jarIntact());
 	}
