@@ -156,6 +156,43 @@ public class Application {
 		Set<FieldData> appFieldsRemoved = new HashSet<FieldData>();
 		Set<FieldData> libFieldsRemoved = new HashSet<FieldData>();
 
+		//Keeping a note of these to add to the verbose log
+		Set<MethodData> appMethodsUsed = new HashSet<MethodData>();
+		Set<MethodData> libMethodsUsed = new HashSet<MethodData>();
+		Set<MethodData> appMethodsUnused = new HashSet<MethodData>();
+		Set<MethodData> libMethodsUnused = new HashSet<MethodData>();
+		Set<String> appClassesUsed = new HashSet<String>();
+		Set<String> libClassesUsed = new HashSet<String>();
+		Set<String> appClassesUnused = new HashSet<String>();
+		Set<String> libClassesUnused = new HashSet<String>();
+		Set<FieldData> appFieldsUsed = new HashSet<FieldData>();
+		Set<FieldData> libFieldsUsed = new HashSet<FieldData>();
+		Set<FieldData> appFieldsUnused = new HashSet<FieldData>();
+		Set<FieldData> libFieldsUnused = new HashSet<FieldData>();
+
+		appMethodsUsed.addAll(jShrink.getUsedAppMethods());
+		libMethodsUsed.addAll(jShrink.getUsedLibMethods());
+		appMethodsUnused.addAll(jShrink.getAllAppMethods());
+		appMethodsUnused.removeAll(appMethodsUsed);
+		libMethodsUnused.addAll(jShrink.getAllLibMethods());
+		libMethodsUnused.removeAll(libMethodsRemoved);
+
+
+		appClassesUsed.addAll(jShrink.getUsedAppClasses());
+		libClassesUsed.addAll(jShrink.getUsedLibClasses());
+		appClassesUnused.addAll(jShrink.getAllAppClasses());
+		appClassesUnused.removeAll(appClassesUsed);
+		libClassesUnused.addAll(jShrink.getAllLibClasses());
+		libClassesUnused.removeAll(libClassesUsed);
+
+		appFieldsUsed.addAll(jShrink.getUsedAppFields());
+		libFieldsUsed.addAll(jShrink.getUsedLibFields());
+		appFieldsUnused.addAll(jShrink.getAllAppFields());
+		appFieldsUnused.removeAll(appFieldsUsed);
+		libFieldsUnused.addAll(jShrink.getAllLibFields());
+		libFieldsUnused.removeAll(libFieldsUnused);
+
+
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
 			if(commandLineParser.isVerbose()){
@@ -327,10 +364,70 @@ public class Application {
 		removedMethods.addAll(appMethodsRemoved);
 		removedMethods.addAll(libMethodsRemoved);
 
+
+		//Populate the verboseLog
+		StringBuilder toLogVerbose = new StringBuilder();
+		for(MethodData methodData : appMethodsUsed){
+			toLogVerbose.append("APP_METHOD_USED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(MethodData methodData : libMethodsUsed){
+			toLogVerbose.append("Lib_METHOD_USED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(MethodData methodData : appMethodsUnused){
+			toLogVerbose.append("APP_METHOD_UNUSED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(MethodData methodData : libMethodsUnused){
+			toLogVerbose.append("LIB_METHOD_UNUSED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(String cls: appClassesUsed){
+			toLogVerbose.append("APP_CLASS_USED," + cls + System.lineSeparator());
+		}
+
+		for(String cls: libClassesUsed){
+			toLogVerbose.append("LIB_CLASS_USED," + cls + System.lineSeparator());
+		}
+
+		for(String cls: appClassesUnused){
+			toLogVerbose.append("APP_CLASS_UNUSED," + cls + System.lineSeparator());
+		}
+
+		for(String cls: libClassesUnused){
+			toLogVerbose.append("LIB_CLASS_UNUSED," + cls + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : appFieldsUsed){
+			toLogVerbose.append("APP_FIELD_USED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : libFieldsUsed){
+			toLogVerbose.append("LIB_FIELD_USED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : appFieldsUnused){
+			toLogVerbose.append("APP_FIELD_UNUSED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : libFieldsUnused){
+			toLogVerbose.append("LIB_FIELD_UNUSED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		for(MethodData methodData : appMethodsRemoved){
+			toLogVerbose.append("APP_METHOD_REMOVED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(MethodData methodData : libMethodsRemoved){
+			toLogVerbose.append("LIB_METHOD_REMOVED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+
 		long endTime = System.nanoTime();
 		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
 
-		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(),
+		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
 			testOutputBefore.getTestOutputText(), testOutputAfter.getTestOutputText());
 
 		if(commandLineParser.isVerbose()){
@@ -338,13 +435,18 @@ public class Application {
 		}
 	}
 
-	private static void outputToLogDirectory(File directory, String log,
+	private static void outputToLogDirectory(File directory, String log, String verboseLog,
 	                                         String testOutputBefore, String testOutputAfter){
 
 		try {
 			FileWriter fileWriter =
 				new FileWriter(directory.getAbsolutePath() + File.separator + "log.dat");
 			fileWriter.write(log);
+			fileWriter.close();
+
+			fileWriter =
+				new FileWriter(directory.getAbsolutePath() + File.separator + "verbose_log.dat");
+			fileWriter.write(verboseLog);
 			fileWriter.close();
 
 			fileWriter =
