@@ -105,7 +105,7 @@ google_google-http-java-client,ISSUE_#32
 tomighty_tomighty,DONE
 datastax_java-driver,ISSUE_#34
 facebook_nifty,ISSUE_#47
-protostuff_protostuff,DONE
+protostuff_protostuff,BUILD_FAILURE
 royclarkson_spring-rest-service-oauth,TIMEOUT
 alibaba_TProfiler,DONE
 shopizer-ecommerce_shopizer,TIMEOUT
