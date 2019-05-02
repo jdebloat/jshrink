@@ -37,9 +37,6 @@ public class ClassCollapser {
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
             String fromName = collapse.get(0);
             String toName = collapse.get(1);
-            if(toName.equals("org.reactivestreams.Subscriber")) {
-                System.out.println("caught you!");
-            }
             if (!nameToSootClass.containsKey(fromName)) {
                 nameToSootClass.put(fromName, Scene.v().loadClassAndSupport(fromName));
             }
@@ -367,10 +364,6 @@ public class ClassCollapser {
     **/
     boolean changeClassNamesInClass(SootClass c, SootClass changeFrom, SootClass changeTo) {
         assert c != changeFrom;
-
-        if(c.getName().equals("com.fasterxml.jackson.databind.DeserializationContext") && changeFrom.getName().equals("com.fasterxml.jackson.databind.deser.DefaultDeserializationContext")) {
-            System.out.println("Caught you");
-        }
 
         boolean changed = false;
         if (c.hasSuperclass() && c.getSuperclass().getName().equals(changeFrom.getName())) {

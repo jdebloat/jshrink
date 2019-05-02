@@ -215,4 +215,36 @@ public class ASMClassVisitorTest {
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testVisitStaticFieldReference() {
+        ClassLoader classLoader = ASMClassVisitorTest.class.getClassLoader();
+        String pathToClassFile = classLoader.getResource("BeanConverterConfig.class").getFile();
+        Set<String> classes = new HashSet<String>();
+        Set<MethodData> methods = new HashSet<MethodData>();
+        Set<FieldData> fields = new HashSet<FieldData>();
+        Map<MethodData, Set<FieldData>> fieldRefs = new HashMap<MethodData, Set<FieldData>>();
+        Map<MethodData, Set<MethodData>> virtualCalls = new HashMap<MethodData, Set<MethodData>>();
+        try {
+            FileInputStream fis = new FileInputStream(pathToClassFile);
+            ClassReader cr = new ClassReader(fis);
+            ASMClassVisitor cv = new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldRefs, virtualCalls);
+            cr.accept(cv, ClassReader.SKIP_DEBUG);
+            fis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(8, methods.size());
+        assertEquals(2, fields.size());
+
+        FieldData staticField = new FieldData("BEANS_BY_CLASSLOADER", "com.blade.jdbc.model.BeanConverterConfig", true, "com.blade.jdbc.model.ContextClassLoaderLocal");
+        assertTrue(fields.contains(staticField));
+        for(MethodData method : fieldRefs.keySet()) {
+            Set<FieldData> fieldRefsInMethod = fieldRefs.get(method);
+            if(method.getName().equals("setInstance")) {
+                assertTrue(fieldRefsInMethod.contains(staticField));
+            }
+        }
+    }
 }
