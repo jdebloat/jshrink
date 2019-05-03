@@ -7,7 +7,7 @@ DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
-TIMEOUT=10800 #3 hours
+TIMEOUT=36000 #10 hours
 OUTPUT_LOG_DIR="${PWD}/method_removal_with_tamiflex_specialized_entry_points_output_log"
 
 if [ ! -f "${JAVA}" ]; then
@@ -48,7 +48,7 @@ cat ${WORK_LIST} |  while read entry; do
 	PUBLIC_ENTRY=0
 	MAIN_ENTRY=0
 
-	#A 3 hour timeout
+	#A 10 hour timeout
 	if [[ "${entry_point}" == "PUBLIC" ]]; then
 		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
 		PUBLIC_ENTRY=1 
