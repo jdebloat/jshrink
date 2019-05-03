@@ -7,7 +7,7 @@ DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
-TIMEOUT=10800 #3 hours
+TIMEOUT=36000 #10 hours   
 OUTPUT_LOG_DIR="${PWD}/class_collapser_with_tamiflex_output_log"
 
 if [ ! -f "${JAVA}" ]; then
@@ -43,7 +43,7 @@ cat ${WORK_LIST} |  while read item; do
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	#A 3 hour timeout
+	#A 10 hour timeout
 	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --class-collapser --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
