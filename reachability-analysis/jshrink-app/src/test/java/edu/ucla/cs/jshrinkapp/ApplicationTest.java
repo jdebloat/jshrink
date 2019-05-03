@@ -32,8 +32,8 @@ public class ApplicationTest {
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
 	private static Optional<File> logDirectory = Optional.empty();
 
-	protected static File getOptionalFile(Optional<File> optionalFile, String resources){
-		if(optionalFile.isPresent()){
+	protected static File getOptionalFile(Optional<File> optionalFile, String resources) {
+		if (optionalFile.isPresent()) {
 			return optionalFile.get();
 		}
 		ClassLoader classLoader = ApplicationTest.class.getClassLoader();
@@ -47,7 +47,7 @@ public class ApplicationTest {
 			FileUtils.copyDirectory(f, copy);
 
 			optionalFile = Optional.of(copy);
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -55,41 +55,41 @@ public class ApplicationTest {
 		return optionalFile.get();
 	}
 
-	protected File getTamiFlexJar(){
+	protected File getTamiFlexJar() {
 		File toReturn = new File(
 				ApplicationTest.class.getClassLoader().getResource(
 						"tamiflex" + File.separator + "poa-2.0.3.jar").getFile());
 		return toReturn;
 	}
 
-	private static File getSimpleTestProjectDir(){
+	private static File getSimpleTestProjectDir() {
 		return getOptionalFile(simpleTestProject, "simple-test-project");
 	}
 
-	private boolean jarIntact(){
-		if(simpleTestProject.isPresent()){
+	private boolean jarIntact() {
+		if (simpleTestProject.isPresent()) {
 			File f = new File(simpleTestProject.get().getAbsolutePath()
-				+ File.pathSeparator + "libs" + File.pathSeparator + "standard-stuff-library.jar");
+					+ File.pathSeparator + "libs" + File.pathSeparator + "standard-stuff-library.jar");
 			return f.exists() && !f.isDirectory();
 		}
 
 		return true;
-    }
+	}
 
 	private File getModuleProjectDir() {
 		return getOptionalFile(moduleTestProject, "module-test-project");
 	}
 
-	private File getReflectionProjectDir(){
+	private File getReflectionProjectDir() {
 		return getOptionalFile(reflectionTestProject, "reflection-test-project");
 	}
 
-	private File getJunitProjectDir(){
+	private File getJunitProjectDir() {
 		return getOptionalFile(junitProject, "junit4");
 	}
 
-	private File getLogDirectory(){
-		if(logDirectory.isPresent()){
+	private File getLogDirectory() {
+		if (logDirectory.isPresent()) {
 			return this.getLogDirectory();
 		}
 
@@ -98,7 +98,7 @@ public class ApplicationTest {
 			lDirectory.delete();
 
 			logDirectory = Optional.of(lDirectory);
-		}catch(IOException e){
+		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -106,12 +106,12 @@ public class ApplicationTest {
 		return logDirectory.get();
 	}
 
-	private File getSimpleClassCollapserDir(){
+	private File getSimpleClassCollapserDir() {
 		return getOptionalFile(simpleClassCollapserProject, "classcollapser"
-			+ File.separator + "simple-collapse-example");
+				+ File.separator + "simple-collapse-example");
 	}
 
-	private File getOverriddenFieldClassCollapserDir(){
+	private File getOverriddenFieldClassCollapserDir() {
 		return getOptionalFile(overridenFieldClassCollapserProject, "classcollapser"
 				+ File.separator + "override-field-example");
 	}
@@ -121,11 +121,11 @@ public class ApplicationTest {
 				+ File.separator + "method-name-conflict-example");
 	}
 
-	private File getLambdaAppProject(){
+	private File getLambdaAppProject() {
 		return getOptionalFile(lambdaProject, "lambda-test-project");
 	}
 
-	private File getDynamicDispatchingProject(){
+	private File getDynamicDispatchingProject() {
 		return getOptionalFile(dynamicDispatchingProject, "dynamic-dispatching-test-project");
 	}
 
@@ -142,9 +142,9 @@ public class ApplicationTest {
 	}
 
 
-	private boolean isPresent(Set<MethodData> methodsRemoved, String className, String methodName){
-		for(MethodData methodData : methodsRemoved){
-			if(methodData.getClassName().equals(className) && methodData.getName().equals(methodName)){
+	private boolean isPresent(Set<MethodData> methodsRemoved, String className, String methodName) {
+		for (MethodData methodData : methodsRemoved) {
+			if (methodData.getClassName().equals(className) && methodData.getName().equals(methodName)) {
 				return true;
 			}
 		}
@@ -170,7 +170,7 @@ public class ApplicationTest {
 	*/
 
 	@Test
-	public void mainTest_targetMainEntryPoint(){
+	public void mainTest_targetMainEntryPoint() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -191,33 +191,33 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
 		assertTrue(classesRemoved.contains("StandardStuffSub"));
@@ -227,7 +227,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void mainTest_targetMainEntryPoint_withSpark(){
+	public void mainTest_targetMainEntryPoint_withSpark() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -248,28 +248,28 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
@@ -284,7 +284,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void mainTest_targetTestEntryPoints(){
+	public void mainTest_targetTestEntryPoints() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -303,46 +303,46 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
 		//(Method is untouched by too small to remove)
 //		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertTrue(isPresent(methodsRemoved,"Main","main"));
+		assertTrue(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main$1", "compare"));
 
 
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
 		assertEquals(2, classesRemoved.size());
 
-        assertTrue(jarIntact());
+		assertTrue(jarIntact());
 	}
 
 	@Test
-	public void mainTest_targetPublicEntryPoints(){
+	public void mainTest_targetPublicEntryPoints() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -360,40 +360,40 @@ public class ApplicationTest {
 		assertTrue(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertEquals(0, classRemoved.size());
 
-        assertTrue(jarIntact());
+		assertTrue(jarIntact());
 	}
 
 	@Test
-	public void mainTest_targetAllEntryPoints(){
+	public void mainTest_targetAllEntryPoints() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -413,41 +413,41 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertTrue(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertEquals(0, classRemoved.size());
 
-        assertTrue(jarIntact());
+		assertTrue(jarIntact());
 	}
 
 	@Test
-	public void mainTest_targetAllEntryPoints_withTamiFlex(){
+	public void mainTest_targetAllEntryPoints_withTamiFlex() {
 		/*
 		Note: There is actually no reflection in this target, i just want to ensure reflection isn't making anything
 		crash.
@@ -472,28 +472,28 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertTrue(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
@@ -506,8 +506,9 @@ public class ApplicationTest {
 	}
 
 
-	@Ignore @Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
-	public void mainTest_targetCustomEntryPoint(){
+	@Ignore
+	@Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
+	public void mainTest_targetCustomEntryPoint() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -521,43 +522,43 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertTrue(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertTrue(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertTrue(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertTrue(isPresent(methodsRemoved, "Main", "main"));
 		assertTrue(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
-			"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
 
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.UnusedClass"));
 		assertTrue(classesRemoved.contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertEquals(2, classesRemoved.size());
 
-        assertTrue(jarIntact());
+		assertTrue(jarIntact());
 	}
 
 	@Test
-	public void mavenTest_mainMethodEntry_withOutTamiFlex(){
+	public void mavenTest_mainMethodEntry_withOutTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
@@ -571,23 +572,23 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "touchedViaReflection"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
@@ -601,9 +602,9 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-	@Test 
+	@Test
 //	@Ignore
-	public void mavenTest_mainMethodEntry_withTamiFlex(){
+	public void mavenTest_mainMethodEntry_withTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getModuleProjectDir().getAbsolutePath() + "\" ");
@@ -619,24 +620,24 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
 		assertFalse(isPresent(methodsRemoved, "StandardStuff", "touchedViaReflection"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
 
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
@@ -650,8 +651,9 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-	@Test @Ignore //We don't support "--ignore-classes" for now
-	public void ignoreClassTest(){
+	@Test
+	@Ignore //We don't support "--ignore-classes" for now
+	public void ignoreClassTest() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -664,7 +666,7 @@ public class ApplicationTest {
 		try {
 			Method method = ApplicationTest.class.getMethod("ignoreClassTest");
 			Object o = method.invoke(null);
-		}catch(Exception e){
+		} catch (Exception e) {
 
 		}
 
@@ -673,23 +675,23 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertFalse(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertFalse(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertFalse(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
@@ -703,7 +705,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void reflectionTest_mainMethodEntry_withTamiFlex(){
+	public void reflectionTest_mainMethodEntry_withTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
@@ -719,22 +721,22 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
 		assertFalse(isPresent(methodsRemoved, "ReflectionStuff", "touchedViaReflection"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
@@ -750,7 +752,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void reflectionTest_mainMethodEntry_withoutTamiFlex(){
+	public void reflectionTest_mainMethodEntry_withoutTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getReflectionProjectDir().getAbsolutePath() + "\" ");
@@ -763,22 +765,22 @@ public class ApplicationTest {
 		Set<MethodData> methodsRemoved = Application.removedMethods;
 		Set<String> classesRemoved = Application.removedClasses;
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
 		assertTrue(isPresent(methodsRemoved, "ReflectionStuff", "touchedViaReflection"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
 		assertTrue(isPresent(methodsRemoved,
@@ -790,7 +792,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void junit_test(){
+	public void junit_test() {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -811,7 +813,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void junit_test_log_in_home_directory(){
+	public void junit_test_log_in_home_directory() {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -833,7 +835,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void junit_test_methodinliner(){
+	public void junit_test_methodinliner() {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -887,7 +889,7 @@ public class ApplicationTest {
 	public void test_junit_test_failures() {
 		String junit_project_path = getJunitProjectDir().getAbsolutePath();
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
-		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[] {}, true, false);
+		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false, false);
@@ -897,7 +899,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void test_handling_virtually_invoked_methods(){
+	public void test_handling_virtually_invoked_methods() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getDynamicDispatchingProject().getAbsolutePath() + "\" ");
@@ -918,8 +920,9 @@ public class ApplicationTest {
 		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
-	@Test @Ignore
-	public void lambdaMethodTest(){
+	@Test
+	@Ignore
+	public void lambdaMethodTest() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getLambdaAppProject() + "\" ");
@@ -937,12 +940,13 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
 		assertFalse(isPresent(methodsRemoved, "StandardStuff", "isEven"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
+		assertFalse(isPresent(methodsRemoved, "Main", "isNegativeNumber"));
 	}
 
-	@Test @Ignore
-	public void lambdaMethodTest_full(){
+	@Test
+	@Ignore
+	public void lambdaMethodTest_full() {
 		/*
 		This test fails do to Soot which cannot properly process convert SootClass to .java files which contain Lambda
 		expressions. I've set it to ignore for the time being as it's not something we can presently fix.
@@ -964,14 +968,14 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
 		assertFalse(isPresent(methodsRemoved, "StandardStuff", "isEven"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
-		assertFalse(isPresent(methodsRemoved,"Main","isNegativeNumber"));
-		assertTrue(isPresent(methodsRemoved,"Main","methodNotUsed"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
+		assertFalse(isPresent(methodsRemoved, "Main", "isNegativeNumber"));
+		assertTrue(isPresent(methodsRemoved, "Main", "methodNotUsed"));
 		assertEquals(0, methodsRemoved.size());
 	}
 
 	@Test
-	public void inlineMethodTest() throws IOException{
+	public void inlineMethodTest() throws IOException {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -984,32 +988,32 @@ public class ApplicationTest {
 		InlineData methodsInlined = Application.inlineData;
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(TestUtils.getMethodDataFromSignature(
-			"<StandardStuff$NestedClass: void nestedClassMethodCallee()>")));
-		assertEquals(1,methodsInlined.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")).size());
+				"<StandardStuff$NestedClass: void nestedClassMethodCallee()>")));
+		assertEquals(1, methodsInlined.getInlineLocations()
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>")).size());
 		Assert.assertTrue(methodsInlined.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>"))
-			.contains(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: public void nestedClassMethod()>")));
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: void nestedClassMethodCallee()>"))
+				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: public void nestedClassMethod()>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+				TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")).size());
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")).size());
 		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>"))
-			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-			TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
+				TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
 		assertEquals(1, methodsInlined.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")).size());
+				.get(TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")).size());
 		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>"))
-			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(jarIntact());
 	}
 
 	@Test
-	public void classCollapserTest(){
+	public void classCollapserTest() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getSimpleClassCollapserDir().getAbsolutePath() + "\" ");
@@ -1024,14 +1028,15 @@ public class ApplicationTest {
 
 		ClassCollapserData classCollapserData = Application.classCollapserData;
 
-		assertEquals(1, classCollapserData.getClassesToRemove().size());
+		assertEquals(2, classCollapserData.getClassesToRemove().size());
 		assertTrue(classCollapserData.getClassesToRemove().contains("B"));
+		assertTrue(classCollapserData.getClassesToRemove().contains("C"));
 
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "Main", "main"));
 		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "<init>"));
 		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "saySomething"));
 		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "uniqueToC"));
-		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B","<init>"));
+		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "<init>"));
 		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "uniqueToB"));
 		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "saySomething"));
 		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "uniqueToB"));
@@ -1053,7 +1058,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getOverriddenFieldClassCollapserDir().getAbsolutePath() + "\" ");
 		arguments.append("--test-entry ");
-		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
 		arguments.append("--verbose ");
 		arguments.append("-T ");
@@ -1080,7 +1085,7 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getMethodNameConflictClassCollapserDir().getAbsolutePath() + "\" ");
 		arguments.append("--test-entry ");
-		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
 		arguments.append("--verbose ");
 		arguments.append("-T ");
@@ -1103,7 +1108,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void mainTest_targetMainEntryPoint_classCollapser(){
+	public void mainTest_targetMainEntryPoint_classCollapser() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
@@ -1122,28 +1127,28 @@ public class ApplicationTest {
 		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
 		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
 
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getStringStatic"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","getString"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff","<init>"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff", "doNothing"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicAndTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouched"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","publicNotTestedButUntouchedCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff","privateAndUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
 		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethod"));
-		assertFalse(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassMethodCallee"));
-		assertTrue(isPresent(methodsRemoved,"StandardStuff$NestedClass","nestedClassNeverTouched"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","getNumber"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","untouchedGetNumber"));
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
 		assertTrue(isPresent(methodsRemoved,
-				"edu.ucla.cs.onr.test.LibraryClass","privateUntouchedGetNumber"));
-		assertFalse(isPresent(methodsRemoved,"edu.ucla.cs.onr.test.LibraryClass","<init>"));
-		assertFalse(isPresent(methodsRemoved,"Main","main"));
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
 		assertTrue(isPresent(methodsRemoved,
 				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
@@ -1157,14 +1162,14 @@ public class ApplicationTest {
 		assertTrue(jarIntact());
 	}
 
-    private boolean isFieldPresent(Set<FieldData> fieldSet, String className, String fieldName){
-        for(FieldData fieldData : fieldSet){
-            if(fieldData.getClassName().equals(className) && fieldData.getName().equals(fieldName)){
-                return true;
-            }
-        }
-        return false;
-    }
+	private boolean isFieldPresent(Set<FieldData> fieldSet, String className, String fieldName) {
+		for (FieldData fieldData : fieldSet) {
+			if (fieldData.getClassName().equals(className) && fieldData.getName().equals(fieldName)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * This test case aims to test the field removal function only without interacting with other transformations.
@@ -1175,29 +1180,29 @@ public class ApplicationTest {
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
-        arguments.append("--test-entry ");
+		arguments.append("--test-entry ");
 		arguments.append("--remove-fields ");
-        arguments.append("--skip-method-removal ");
-        arguments.append("--test-output ");
+		arguments.append("--skip-method-removal ");
+		arguments.append("--test-output ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
-        Set<FieldData> fieldsRemoved = Application.removedFields;
+		Set<FieldData> fieldsRemoved = Application.removedFields;
 
-        assertEquals(4, fieldsRemoved.size());
-        // though the following fields are referened in the source code, they are inlined by Java compiler in the bytecode
-        // so they are not used in bytecode
-        assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "HELLO_WORLD_STRING"));
-        assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "GOODBYE_STRING"));
-        assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "x"));
-        assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "y"));
+		assertEquals(4, fieldsRemoved.size());
+		// though the following fields are referened in the source code, they are inlined by Java compiler in the bytecode
+		// so they are not used in bytecode
+		assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "HELLO_WORLD_STRING"));
+		assertTrue(isFieldPresent(fieldsRemoved, "StandardStuff", "GOODBYE_STRING"));
+		assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "x"));
+		assertTrue(isFieldPresent(fieldsRemoved, "edu.ucla.cs.onr.test.LibraryClass2", "y"));
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
 		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
 		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 
-        assertTrue(jarIntact());
+		assertTrue(jarIntact());
 	}
 
 	@Test
@@ -1212,7 +1217,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--remove-fields ");
-		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--test-output ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
@@ -1236,7 +1241,7 @@ public class ApplicationTest {
 	 * Check how many test failures there will be when running our tool on JUnit without enabling TamiFlex
 	 */
 	@Test
-	public void runFieldRemovalOnJUnitWithoutTamiFlex(){
+	public void runFieldRemovalOnJUnitWithoutTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
@@ -1244,7 +1249,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-fields ");
-		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--test-output ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
@@ -1259,33 +1264,8 @@ public class ApplicationTest {
 	/**
 	 * After enabling TamiFlex, there should be no test failure after removing unused fields.
 	 */
-    @Test
-    public void runFieldRemovalOnJUnitWithTamiFlex(){
-        //This test ensures that all test cases pass before and after the tool is run
-        StringBuilder arguments = new StringBuilder();
-        arguments.append("--prune-app ");
-        arguments.append("--maven-project \"" + getJunitProjectDir() + "\" ");
-        arguments.append("--main-entry ");
-        arguments.append("--test-entry ");
-		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--public-entry ");
-        arguments.append("--remove-fields ");
-		arguments.append("--skip-method-removal ");
-        arguments.append("--test-output ");
-	    arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
-
-        Application.main(arguments.toString().split("\\s+"));
-
-        assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
-        assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
-        assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
-        assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
-
-		assertTrue(jarIntact());
-    }
-
 	@Test
-	public void runMethodRemovalAndFieldRemovalOnJUnitWithTamiFlex(){
+	public void runFieldRemovalOnJUnitWithTamiFlex() {
 		//This test ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -1297,6 +1277,7 @@ public class ApplicationTest {
 		arguments.append("--remove-fields ");
 		arguments.append("--remove-methods ");
 		arguments.append("--test-output ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
 

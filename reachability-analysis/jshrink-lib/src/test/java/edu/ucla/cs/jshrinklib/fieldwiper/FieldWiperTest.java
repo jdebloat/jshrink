@@ -38,7 +38,7 @@ public class FieldWiperTest {
         String before = TestUtils.runClass(sootClass);
         // remove the unused field, f2 in SimpleClass.java
         SootField field = sootClass.getField("f2", RefType.v("java.lang.String"));
-        FieldWiper.removeField(field);
+        FieldWiper.removeField(field, true);
         assertEquals(1, sootClass.getFieldCount());
         // the output should still be the same
         String after = TestUtils.runClass(sootClass);
@@ -53,7 +53,7 @@ public class FieldWiperTest {
         String before = TestUtils.runClass(sootClass);
         SootClass superClass = getSootClassFromResources("SimpleClass");
         SootField unusedField = superClass.getField("f2", RefType.v("java.lang.String"));
-        FieldWiper.removeField(unusedField);
+        FieldWiper.removeField(unusedField, true);
         assertEquals(1, superClass.getFieldCount());
         // the output should still be the same
         String after = TestUtils.runClass(sootClass);

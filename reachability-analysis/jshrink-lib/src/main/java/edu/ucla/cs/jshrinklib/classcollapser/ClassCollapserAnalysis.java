@@ -115,7 +115,18 @@ public class ClassCollapserAnalysis {
                     collapseList.addLast(collapse);
                     nameChangeList.put(child, singleParent);
                     usedAppClasses.add(singleParent);
-                    removeList.add(child);
+
+                    // all the subclasses or interfaces of this parent class will be removed
+                    if(childrenMap.containsKey(singleParent)) {
+                        for (String child2 : childrenMap.get(singleParent)) {
+                            removeList.add(child2);
+                        }
+                    }
+                    if(childrenVirtualMap.containsKey(singleParent)) {
+                        for(String child2 : childrenVirtualMap.get(singleParent)) {
+                            removeList.add(child2);
+                        }
+                    }
                 }
             }
             for (String parent: parents) {

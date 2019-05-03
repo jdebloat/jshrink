@@ -52,8 +52,11 @@ public class ClassCollapser {
             this.removedMethods.addAll(removedMethods);
 
             this.classesToRewrite.add(to.getName());
-            this.classesToRemove.add(from.getName());
+//            this.classesToRemove.add(from.getName());
         }
+
+        // add all classes to remove, including those merged subclasses and their unused siblings
+        this.classesToRemove.addAll(classCollapserAnalysis.getRemoveList());
 
         Set<String> allClasses = new HashSet<String>();
         allClasses.addAll(classCollapserAnalysis.appClasses);
@@ -88,7 +91,7 @@ public class ClassCollapser {
         }
 
         // update method call targets whose return types, parameter types, or even names have been changed
-        for(String className : allClasses ) {
+        for(String className : allClasses) {
             if(nameChangeList.containsKey(className)) {
                 // no need to update any merged classes since they will be deleted anyway
                 continue;
