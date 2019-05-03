@@ -105,11 +105,6 @@ public class MethodInliner {
 				This checks that if the callee comes from a different class, that it contains no references to inner
 				classes.
 				 */
-
-				if(caller.getDeclaringClass().getName().endsWith(".HandlerList")){
-					System.out.println();
-				}
-
 				if(!caller.getDeclaringClass().equals(callee.getDeclaringClass())) {
 					Set<String> classRefs = classesReferenced(callee.retrieveActiveBody());
 					boolean incompatableRef = false;
