@@ -317,7 +317,7 @@ public class ClassCollapser {
                 // add this method to the methodsToMove list
                 methodsToMove.add(method);
             } else {
-                if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
+//                if (usedMethods.containsKey(from.getName()) && usedMethods.get(from.getName()).contains(method.getSubSignature())) {
                     if (!originalMethods.containsKey(method.getSubSignature())) {
                         // add this method to the methodsToMove list
                         methodsToMove.add(method);
@@ -326,32 +326,19 @@ public class ClassCollapser {
                         methodsToRemoveInSuperClass.add(originalMethods.get(method.getSubSignature()));
                         methodsToMove.add(method);
                     }
-                }
+//                }
             }
         }
 
         for(SootMethod method : methodsToRemoveInSuperClass) {
+            // conflicted but unused methods (very likely to be virtually invoked) in a super class will be removed and
+            // replaced with a concrete class
+            toReturn.add(SootUtils.sootMethodToMethodData(method));
             to.removeMethod(method);
         }
 
-        // remove the unused methods in super class
-//        if(usedMethods.containsKey(to.getName())) {
-//            Set<String> usedMethodsInSuperClass = usedMethods.get(to.getName());
-//            for(String subSign : originalMethods.keySet()) {
-//                if(!usedMethodsInSuperClass.contains(subSign)) {
-//                    to.removeMethod(originalMethods.get(subSign));
-//                }
-//            }
-//        } else {
-//            // no methods in the super class is used
-//            for(SootMethod m : originalMethods.values()) {
-//                to.removeMethod(m);
-//            }
-//        }
-
         // move methods from the subclass to the superclass
         for(SootMethod m : methodsToMove) {
-            toReturn.add(SootUtils.sootMethodToMethodData(m));
             from.removeMethod(m);
             to.addMethod(m);
         }
@@ -375,7 +362,9 @@ public class ClassCollapser {
         }
         if (c.getInterfaces().contains(changeFrom)) {
             c.removeInterface(changeFrom);
-            c.addInterface(changeTo);
+            if(!c.getInterfaces().contains(changeTo)) {
+                c.addInterface(changeTo);
+            }
             changed = true;
         }
         for (SootField f: c.getFields()) {
