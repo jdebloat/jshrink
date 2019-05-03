@@ -70,7 +70,7 @@ public class ClassCollapserTest {
         entryPoints.add(m5);
 
         ClassCollapserAnalysis classCollapserAnalysis
-                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints);
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints, new HashSet<String>());
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();
@@ -246,7 +246,7 @@ public class ClassCollapserTest {
         entryPoints.add(m8);
 
         ClassCollapserAnalysis classCollapserAnalysis
-                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints);
+                = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints, new HashSet<String>());
         classCollapserAnalysis.run();
 
         ClassCollapser classCollapser = new ClassCollapser();

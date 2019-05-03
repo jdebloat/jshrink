@@ -469,11 +469,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	}
 
 	@Override
-	public Set<String> classesToIgnore(){
-		return new HashSet<String>();
-	}
-
-	@Override
 	public Set<CallGraph> getCallGraphs(){
 		return this.callgraphs;
 	}

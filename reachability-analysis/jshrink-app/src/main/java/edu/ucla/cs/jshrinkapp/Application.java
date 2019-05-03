@@ -301,7 +301,7 @@ public class Application {
 				if(commandLineParser.isVerbose()){
 					System.out.println("Collapsing collapsable classes...");
 				}
-				classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true);
+				classCollapserData = jShrink.collapseClasses(commandLineParser.isPruneAppInstance(), true, commandLineParser.removeClasses());
 
 				//Update our sets to note what has been removed.
 				appMethodsRemoved.addAll(classCollapserData.getRemovedMethods());

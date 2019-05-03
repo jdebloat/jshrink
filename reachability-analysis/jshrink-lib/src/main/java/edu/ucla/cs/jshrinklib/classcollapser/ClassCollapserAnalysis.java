@@ -30,6 +30,7 @@ public class ClassCollapserAnalysis {
     private Map<String, Set<String>> childrenVirtualMap; // interface -> subclasses
     private Map<String, SootClass> appClassMap;
     private Set<MethodData> entryPoints;
+    private Set<String> classesToIgnore;
 
     private Map<MethodData, Set<MethodData>> callGraph;
 
@@ -37,7 +38,8 @@ public class ClassCollapserAnalysis {
                                   Set<String> usedAppCls,
                                   Set<MethodData> usedAppMethodData,
                                   Map<MethodData, Set<MethodData>> callGraph,
-                                  Set<MethodData> entryPoints) {
+                                  Set<MethodData> entryPoints,
+                                  Set<String> classesToIgnore) {
 
         appClasses = appCls;
         parentsMap = new HashMap<String, String>();
@@ -63,6 +65,7 @@ public class ClassCollapserAnalysis {
         }
 
         this.callGraph = callGraph;
+        this.classesToIgnore = new HashSet<String>(classesToIgnore);
     }
 
     public void run() {
@@ -218,6 +221,10 @@ public class ClassCollapserAnalysis {
     }
 
     private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
+        if(classesToIgnore.contains(from) || classesToIgnore.contains(to)) {
+            return false;
+        }
+
         if (isAnnoymousInner(from) || isAnnoymousInner(to)) {
             return false;
         }
@@ -251,13 +258,6 @@ public class ClassCollapserAnalysis {
 
         if (fromClass.isStatic() || toClass.isStatic()) {
             return false;
-        }
-
-        if(!SootUtils.modifiableSootClass(fromClass)){
-        	return false;
-        }
-        if(!SootUtils.modifiableSootClass(toClass)){
-        	return false;
         }
 
         int numUsedChildren = 0;

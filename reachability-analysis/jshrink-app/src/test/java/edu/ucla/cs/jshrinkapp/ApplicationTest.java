@@ -866,11 +866,11 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
-		arguments.append("--skip-method-removal ");
+		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
 		arguments.append("--test-output ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--verbose ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
