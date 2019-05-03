@@ -266,9 +266,6 @@ public class MethodInliner {
 			Stmt s = (Stmt) u;
 			if(s.containsFieldRef()) {
 				FieldRef fr = s.getFieldRef();
-				if(fr.getField().getDeclaringClass().getName().contains("JsonFactory$")){
-					System.out.println();
-				}
 				toReturn.add(fr.getField().getDeclaringClass().getName());
 			}
 		}
