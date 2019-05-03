@@ -11,6 +11,7 @@ import soot.*;
 import java.io.*;
 
 import org.junit.Test;
+import soot.options.Options;
 
 public class MethodWiperTest {
 	private static SootClass getSootClassFromResources(String className){
@@ -391,7 +392,7 @@ public class MethodWiperTest {
 	}
 
 	@Test
-	public void wipeBody(){
+	public void removeEntireMethod(){
 		SootClass sootClass = getSootClassFromResources("Test");
 		assertTrue(MethodWiper.removeMethod(sootClass.getMethodByName("staticShortMethodNoParams")));
 		String output = TestUtils.runClass(sootClass);
@@ -408,8 +409,13 @@ public class MethodWiperTest {
 		expected += "staticBooleanMethodNoParams touched" + System.lineSeparator();
 		expected += "staticCharMethodNoParams touched" + System.lineSeparator();
 		expected += "staticByteMethodNoParams touched" + System.lineSeparator();
-		expected += "Exception in thread \"main\" java.lang.NoSuchMethodError: Test.staticShortMethodNoParams()Ljava/lang/Short;\n" +
-				"\tat Test.main(Test.java)" + System.lineSeparator();
+//		expected += "Exception in thread \"main\" java.lang.NoSuchMethodError: Test.staticShortMethodNoParams()Ljava/lang/Short;\n" +
+//				"\tat Test.main(Test.java)" + System.lineSeparator();
+		// Note that after removing this method, Soot will automatically add a dummy method back if that removed method is called somewhere else
+		// The dummy method will throw an exception inside
+		expected += "Exception in thread \"main\" java.lang.Error: Unresolved compilation error: Method <Test: java.lang.Short staticShortMethodNoParams()> does not exist!\n" +
+				"\tat Test.staticShortMethodNoParams(Test.java)\n" +
+				"\tat Test.main(Test.java)\n";
 
 		assertEquals(expected, output);
 	}

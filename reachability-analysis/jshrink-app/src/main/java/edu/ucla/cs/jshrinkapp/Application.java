@@ -1,6 +1,8 @@
 package edu.ucla.cs.jshrinkapp;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -312,6 +314,11 @@ public class Application {
 					System.out.println("Done collapsing collapsable classes!");
 				}
 			}
+
+			// filter out unmodifiable classes after debloating
+			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
+					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
+
 			jShrink.updateClassFiles();
 		}
 
@@ -339,6 +346,10 @@ public class Application {
 			if(commandLineParser.isVerbose()){
 				System.out.println("Done inlining inlinable methods!");
 			}
+
+			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
+					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
+
 			jShrink.updateClassFiles();
 		}
 
@@ -462,5 +473,42 @@ public class Application {
 			e.printStackTrace();
 			System.exit(1);
 		}
+	}
+
+	private static void filterUnmodifiableClassesAfterDebloating(JShrink jShrink, Set<MethodData> appMethodsRemoved,
+																 Set<MethodData> libMethodsRemoved,
+																 Set<FieldData> appFieldsRemoved,
+																 Set<FieldData> libFieldsRemoved) {
+		Set<String> classes = jShrink.filterUnmodifiableClass();
+		HashSet<MethodData> methodsNotRemoved = new HashSet<MethodData>();
+		for(MethodData removedMethod : appMethodsRemoved) {
+			if(classes.contains(removedMethod.getClassName())) {
+				methodsNotRemoved.add(removedMethod);
+			}
+		}
+		appMethodsRemoved.removeAll(methodsNotRemoved);
+		methodsNotRemoved.clear();
+		for(MethodData removedMethod : libMethodsRemoved) {
+			if(classes.contains(removedMethod.getClassName())) {
+				methodsNotRemoved.add(removedMethod);
+			}
+		}
+		libMethodsRemoved.removeAll(methodsNotRemoved);
+		methodsNotRemoved.clear();
+		HashSet<FieldData> fieldsNotRemoved = new HashSet<FieldData>();
+		for(FieldData removedField : appFieldsRemoved) {
+			if(classes.contains(removedField.getClassName())) {
+				fieldsNotRemoved.add(removedField);
+			}
+		}
+		appFieldsRemoved.removeAll(fieldsNotRemoved);
+		fieldsNotRemoved.clear();
+		for(FieldData removedField : libFieldsRemoved) {
+			if(classes.contains(removedField.getClassName())) {
+				fieldsNotRemoved.add(removedField);
+			}
+		}
+		libFieldsRemoved.removeAll(fieldsNotRemoved);
+		fieldsNotRemoved.clear();
 	}
 }

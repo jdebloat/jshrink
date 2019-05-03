@@ -214,13 +214,14 @@ public class MethodWiper {
 		}
 
 		SootClass sootClass = sootMethod.getDeclaringClass();
-		int index =sootClass.getMethods().indexOf(sootMethod);
-		sootClass.getMethods().remove(sootMethod);
-		if(!SootUtils.modifiableSootClass(sootClass)){
-			//If not valid, re-add the method
-			sootClass.getMethods().add(index, sootMethod);
-			return false;
-		}
+////		int index =sootClass.getMethods().indexOf(sootMethod);
+		sootClass.removeMethod(sootMethod);
+//		if(!SootUtils.modifiableSootClass(sootClass)){
+//			//If not valid, re-add the method
+//			sootClass.addMethod(sootMethod);
+////			sootClass.getMethods().add(index, sootMethod);
+//			return false;
+//		}
 
 		return true;
 	}

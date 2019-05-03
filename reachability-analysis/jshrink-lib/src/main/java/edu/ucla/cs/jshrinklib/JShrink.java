@@ -355,6 +355,10 @@ public class JShrink {
 		//Remove the classes and not the classes affected.
 		for(MethodData methodData : toRemove){
 			if(!removedMethods.contains(methodData)) {
+				if(unmodifiableClasses.contains(methodData.getClassName())) {
+					// this class cannot be modified by Soot
+					continue;
+				}
 				SootClass sootClass = Scene.v().loadClassAndSupport(methodData.getClassName());
 				if (!sootClass.isEnum() && sootClass.declaresMethod(methodData.getSubSignature())) {
 					SootMethod sootMethod = sootClass.getMethod(methodData.getSubSignature());
@@ -623,6 +627,20 @@ public class JShrink {
 		}
 	}
 
+	public Set<String> filterUnmodifiableClass() {
+		HashSet<SootClass> unmodifiableClasses = new HashSet<SootClass>();
+		HashSet<String> classNameOnly = new HashSet<String>();
+		for(SootClass sootClass : this.classesToModify) {
+			if(!SootUtils.modifiableSootClass(sootClass)) {
+				unmodifiableClasses.add(sootClass);
+				classNameOnly.add(sootClass.getName());
+			}
+		}
+
+		this.classesToModify.removeAll(unmodifiableClasses);
+
+		return classNameOnly;
+	}
 
 	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
@@ -656,7 +674,8 @@ public class JShrink {
 		// modify each Soot class
 		for(String className : toRemoveByClassName.keySet()) {
 			if(unmodifiableClasses.contains(className)) {
-				System.out.println("Attempting to remove a field in an unmodifialbe class " + className);
+				// do not remove a field in an unmodifiable class since the class cannot be updated anyway
+				continue;
 			}
 			SootClass sootClass = Scene.v().getSootClass(className);
 			Set<FieldData> unusedFields = toRemoveByClassName.get(className);
@@ -674,7 +693,7 @@ public class JShrink {
 					}
 				}
 
-				if(sootField != null && FieldWiper.removeField(sootField)) {
+				if(sootField != null && FieldWiper.removeField(sootField, verbose)) {
 					removedFields.add(unusedField);
 					this.classesToModify.add(sootClass);
 				}

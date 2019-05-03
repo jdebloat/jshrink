@@ -254,8 +254,11 @@ public class ClassCollapserTest {
 
         ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
 
-        assertEquals(1,classCollapserData.getClassesToRemove().size());
+        assertEquals(2,classCollapserData.getClassesToRemove().size());
+        // B is merged
         assertTrue(classCollapserData.getClassesToRemove().contains("B"));
+        // C is removed
+        assertTrue(classCollapserData.getClassesToRemove().contains("C"));
 
         assertEquals(2, classCollapserData.getClassesToRewrite().size());
         assertTrue(classCollapserData.getClassesToRewrite().contains("A"));
