@@ -219,6 +219,8 @@ public class TamiFlexTest {
 		assertEquals(1040, tamiflex.accessed_classes.get("junit").size());
 		assertEquals(626, tamiflex.accessed_fields.get("junit").size());
 		assertEquals(2975, tamiflex.used_methods.get("junit").size());
+
+		assertTrue(tamiflex.accessed_classes.get("junit").contains("org.junit.runner.notification.RunListener$ThreadSafe"));
 	}
 	
 	@Test

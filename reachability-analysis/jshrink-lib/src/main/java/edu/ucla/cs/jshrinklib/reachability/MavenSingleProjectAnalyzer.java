@@ -63,7 +63,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<MethodData> entryPoints;
 	private final Optional<File> tamiFlexJar;
 	private final Set<CallGraph> callgraphs;
-	private final Set<String> classesToIgnore;
 	private final boolean useSpark;
 	private final boolean verbose;
 	private TestOutput testOutput;
@@ -105,7 +104,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		entryPoints = new HashSet<MethodData>();
 		tamiFlexJar = tamiFlex;
 		this.callgraphs = new HashSet<CallGraph>();
-		this.classesToIgnore = new HashSet<String>();
 		this.useSpark = useSpark;
 		this.verbose = verbose;
 
@@ -510,18 +508,21 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				e.printStackTrace();
 			}
 
-			// aggregate all accessed classes from each submodule (if any) into one set 
-			HashSet<String> accessed_classes = new HashSet<String>();
+			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
-				accessed_classes.addAll(tamiflex.accessed_classes.get(module));
+				Set<String> usedClassesInModule = tamiflex.accessed_classes.get(module);
+				for(String usedClass : usedClassesInModule) {
+					if(appClasses.contains(usedClass)) {
+						usedAppClasses.add(usedClass);
+					} else if (libClasses.contains(usedClass)) {
+						usedLibClasses.add(usedClass);
+						if(libClassesCompileOnly.contains(usedClass)) {
+							usedLibClassesCompileOnly.add(usedClass);
+						}
+					}
+				}
 			}
-			HashSet<String> all_classes_in_scope = new HashSet<String>();
-			all_classes_in_scope.addAll(libClasses);
-			all_classes_in_scope.addAll(appClasses);
-			accessed_classes.retainAll(all_classes_in_scope);
-			this.classesToIgnore.addAll(accessed_classes); //[BB: ] No idea why we do this
-			//Application.classesToIgnore.addAll(accessed_classes);
-			
+
 			// aggregate all used methods from each submodule (if any) into one set
 			HashMap<String, HashSet<MethodData>> new_entry_points = new HashMap<String, HashSet<MethodData>>();
 			for(String module : tamiflex.used_methods.keySet()) {
@@ -975,11 +976,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<CallGraph> getCallGraphs(){
 		return this.callgraphs;
-	}
-
-	@Override
-	public Set<String> classesToIgnore(){
-		return this.classesToIgnore;
 	}
 
 	@Override
