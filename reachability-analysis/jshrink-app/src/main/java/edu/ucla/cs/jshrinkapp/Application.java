@@ -1,8 +1,6 @@
 package edu.ucla.cs.jshrinkapp;
 
 import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -12,7 +10,6 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
 import edu.ucla.cs.jshrinklib.reachability.*;
 
-import fj.data.IO;
 import org.apache.log4j.PropertyConfigurator;
 
 public class Application {
@@ -102,10 +99,12 @@ public class Application {
 		try {
 			if(JShrink.instanceExists()){
 				jShrink = JShrink.resetInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose());
+					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
+					commandLineParser.isRunTests());
 			} else {
 				jShrink = JShrink.createInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose());
+					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
+					commandLineParser.isRunTests());
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -129,17 +128,18 @@ public class Application {
 		toLog.append("libs_size_before," + jShrink.getLibSize(true) + System.lineSeparator());
 
 
-		testOutputBefore = jShrink.getTestOutput();
-		if(!testOutputBefore.isTestBuildSuccess()){
-			System.err.println("Cannot build tests for the target application (after \"soot pass\").");
-			System.exit(1);
+		if(commandLineParser.isRunTests()) {
+			testOutputBefore = jShrink.getTestOutput();
+			if (!testOutputBefore.isTestBuildSuccess()) {
+				System.err.println("Cannot build tests for the target application (after \"soot pass\").");
+				System.exit(1);
+			}
+
+			toLog.append("tests_run_before," + testOutputBefore.getRun() + System.lineSeparator());
+			toLog.append("tests_errors_before," + testOutputBefore.getErrors() + System.lineSeparator());
+			toLog.append("tests_failed_before," + testOutputBefore.getFailures() + System.lineSeparator());
+			toLog.append("tests_skipped_before," + testOutputBefore.getSkipped() + System.lineSeparator());
 		}
-
-
-		toLog.append("tests_run_before," + testOutputBefore.getRun() + System.lineSeparator());
-		toLog.append("tests_errors_before," + testOutputBefore.getErrors() + System.lineSeparator());
-		toLog.append("tests_failed_before," + testOutputBefore.getFailures() + System.lineSeparator());
-		toLog.append("tests_skipped_before," + testOutputBefore.getSkipped() + System.lineSeparator());
 
 		//Note the number of library and application methods and fields before and transformations.
 		Set<MethodData> allAppMethodsBefore = jShrink.getAllAppMethods();
@@ -364,13 +364,14 @@ public class Application {
 		toLog.append("app_size_after," + jShrink.getAppSize(true) + System.lineSeparator());
 		toLog.append("libs_size_after," + jShrink.getLibSize(true) + System.lineSeparator());
 
-		testOutputAfter = jShrink.getTestOutput();
+		if(commandLineParser.isRunTests()) {
+			testOutputAfter = jShrink.getTestOutput();
 
-
-		toLog.append("tests_run_after," + testOutputAfter.getRun() + System.lineSeparator());
-		toLog.append("tests_errors_after," + testOutputAfter.getErrors() + System.lineSeparator());
-		toLog.append("tests_failed_after," + testOutputAfter.getFailures() + System.lineSeparator());
-		toLog.append("tests_skipped_after," + testOutputAfter.getSkipped() + System.lineSeparator());
+			toLog.append("tests_run_after," + testOutputAfter.getRun() + System.lineSeparator());
+			toLog.append("tests_errors_after," + testOutputAfter.getErrors() + System.lineSeparator());
+			toLog.append("tests_failed_after," + testOutputAfter.getFailures() + System.lineSeparator());
+			toLog.append("tests_skipped_after," + testOutputAfter.getSkipped() + System.lineSeparator());
+		}
 
 		removedMethods.addAll(appMethodsRemoved);
 		removedMethods.addAll(libMethodsRemoved);
@@ -439,7 +440,8 @@ public class Application {
 		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
 
 		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
-			testOutputBefore.getTestOutputText(), testOutputAfter.getTestOutputText());
+			commandLineParser.isRunTests() ? Optional.of(testOutputBefore.getTestOutputText()) : Optional.empty(),
+			commandLineParser.isRunTests() ? Optional.of(testOutputAfter.getTestOutputText()) : Optional.empty());
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("Output logging info to \"" + commandLineParser.getLogDirectory() + "\".");
@@ -447,7 +449,7 @@ public class Application {
 	}
 
 	private static void outputToLogDirectory(File directory, String log, String verboseLog,
-	                                         String testOutputBefore, String testOutputAfter){
+	                                         Optional<String> testOutputBefore, Optional<String> testOutputAfter){
 
 		try {
 			FileWriter fileWriter =
@@ -460,15 +462,19 @@ public class Application {
 			fileWriter.write(verboseLog);
 			fileWriter.close();
 
-			fileWriter =
-				new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_before.dat");
-			fileWriter.write(testOutputBefore);
-			fileWriter.close();
+			if(testOutputBefore.isPresent()) {
+				fileWriter =
+					new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_before.dat");
+				fileWriter.write(testOutputBefore.get());
+				fileWriter.close();
+			}
 
-			fileWriter =
-				new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_after.dat");
-			fileWriter.write(testOutputAfter);
-			fileWriter.close();
+			if(testOutputAfter.isPresent()) {
+				fileWriter =
+					new FileWriter(directory.getAbsolutePath() + File.separator + "test_output_after.dat");
+				fileWriter.write(testOutputAfter.get());
+				fileWriter.close();
+			}
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
