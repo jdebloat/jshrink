@@ -25,7 +25,6 @@ JodaOrg_joda-time,ISSUE_#36
 Netflix_feign,BUILD_FAILURE
 dropwizard_metrics,ISSUE_#29
 jayway_rest-assured,TIMEOUT
-junit-team_junit,DONE
 jwtk_jjwt,TIMEOUT
 b3log_solo,ISSUE_#36
 immutables_immutables,TIMEOUT
