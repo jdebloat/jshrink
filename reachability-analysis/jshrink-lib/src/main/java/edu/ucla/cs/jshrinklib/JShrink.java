@@ -233,7 +233,7 @@ public class JShrink {
 		return this.unmodifiableClasses;
 	}
 
-	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses){
+	public ClassCollapserData collapseClasses(boolean collapseAppClasses, boolean collapseLibClasses, boolean removeClasses){
 		Set<String> allClasses = new HashSet<String>();
 		Set<String> usedClasses = new HashSet<String>();
 		Set<MethodData> usedMethods = new HashSet<MethodData>();
@@ -250,7 +250,7 @@ public class JShrink {
 		}
 
 		ClassCollapserAnalysis classCollapserAnalysis =
-			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints());
+			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints(), unmodifiableClasses);
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.run(classCollapserAnalysis, this.getTestClasses());
@@ -264,6 +264,18 @@ public class JShrink {
 			SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
 			this.classesToModify.remove(sootClass);
 			this.classesToRemove.add(sootClass);
+		}
+
+		if(removeClasses) {
+			// The class collapsing procedure only removed unused subclasses
+			// we can further remove all unused classes
+			Set<String> unusedClasses = new HashSet<String>(allClasses);
+			unusedClasses.removeAll(usedClasses);
+			for(String classToRemove : unusedClasses) {
+				SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
+				this.classesToModify.remove(sootClass);
+				this.classesToRemove.add(sootClass);
+			}
 		}
 
 		return classCollapserData;
@@ -307,10 +319,6 @@ public class JShrink {
 		this.classesToModify.addAll(output.getClassesModified());
 
 		return output;
-	}
-
-	public Set<String> getClassesToIgnore(){
-		return this.getProjectAnalyserRun().classesToIgnore();
 	}
 
 	public Set<MethodData> removeMethods(Set<MethodData> toRemove, boolean removeUnusedClasses){
