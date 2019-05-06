@@ -157,6 +157,8 @@ public class Application {
 		Set<MethodData> libMethodsRemoved = new HashSet<MethodData>();
 		Set<FieldData> appFieldsRemoved = new HashSet<FieldData>();
 		Set<FieldData> libFieldsRemoved = new HashSet<FieldData>();
+		Set<String> appClassesRemoved = new HashSet<String>();
+		Set<String> libClassesRemoved = new HashSet<String>();
 
 		//Keeping a note of these to add to the verbose log
 		Set<MethodData> appMethodsUsed = new HashSet<MethodData>();
@@ -177,7 +179,7 @@ public class Application {
 		appMethodsUnused.addAll(jShrink.getAllAppMethods());
 		appMethodsUnused.removeAll(appMethodsUsed);
 		libMethodsUnused.addAll(jShrink.getAllLibMethods());
-		libMethodsUnused.removeAll(libMethodsRemoved);
+		libMethodsUnused.removeAll(libMethodsUsed);
 
 
 		appClassesUsed.addAll(jShrink.getUsedAppClasses());
@@ -192,7 +194,7 @@ public class Application {
 		appFieldsUnused.addAll(jShrink.getAllAppFields());
 		appFieldsUnused.removeAll(appFieldsUsed);
 		libFieldsUnused.addAll(jShrink.getAllLibFields());
-		libFieldsUnused.removeAll(libFieldsUnused);
+		libFieldsUnused.removeAll(libFieldsUsed);
 
 
 		//Run the method removal.
@@ -353,6 +355,11 @@ public class Application {
 			jShrink.updateClassFiles();
 		}
 
+		appClassesRemoved.addAll(removedClasses);
+		appClassesRemoved.retainAll(jShrink.getAllAppClasses());
+		libClassesRemoved.addAll(removedClasses);
+		libClassesRemoved.retainAll(jShrink.getAllLibClasses());
+
 		toLog.append("app_num_methods_after," +
 			(allAppMethodsBefore.size() - appMethodsRemoved.size()) + System.lineSeparator());
 		toLog.append("libs_num_methods_after," +
@@ -427,12 +434,28 @@ public class Application {
 			toLogVerbose.append("LIB_FIELD_UNUSED," + fieldData.toString() + System.lineSeparator());
 		}
 
+		for(String className : appClassesRemoved) {
+			toLogVerbose.append("APP_CLASS_REMOVED," + className + System.lineSeparator());
+		}
+
+		for(String className : libClassesRemoved) {
+			toLogVerbose.append("LIB_CLASS_REMOVED," + className + System.lineSeparator());
+		}
+
 		for(MethodData methodData : appMethodsRemoved){
 			toLogVerbose.append("APP_METHOD_REMOVED," + methodData.getSignature() + System.lineSeparator());
 		}
 
 		for(MethodData methodData : libMethodsRemoved){
 			toLogVerbose.append("LIB_METHOD_REMOVED," + methodData.getSignature() + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : appFieldsRemoved){
+			toLogVerbose.append("APP_FIELD_REMOVED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		for(FieldData fieldData : appFieldsRemoved){
+			toLogVerbose.append("LIB_FIELD_REMOVED," + fieldData.toString() + System.lineSeparator());
 		}
 
 
