@@ -1199,7 +1199,6 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-fields ");
-		arguments.append("--skip-method-removal ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
