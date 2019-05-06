@@ -16,8 +16,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.*;
 
 public class ApplicationTest {
 
@@ -800,7 +799,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
@@ -813,6 +812,24 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void junit_test_dont_run_tests() {
+		//This tests ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--verbose ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		assertNull(Application.testOutputBefore);
+		assertNull(Application.testOutputAfter);
+	}
+
+	@Test
 	public void junit_test_log_in_home_directory() {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
@@ -821,7 +838,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -844,7 +861,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--skip-method-removal ");
 		arguments.append("--inline ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
@@ -868,7 +885,7 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--verbose ");
 
@@ -892,7 +909,7 @@ public class ApplicationTest {
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false, false);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false, false, true);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
@@ -905,7 +922,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getDynamicDispatchingProject().getAbsolutePath() + "\" ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1182,8 +1199,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-fields ");
-		arguments.append("--skip-method-removal ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1218,7 +1234,7 @@ public class ApplicationTest {
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--remove-fields ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1250,7 +1266,7 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-fields ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1276,7 +1292,7 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-fields ");
 		arguments.append("--remove-methods ");
-		arguments.append("--test-output ");
+		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));

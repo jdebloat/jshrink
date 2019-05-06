@@ -67,10 +67,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean verbose;
 	private TestOutput testOutput;
 	private boolean compileProject = true;
+	private final boolean runTests;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex,
-	                                  boolean useSpark, boolean verbose) {
+	                                  boolean useSpark, boolean verbose, boolean executeTests) {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
@@ -106,9 +107,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.callgraphs = new HashSet<CallGraph>();
 		this.useSpark = useSpark;
 		this.verbose = verbose;
+		this.runTests = executeTests;
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
+		//... also if this.run-tests == false
 		testOutput = new TestOutput(-1, -1, -1, -1, "", true);
 	}
 
@@ -206,55 +209,43 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				 }
 			 }
 
-			if(this.verbose){
-				System.out.println("Running project tests...");
-			}
+			 if(this.runTests) {
+				 if (this.verbose) {
+					 System.out.println("Running project tests...");
+				 }
 
-	//		if(this.compileProject) {
-				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
-	//		}else {
-	//			cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
-	//				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode" ,"--offline", "-fn"};
-	//		}
-			processBuilder = new ProcessBuilder(cmd);
-			processBuilder.redirectErrorStream(true);
-			process = processBuilder.start();
-			stdout = process.getInputStream();
-			isr = new InputStreamReader(stdout);
-			br = new BufferedReader(isr);
+				 cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
+					 "-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
+				 processBuilder = new ProcessBuilder(cmd);
+				 processBuilder.redirectErrorStream(true);
+				 process = processBuilder.start();
+				 stdout = process.getInputStream();
+				 isr = new InputStreamReader(stdout);
+				 br = new BufferedReader(isr);
 
-			String maven_log = "";
-			while((line=br.readLine()) != null) {
-				maven_log += line + System.lineSeparator();
-			}
-			br.close();
+				 String maven_log = "";
+				 while ((line = br.readLine()) != null) {
+					 maven_log += line + System.lineSeparator();
+				 }
+				 br.close();
 
-			exitValue = process.waitFor();
+				 exitValue = process.waitFor();
 
-			// still get test output even in case of test failure
-			this.testOutput = MavenUtils.testOutputFromString(maven_log);
+				 // still get test output even in case of test failure
+				 this.testOutput = MavenUtils.testOutputFromString(maven_log);
 
-			/*if(exitValue != 0) {
-				throw new IOException("Test crashed!");
-			}*/
-
-			if(this.verbose){
-				System.out.println("Done running project tests!");
-			}
+				 if (this.verbose) {
+					 System.out.println("Done running project tests!");
+				 }
+			 }
 
 			if(this.verbose){
 				System.out.println("Getting dependency information...");
 			}
 			// first get the full classpath (compile scope + test scope) so that we will get a more complete
 			// call graph in the static analysis later
-		//	if(compileProject) {
-				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(),  "--batch-mode"};
-			//} else {
-		//		cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
-		//			"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--offline", "--batch-mode"};
-		///	}
+			cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(),  "--batch-mode"};
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
@@ -283,13 +274,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			}
 			
 			// then get the classpath of the compile scope only for the future method removal
-		//	if(compileProject) {
-				cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
-					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
-		//	}else{
-			//	cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
-			//		"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--offline", "--batch-mode"};
-			//}
+			cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "dependency:build-classpath",
+				"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "-DincludeScope=compile", "--batch-mode"};
 			processBuilder = new ProcessBuilder(cmd);
 			processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
