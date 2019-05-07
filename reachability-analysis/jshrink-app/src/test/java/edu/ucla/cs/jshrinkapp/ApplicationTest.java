@@ -852,30 +852,6 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void junit_test_methodinliner() {
-		//This tests ensures that all test cases pass before and after the tool is run
-		StringBuilder arguments = new StringBuilder();
-		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
-		arguments.append("--main-entry ");
-		arguments.append("--test-entry ");
-		arguments.append("--skip-method-removal ");
-		arguments.append("--inline ");
-		arguments.append("--run-tests ");
-		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
-
-		Application.main(arguments.toString().split("\\s+"));
-
-		InlineData inlineData = Application.inlineData;
-
-		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
-		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
-		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
-		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
-	}
-
-	@Test
 	public void junit_test_class_collapser() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
