@@ -3,6 +3,7 @@ package edu.ucla.cs.jshrinklib.classcollapser;
 import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
+import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Test;
@@ -95,19 +96,30 @@ public class ClassCollapserTest {
         assertEquals(2, A.getMethods().size());
         assertEquals(2, B.getMethodCount());
 
-        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
-        usedMethods.put("B", new HashSet<String>());
-        for (SootMethod m : B.getMethods()) {
-            usedMethods.get("B").add(m.getSubSignature());
+        HashMap<MethodData, Set<MethodData>> callGraph = new HashMap<MethodData, Set<MethodData>>();
+        for(SootMethod sootMethod : A.getMethods()) {
+            MethodData md = SootUtils.sootMethodToMethodData(sootMethod);
+            callGraph.put(md, new HashSet<MethodData>());
+        }
+        for(SootMethod sootMethod : B.getMethods()) {
+            MethodData md = SootUtils.sootMethodToMethodData(sootMethod);
+            callGraph.put(md, new HashSet<MethodData>());
         }
 
-        ClassCollapser.mergeTwoClasses(B, A, usedMethods);
+        assertEquals(4, callGraph.keySet().size());
+
+        ClassCollapser.mergeTwoClasses(B, A, callGraph);
 
         assertEquals(2, A.getMethodCount());
         for (Unit u: A.getMethodByName("foo").retrieveActiveBody().getUnits()) {
             if (u instanceof InvokeStmt) {
                 assertEquals("\"class B\"", ((InvokeStmt)u).getInvokeExpr().getArg(0).toString());
             }
+        }
+
+        assertEquals(2, callGraph.keySet().size());
+        for(MethodData md : callGraph.keySet()) {
+            assertEquals("A", md.getClassName());
         }
     }
 
@@ -123,7 +135,7 @@ public class ClassCollapserTest {
         assertEquals(1, A.getFieldCount());
         assertEquals(1, B.getFieldCount());
 
-        ClassCollapser.mergeTwoClasses(B, A, new HashMap<String, Set<String>>());
+        ClassCollapser.mergeTwoClasses(B, A, new HashMap<MethodData, Set<MethodData>>());
 
         assertEquals(2, A.getFieldCount());
         assertNotNull(A.getFieldByName("a"));
@@ -168,13 +180,8 @@ public class ClassCollapserTest {
         SootClass A = TestUtils.getSootClass(classPath, "A");
         SootClass SubA = TestUtils.getSootClass(classPath, "SubA");
 
-        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
-        usedMethods.put("SubA", new HashSet<String>());
-        for (SootMethod m : SubA.getMethods()) {
-            usedMethods.get("SubA").add(m.getSubSignature());
-        }
-
-        ClassCollapser.mergeTwoClasses(SubA, A, usedMethods);
+        // use mocked call graph instead
+        ClassCollapser.mergeTwoClasses(SubA, A, new HashMap<MethodData, Set<MethodData>>());
 
         ClassFileUtils.writeClass(A, new File(dir.getAbsolutePath() + File.separator + "A.class"));
     }
@@ -292,17 +299,8 @@ public class ClassCollapserTest {
         SootClass Implementation = TestUtils.getSootClass(classPath, "SomeInterfaceImplementation");
         SootClass Interface = TestUtils.getSootClass(classPath, "SomeInterface");
 
-        HashMap<String, Set<String>> usedMethods = new HashMap<String, Set<String>>();
-        usedMethods.put("B", new HashSet<String>());
-        for (SootMethod m : B.getMethods()) {
-            usedMethods.get("B").add(m.getSubSignature());
-        }
-        usedMethods.put("SomeInterfaceImplementation", new HashSet<String>());
-        for(SootMethod m : Implementation.getMethods()) {
-            usedMethods.get("SomeInterfaceImplementation").add(m.getSubSignature());
-        }
-
-        ClassCollapser.mergeTwoClasses(Implementation, Interface, usedMethods);
-        ClassCollapser.mergeTwoClasses(B, A, usedMethods);
+        // use mocked call graph instead
+        ClassCollapser.mergeTwoClasses(Implementation, Interface, new HashMap<MethodData, Set<MethodData>>());
+        ClassCollapser.mergeTwoClasses(B, A, new HashMap<MethodData, Set<MethodData>>());
     }
 }

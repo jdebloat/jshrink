@@ -378,4 +378,8 @@ public class ClassCollapserAnalysis {
     /*package*/ Map<String, Set<String>> getProcessedUsedMethods() {
         return usedAppMethods;
     }
+
+    public Map<MethodData, Set<MethodData>> getCallGraph() {
+        return callGraph;
+    }
 }

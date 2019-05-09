@@ -59,16 +59,32 @@ public class MethodData {
 		return this.name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public String getClassName(){
 		return this.className;
+	}
+
+	public void setClassName(String className) {
+		this.className = className;
 	}
 
 	public String[] getArgs(){
 		return this.args;
 	}
 
+	public void setArgs(String[] args) {
+		this.args = args;
+	}
+
 	public String getReturnType(){
 		return this.returnType;
+	}
+
+	public void setReturnType(String type) {
+		this.returnType = type;
 	}
 
 	public boolean isPublic(){

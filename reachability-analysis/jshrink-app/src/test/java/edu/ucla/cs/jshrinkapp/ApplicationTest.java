@@ -863,6 +863,7 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -913,6 +914,34 @@ public class ApplicationTest {
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
+	}
+
+	@Test
+	public void junit_test_class_collapser_and_inliner() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--inline ");
+		arguments.append("--run-tests ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		System.out.println(classCollapseResult.getRemovedMethods().size());
+		System.out.println(classCollapseResult.getClassesToRemove().size());
+		System.out.println(classCollapseResult.getClassesToRewrite().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
 	@Test
@@ -998,6 +1027,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--inline ");
+		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1030,15 +1060,16 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void classCollapserTest() {
+	public void testMethodInlinerWithClassCollapser() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getSimpleClassCollapserDir().getAbsolutePath() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--remove-methods ");
-		// no need to enable tamiflex since there are no reflection calls in this simple case
-//		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--class-collapser ");
+		arguments.append("--inline ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1049,19 +1080,56 @@ public class ApplicationTest {
 		assertTrue(classCollapserData.getClassesToRemove().contains("B"));
 		assertTrue(classCollapserData.getClassesToRemove().contains("C"));
 
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "Main", "main"));
-		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "<init>"));
-		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "saySomething"));
-		// assertTrue(isPresent(classCollapserData.getRemovedMethods(), "C", "uniqueToC"));
-		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "<init>"));
-		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "uniqueToB"));
-		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "B", "saySomething"));
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "uniqueToB"));
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "uniqueToA"));
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "<init>"));
+		assertEquals(2, classCollapserData.getClassesToRemove().size());
+		assertTrue(classCollapserData.getClassesToRemove().contains("B"));
+		assertTrue(classCollapserData.getClassesToRemove().contains("C"));
+
 		// A.saySomething is replaced by B.saySomething.
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "saySomething"));
-		assertFalse(isPresent(classCollapserData.getRemovedMethods(), "A", "getClassType"));
+		assertEquals(1, classCollapserData.getRemovedMethods().size());
+		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "A", "saySomething"));
+
+		InlineData methodsInlined = Application.inlineData;
+		assertEquals(5, methodsInlined.getInlineLocations().size());
+		methodsInlined.getInlineLocations().keySet().contains(
+				new MethodData("getClassType", "A", "java.lang.String", new String[] {}, true, false));
+		methodsInlined.getInlineLocations().keySet().contains(
+				new MethodData("saySomething", "A", "java.lang.String", new String[] {}, true, false));
+		methodsInlined.getInlineLocations().keySet().contains(
+				new MethodData("uniqueToA", "A", "java.lang.String", new String[] {}, true, false));
+		methodsInlined.getInlineLocations().keySet().contains(
+				new MethodData("uniqueToB", "A", "java.lang.String", new String[] {}, true, false));
+		methodsInlined.getInlineLocations().keySet().contains(
+				new MethodData("getString", "A", "java.lang.String", new String[] {}, false, false));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
+	public void classCollapserTest() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getSimpleClassCollapserDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--verbose ");
+		arguments.append("-T ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapserData = Application.classCollapserData;
+
+		assertEquals(2, classCollapserData.getClassesToRemove().size());
+		assertTrue(classCollapserData.getClassesToRemove().contains("B"));
+		assertTrue(classCollapserData.getClassesToRemove().contains("C"));
+
+		// A.saySomething is replaced by B.saySomething.
+		assertEquals(1, classCollapserData.getRemovedMethods().size());
+		assertTrue(isPresent(classCollapserData.getRemovedMethods(), "A", "saySomething"));
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());

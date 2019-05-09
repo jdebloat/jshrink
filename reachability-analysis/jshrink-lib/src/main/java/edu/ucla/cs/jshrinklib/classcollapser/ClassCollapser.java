@@ -32,6 +32,8 @@ public class ClassCollapser {
     }
 
     public void run(ClassCollapserAnalysis classCollapserAnalysis, Set<String> testClasses) {
+        Map<MethodData, Set<MethodData>> callGraph = classCollapserAnalysis.getCallGraph();
+
         HashMap<String, SootClass> nameToSootClass = new HashMap<String, SootClass>();
 
         for (ArrayList<String> collapse: classCollapserAnalysis.getCollapseList()) {
@@ -47,16 +49,29 @@ public class ClassCollapser {
             SootClass to = nameToSootClass.get(toName);
 
             Set<MethodData> removedMethods =
-                    ClassCollapser.mergeTwoClasses(from, to, ((ClassCollapserAnalysis) classCollapserAnalysis).getProcessedUsedMethods());
+                    ClassCollapser.mergeTwoClasses(from, to, callGraph);
 
             this.removedMethods.addAll(removedMethods);
 
             this.classesToRewrite.add(to.getName());
 //            this.classesToRemove.add(from.getName());
+//            callGraph.remove(fromName);
         }
 
         // add all classes to remove, including those merged subclasses and their unused siblings
         this.classesToRemove.addAll(classCollapserAnalysis.getRemoveList());
+        Set<MethodData> methodsToRemove = new HashSet<MethodData>();
+        for(String className : classCollapserAnalysis.getRemoveList()) {
+            for(MethodData md : callGraph.keySet()) {
+                if(md.getName().equals(className)) {
+                    methodsToRemove.add(md);
+                }
+            }
+        }
+
+        for(MethodData md : methodsToRemove) {
+            callGraph.remove(md);
+        }
 
         Set<String> allClasses = new HashSet<String>();
         allClasses.addAll(classCollapserAnalysis.appClasses);
@@ -90,6 +105,39 @@ public class ClassCollapser {
             }
         }
 
+        // update the renamed methods in the call graph
+        List<MethodData> usedMethods = new ArrayList<MethodData>(callGraph.keySet());
+        // must iterate the hashmap keyset this way since we need to update keys in the hasmap
+        for(int i = 0; i < usedMethods.size(); i++) {
+            MethodData md = usedMethods.get(i);
+            String subSignature = md.getClassName() + " : " + md.getSubSignature();
+            Set<MethodData> callers = callGraph.get(md);
+            if(renamedMethods.containsKey(subSignature)) {
+                SootMethod sootMethod = renamedMethods.get(subSignature);
+                MethodData renamedMethodData = SootUtils.sootMethodToMethodData(sootMethod);
+                callGraph.remove(md);
+                callGraph.put(renamedMethodData, callers);
+            }
+
+            for(MethodData caller : callers) {
+                String callerSignature = caller.getClassName() + " : " + caller.getSubSignature();
+                if(renamedMethods.containsKey(callerSignature)) {
+                    SootMethod sootMethod = renamedMethods.get(callerSignature);
+                    String retType = sootMethod.getReturnType().toString();
+                    caller.setReturnType(retType);
+
+                    List<Type> paramTypes = sootMethod.getParameterTypes();
+                    String[] types = new String[paramTypes.size()];
+                    for(int j = 0; j < types.length; j++) {
+                        types[j] = paramTypes.get(j).toString();
+                    }
+                    caller.setArgs(types);
+
+                    caller.setName(sootMethod.getName());
+                }
+            }
+        }
+
         // update method call targets whose return types, parameter types, or even names have been changed
         for(String className : allClasses) {
             if(nameChangeList.containsKey(className)) {
@@ -113,7 +161,8 @@ public class ClassCollapser {
                         InvokeExpr callExpr = stmt.getInvokeExpr();
                         SootMethodRef smf = callExpr.getMethodRef();
                         boolean updated = false;
-                        String signature = SootMethod.getSubSignature(smf.getName(), smf.getParameterTypes(), smf.getReturnType());
+                        String signature = smf.getDeclaringClass().getName() + " : "
+                                    + SootMethod.getSubSignature(smf.getName(), smf.getParameterTypes(), smf.getReturnType());
                         if(renamedMethods.containsKey(signature)) {
                             SootMethod renamed_method = renamedMethods.get(signature);
                             if (renamed_method.getName().equals("<init>")) {
@@ -217,7 +266,7 @@ public class ClassCollapser {
      * @param to The class that will be merged into, and kept (the sub class)
      * @return The set of methods that have been removed
      */
-    /*package*/ static Set<MethodData> mergeTwoClasses(SootClass from, SootClass to, Map<String, Set<String>> usedMethods) {
+    /*package*/ static Set<MethodData> mergeTwoClasses(SootClass from, SootClass to, Map<MethodData, Set<MethodData>> callGraph) {
         Set<MethodData> toReturn = new HashSet<MethodData>();
         HashMap<String, SootField> originalFields = new HashMap<String, SootField>();
         for (SootField field : to.getFields()) {
@@ -333,14 +382,36 @@ public class ClassCollapser {
         for(SootMethod method : methodsToRemoveInSuperClass) {
             // conflicted but unused methods (very likely to be virtually invoked) in a super class will be removed and
             // replaced with a concrete class
-            toReturn.add(SootUtils.sootMethodToMethodData(method));
+            MethodData md = SootUtils.sootMethodToMethodData(method);
+            toReturn.add(md);
             to.removeMethod(method);
+
+            // update the call graph
+            callGraph.remove(md);
         }
 
         // move methods from the subclass to the superclass
         for(SootMethod m : methodsToMove) {
+            MethodData orig_md = SootUtils.sootMethodToMethodData(m);
             from.removeMethod(m);
             to.addMethod(m);
+
+            if(callGraph.containsKey(orig_md)) {
+                Set<MethodData> callers = callGraph.get(orig_md);
+                MethodData md = SootUtils.sootMethodToMethodData(m);
+                // update the references to this method if it is the caller of other methods
+                for(MethodData m2 : callGraph.keySet()) {
+                    Set<MethodData> callers2 = callGraph.get(m2);
+                    for(MethodData caller : callers2) {
+                        if(caller.equals(orig_md)) {
+                            caller.setClassName(to.getName());
+                        }
+                    }
+                    callGraph.put(m2, callers2);
+                }
+                callGraph.put(md, callers);
+                callGraph.remove(orig_md);
+            }
         }
 
         return toReturn;
@@ -530,7 +601,7 @@ public class ClassCollapser {
 
             if(name_conflict) {
                 assert original_method != null;
-                renamedMethods.put(original_method, m);
+                renamedMethods.put(c.getName() + " : " + original_method, m);
             }
             // do not inline change2 since Java do short circuit evaluation
             // we still want to make sure type references in each method body is updated correctly
@@ -545,7 +616,8 @@ public class ClassCollapser {
 
         for(int j = 0; j < methods.size(); j++) {
             SootMethod m2 = methods.get(j);
-            if(m2.getSubSignature().equals(renamed_signature)) {
+            String signature = m2.getSubSignature();
+            if(signature.equals(renamed_signature)) {
                 // this is not allowed in Java but saw this case in android.jar
                 // remove m from class and continue
                 hasConflict = true;

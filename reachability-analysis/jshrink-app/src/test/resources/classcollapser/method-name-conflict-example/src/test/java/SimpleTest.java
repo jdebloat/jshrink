@@ -14,4 +14,11 @@ public class SimpleTest {
         B b = new B(subA);
         assertEquals("SubA: m", b.f);
     }
+
+    @Test
+    public void testB4() {
+        SubA subA = new SubA();
+        B b = new B(subA);
+        assertEquals("SubA: m", b.call(subA));
+    }
 }

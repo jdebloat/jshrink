@@ -35,6 +35,7 @@ public class JShrink {
 	private long appSizeDecompressed = -1;
 	private Set<String> unmodifiableClasses = new HashSet<String>();
 	private boolean runTests;
+	private Map<MethodData, Set<MethodData>> callGraphs = null;
 
 	/*
 	Regardless of whether "reset()" is run, the project, if compiled, remains so. We do not want to recompile, thus
@@ -285,29 +286,35 @@ public class JShrink {
 	}
 
 	public Map<MethodData, Set<MethodData>> getSimplifiedCallGraph(){
-		HashMap<MethodData, Set<MethodData>> toReturn = new HashMap<MethodData, Set<MethodData>>();
-		toReturn.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
-		toReturn.putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
+		if(callGraphs != null) {
+			return callGraphs;
+		}
 
-		return toReturn;
+		callGraphs = new HashMap<MethodData, Set<MethodData>>();
+		callGraphs.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
+		callGraphs.putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
+
+		return callGraphs;
 	}
 
 	public InlineData inlineMethods(boolean inlineAppClassMethods, boolean inlineLibClassMethods){
+		Set<String> classesInScope = new HashSet<String>();
+		if(inlineAppClassMethods) {
+			classesInScope.addAll(this.getAllAppClasses());
+		}
+		if(inlineLibClassMethods) {
+			classesInScope.addAll(this.getAllLibClasses());
+		}
+
+		Map<MethodData, Set<MethodData>> simplifiedCallGraph = new HashMap<MethodData, Set<MethodData>>();
+		Map<MethodData, Set<MethodData>> originalCallGraph = this.getSimplifiedCallGraph();
+		for(MethodData md : originalCallGraph.keySet()) {
+			if(classesInScope.contains(md.getClassName())) {
+				simplifiedCallGraph.put(md,  originalCallGraph.get(md));
+			}
+		}
 
 		Map<SootMethod, Set<SootMethod>> callgraph = new HashMap<SootMethod, Set<SootMethod>>();
-		Set<MethodData> validMethods = new HashSet<MethodData>();
-
-		if(inlineAppClassMethods){
-			validMethods.addAll(this.getAllAppMethods());
-		}
-		if(inlineLibClassMethods){
-			validMethods.addAll(this.getAllLibMethods());
-		}
-
-		Map<MethodData, Set<MethodData>> simplifiedCallGraph =
-			new HashMap<MethodData, Set<MethodData>>(this.getSimplifiedCallGraph());
-		simplifiedCallGraph.keySet().retainAll(validMethods);
-
 		for(Map.Entry<SootMethod, Set<SootMethod>> entry :
 			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(simplifiedCallGraph).entrySet()){
 			callgraph.put(entry.getKey(), entry.getValue());
@@ -318,7 +325,7 @@ public class JShrink {
 		classPaths.addAll(this.getProjectAnalyser().getAppClasspaths());
 		classPaths.addAll(this.getProjectAnalyser().getLibClasspaths());
 
-		InlineData output = MethodInliner.inlineMethods(callgraph, classPaths);
+		InlineData output = MethodInliner.inlineMethods(callgraph, classPaths, unmodifiableClasses);
 		this.classesToModify.addAll(output.getClassesModified());
 
 		return output;

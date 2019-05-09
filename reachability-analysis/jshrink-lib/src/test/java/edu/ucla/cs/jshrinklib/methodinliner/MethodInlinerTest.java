@@ -122,7 +122,7 @@ public class MethodInlinerTest {
 	public void inlineMethodsTest() throws IOException{
 		setup_simpleTestProject();
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
-		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(),  new HashSet<String>());
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
 			TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
@@ -154,7 +154,7 @@ public class MethodInlinerTest {
 	@Test
 	public void inlineMethodsTest_withoutDecompressedJars() throws IOException{
 		setup_simpleTestProject();
-		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 
 		assertEquals(3, inlineData.getInlineLocations().size());
 
@@ -187,7 +187,7 @@ public class MethodInlinerTest {
 	public void inlineMethodsTest_withClassRewrite() throws IOException{
 		setup_simpleTestProject();
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
-		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
@@ -225,7 +225,7 @@ public class MethodInlinerTest {
 	public void packageInlinerTest() throws IOException{
 		setup_packageInlinerTest();
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
-		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths());
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 		assertEquals(0, inlineData.getInlineLocations().size());
 		ClassFileUtils.compressJars(decompressedJars);
 	}

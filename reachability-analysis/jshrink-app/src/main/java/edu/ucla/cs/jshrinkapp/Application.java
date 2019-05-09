@@ -181,7 +181,6 @@ public class Application {
 		libMethodsUnused.addAll(jShrink.getAllLibMethods());
 		libMethodsUnused.removeAll(libMethodsUsed);
 
-
 		appClassesUsed.addAll(jShrink.getUsedAppClasses());
 		libClassesUsed.addAll(jShrink.getUsedLibClasses());
 		appClassesUnused.addAll(jShrink.getAllAppClasses());
@@ -196,6 +195,8 @@ public class Application {
 		libFieldsUnused.addAll(jShrink.getAllLibFields());
 		libFieldsUnused.removeAll(libFieldsUsed);
 
+		Set<String> allAppClasses = jShrink.getAllAppClasses();
+		Set<String> allLibClasses = jShrink.getAllLibClasses();
 
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
@@ -321,7 +322,7 @@ public class Application {
 			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
 					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
 
-			jShrink.updateClassFiles();
+//			jShrink.updateClassFiles();
 		}
 
 
@@ -336,9 +337,9 @@ public class Application {
 			for(MethodData methodInlined : inlineData.getInlineLocations().keySet()){
 				if (!jShrink.removeMethods(new HashSet<MethodData>(Arrays.asList(methodInlined))
 					,commandLineParser.removeClasses()).isEmpty()) {
-					if (allAppMethodsBefore.contains(methodInlined)) {
+					if (allAppClasses.contains(methodInlined.getClassName())) {
 						appMethodsRemoved.add(methodInlined);
-					} else if (allLibMethodsBefore.contains(methodInlined)) {
+					} else if (allLibClasses.contains(methodInlined.getClassName())) {
 						libMethodsRemoved.add(methodInlined);
 					}
 				}
@@ -352,13 +353,16 @@ public class Application {
 			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
 					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
 
-			jShrink.updateClassFiles();
+//			jShrink.updateClassFiles();
 		}
 
+		// update class files at the end of all transformations
+		jShrink.updateClassFiles();
+
 		appClassesRemoved.addAll(removedClasses);
-		appClassesRemoved.retainAll(jShrink.getAllAppClasses());
+		appClassesRemoved.retainAll(allAppClasses);
 		libClassesRemoved.addAll(removedClasses);
-		libClassesRemoved.retainAll(jShrink.getAllLibClasses());
+		libClassesRemoved.retainAll(allLibClasses);
 
 		toLog.append("app_num_methods_after," +
 			(allAppMethodsBefore.size() - appMethodsRemoved.size()) + System.lineSeparator());

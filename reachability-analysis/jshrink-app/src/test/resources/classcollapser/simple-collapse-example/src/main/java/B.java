@@ -5,6 +5,14 @@ public class B extends A {
 
 	@Override
 	public String saySomething(){
+		return getString();
+	}
+
+	private String getString() {
+		// random computation
+		int i = 0;
+		i++;
+		i--;
 		return "I am class B";
 	}
 

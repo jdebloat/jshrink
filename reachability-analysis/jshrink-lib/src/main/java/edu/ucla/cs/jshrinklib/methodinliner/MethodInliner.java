@@ -26,7 +26,7 @@ public class MethodInliner {
 	 * @return A InlineData object --- this documents what methods have been inlined, where, and what methods have been\
 	 * 	modified
 	 */
-	public static InlineData inlineMethods(Map<SootMethod, Set<SootMethod>> callgraph, Set<File> classpaths){
+	public static InlineData inlineMethods(Map<SootMethod, Set<SootMethod>> callgraph, Set<File> classpaths, Set<String> unmodifiableClasses){
 
 		InlineData toReturn = new InlineData();
 		Set<SootMethod> methodsRemoved = new HashSet<SootMethod>();
@@ -124,8 +124,10 @@ public class MethodInliner {
 
 
 				//The caller and the callee must be contained in a SootClasses that are ultimately modifiable.
-				if (!SootUtils.modifiableSootClass(caller.getDeclaringClass())
-					|| !SootUtils.modifiableSootClass(callee.getDeclaringClass())) {
+//				if (!SootUtils.modifiableSootClass(caller.getDeclaringClass())
+//					|| !SootUtils.modifiableSootClass(callee.getDeclaringClass())) {
+				if(unmodifiableClasses.contains(caller.getDeclaringClass().getName()) ||
+					unmodifiableClasses.contains(callee.getDeclaringClass().getName())) {
 					if(debug){
 						System.out.println("FAILED: Caller or Callee not within modifiable SootClass.");
 					}
