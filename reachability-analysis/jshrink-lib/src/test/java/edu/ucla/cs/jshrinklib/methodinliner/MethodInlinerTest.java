@@ -156,7 +156,7 @@ public class MethodInlinerTest {
 		setup_simpleTestProject();
 		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 
-		assertEquals(3, inlineData.getInlineLocations().size());
+		assertEquals(6, inlineData.getInlineLocations().size());
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
 			TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
