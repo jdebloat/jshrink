@@ -107,17 +107,17 @@ public class MethodInliner {
 				 */
 				if(!caller.getDeclaringClass().equals(callee.getDeclaringClass())) {
 					Set<String> classRefs = classesReferenced(callee.retrieveActiveBody());
-					boolean incompatableRef = false;
+					boolean incompatibleRef = false;
 					for (String classRef : classRefs) {
 						if (classRef.startsWith(callee.getDeclaringClass().getName() + "$")) {
 							if (debug) {
 								System.out.println("FAILED: Callee contains reference to inner class field/method.");
 							}
-							incompatableRef = true;
+							incompatibleRef = true;
 							break;
 						}
 					}
-					if (incompatableRef) {
+					if (incompatibleRef) {
 						continue;
 					}
 				}
@@ -281,6 +281,14 @@ public class MethodInliner {
 			Stmt s = (Stmt) u;
 			if(s.containsFieldRef()) {
 				FieldRef fr = s.getFieldRef();
+				if(fr.getField() == null) {
+					continue;
+				}
+
+				if(fr.getField().getDeclaringClass() == null) {
+					continue;
+				}
+				
 				toReturn.add(fr.getField().getDeclaringClass().getName());
 			}
 		}
