@@ -173,9 +173,9 @@ public class MethodInliner {
 				ModifierOptions: "safe", "unsafe", or "nochanges". Though, at the time of writing, "unsafe" is the only
 				option that's been implemented. "unsafe" means that the inline may be unsafe but is possible.
 				*/
-				boolean inlineSafety = false;
+				boolean isInlineSafe;
 				try {
-					inlineSafety = InlinerSafetyManager.ensureInlinability(callee, site, caller, "unsafe");
+					isInlineSafe = InlinerSafetyManager.ensureInlinability(callee, site, caller, "unsafe");
 				} catch (Exception e) {
 					// suppress the exception and just do not inline this
 					if(debug) {
@@ -186,14 +186,27 @@ public class MethodInliner {
 
 					continue;
 				}
-				if (!inlineSafety) {
+				if (!isInlineSafe) {
 					if(debug){
 						System.out.println("FAILED: InlineSafetyManager.ensureInlinability returned false.");
 					}
 					continue;
 				}
 
-				if(!inlineIsEfficient(callee, site, caller)){
+				boolean isInlineEfficient;
+				try {
+					isInlineEfficient = inlineIsEfficient(callee, site, caller);
+				} catch (Exception e) {
+					// suppress the exception and just do not inline this
+					if(debug) {
+						System.out.println("FAILED: exception occurs when checking inline efficiency.");
+						System.out.println(e.getMessage());
+						System.out.println(e.getStackTrace());
+					}
+
+					continue;
+				}
+				if(!isInlineEfficient){
 					if(debug){
 						System.out.println("FAILED: This inline operation would increase the size of the app.");
 					}
@@ -288,7 +301,7 @@ public class MethodInliner {
 				if(fr.getField().getDeclaringClass() == null) {
 					continue;
 				}
-				
+
 				toReturn.add(fr.getField().getDeclaringClass().getName());
 			}
 		}
