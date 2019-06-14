@@ -8,5 +8,6 @@
 *.settings 
 *.DS_Store
 *.tmp
+*.lst
 reachability-analysis/soot/eclipse
 reachability-analysis/soot/doc

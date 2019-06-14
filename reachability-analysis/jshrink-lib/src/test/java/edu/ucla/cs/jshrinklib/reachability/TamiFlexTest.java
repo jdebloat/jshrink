@@ -244,8 +244,8 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, false);
 		try {
 			tamiflex.run();
-			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
-			assertEquals(861, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(893, tamiflex.accessed_classes.get("commons-lang3").size());
+			assertEquals(849, tamiflex.accessed_fields.get("commons-lang3").size());
 			assertEquals(4696, tamiflex.used_methods.get("commons-lang3").size());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -261,8 +261,8 @@ public class TamiFlexTest {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
 		try {
 			tamiflex.run();
-			assertEquals(894, tamiflex.accessed_classes.get("commons-lang3").size());
-			assertEquals(861, tamiflex.accessed_fields.get("commons-lang3").size());
+			assertEquals(893, tamiflex.accessed_classes.get("commons-lang3").size());
+			assertEquals(849, tamiflex.accessed_fields.get("commons-lang3").size());
 			assertEquals(4696, tamiflex.used_methods.get("commons-lang3").size());
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -295,7 +295,7 @@ public class TamiFlexTest {
 	public void testTamiFlexOnMavenProjectWithOneSubmodule() {
 		// the gson project has many submodules but only one submodule is actually built
 		String project_path = this.gitGetter.addGitHubProject("google","gson",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
+				"aa236ec38d39f434c1641aeaef9241aec18affde").getAbsolutePath();
 		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
 			.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
@@ -315,7 +315,7 @@ public class TamiFlexTest {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
 		String project_path = this.gitGetter.addGitHubProject("greenrobot","essentials",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();
+			"31eaaeb410174004196c9ef9c9469e0d02afd94b").getAbsolutePath();
 		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
 			.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
@@ -327,7 +327,7 @@ public class TamiFlexTest {
 			assertEquals(72, tamiflex.accessed_classes.get("essentials").size());
 			assertEquals(72, tamiflex.accessed_fields.get("essentials").size());
 			// some tests are not deterministic, so the assertion below may fail
-			assertEquals(262, tamiflex.used_methods.get("essentials").size());
+			assertEquals(246, tamiflex.used_methods.get("essentials").size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -342,7 +342,7 @@ public class TamiFlexTest {
 		// four of them have java class files and only two of them 
 		// have test classes
 		String project_path = this.gitGetter.addGitHubProject("cglib","cglib",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
+				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
 		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
 			.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
 		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
@@ -356,13 +356,13 @@ public class TamiFlexTest {
 			for(String module : tamiflex.accessed_classes.keySet()) {
 				all_accessed_classes.addAll(tamiflex.accessed_classes.get(module));
 			}
-			assertEquals(56, all_accessed_classes.size());
+			assertEquals(62, all_accessed_classes.size());
 			HashSet<String> all_accessed_fields = new HashSet<String>();
 			for(String module : tamiflex.accessed_fields.keySet()) {
 				all_accessed_fields.addAll(tamiflex.accessed_fields.get(module));
 			}
 			// flaky
-			assertEquals(37, all_accessed_fields.size());
+			assertEquals(36, all_accessed_fields.size());
 			HashSet<String> all_used_methods = new HashSet<String>();
 			for(String module : tamiflex.used_methods.keySet()) {
 				all_used_methods.addAll(tamiflex.used_methods.get(module).keySet());
