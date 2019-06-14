@@ -35,7 +35,7 @@ public class JShrink {
 	private long appSizeDecompressed = -1;
 	private Set<String> unmodifiableClasses = new HashSet<String>();
 	private boolean runTests;
-	private Map<MethodData, Set<MethodData>> callGraphs = null;
+	private Optional<Map<MethodData, Set<MethodData>>> callGraphs = Optional.empty();
 
 	/*
 	Regardless of whether "reset()" is run, the project, if compiled, remains so. We do not want to recompile, thus
@@ -286,15 +286,15 @@ public class JShrink {
 	}
 
 	public Map<MethodData, Set<MethodData>> getSimplifiedCallGraph(){
-		if(callGraphs != null) {
-			return callGraphs;
+		if(callGraphs.isPresent()) {
+			return callGraphs.get();
 		}
 
-		callGraphs = new HashMap<MethodData, Set<MethodData>>();
-		callGraphs.putAll(this.getProjectAnalyserRun().getUsedAppMethods());
-		callGraphs.putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
+		callGraphs = Optional.of(new HashMap<MethodData, Set<MethodData>>());
+		callGraphs.get().putAll(this.getProjectAnalyserRun().getUsedAppMethods());
+		callGraphs.get().putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
 
-		return callGraphs;
+		return callGraphs.get();
 	}
 
 	public InlineData inlineMethods(boolean inlineAppClassMethods, boolean inlineLibClassMethods){
@@ -477,6 +477,7 @@ public class JShrink {
 		this.projectAnalyserRun = false;
 		this.classesToModify.clear();
 		this.classesToRemove.clear();
+		this.callGraphs = Optional.empty();
 		G.reset();
 	}
 
