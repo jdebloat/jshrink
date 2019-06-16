@@ -375,6 +375,9 @@ public class SourceLocator {
           } else if (fileName.endsWith(".jimple")) {
             int index = fileName.lastIndexOf(".jimple");
             classes.add(prefix + fileName.substring(0, index));
+          } else if (fileName.endsWith(".java")) {
+            int index = fileName.lastIndexOf(".java");
+            classes.add(prefix + fileName.substring(0, index));
           } else if (fileName.endsWith(".dex")) {
             try {
               for (DexFileProvider.DexContainer container : DexFileProvider.v().getDexFromSource(element)) {
