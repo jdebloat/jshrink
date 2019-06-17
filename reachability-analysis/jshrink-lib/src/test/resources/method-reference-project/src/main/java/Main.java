@@ -12,6 +12,9 @@ public class Main {
 		Function<String, String> usedMethod = Main::usedMethodReference;
 
 		getCollection();
+
+		Function<String, String> innerClassMethod = InnerClass::innerClassMethodReference;
+
 		System.out.println(usedMethod.apply("main"));
 	}
 
@@ -31,6 +34,12 @@ public class Main {
 		Set<Function<String, String>> toReturn = new HashSet<Function<String, String>>();
 		toReturn.add(Main::usedInCollectionMethodReference);
 		return toReturn;
+	}
+
+	public static class InnerClass{
+		private static String innerClassMethodReference(String input){
+			return "innerClassMethodReference " + input;
+		}
 	}
 
 }
