@@ -361,6 +361,26 @@ public class CallGraphAnalysisSimpleTest {
 		assertTrue(contains(getNumber.get(), "Main", "main"));
 	}
 
+	@Test
+	public void testMethodReference(){
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		List<File> libJarPath = new ArrayList<File>();
+		List<File> appClassPath = new ArrayList<File>();
+		List<File> appTestPath = new ArrayList<File>();
+		appClassPath.add(new File(classLoader.getResource("method-reference-project"
+			+ File.separator + "target" + File.separator + "classes").getFile()));
+		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+			new EntryPointProcessor(true, false, false,
+				false, new HashSet<MethodData>()), false);
+		runner.run();
+
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+
+		assertTrue(contains(usedAppMethods.keySet(), "Main", "main"));
+		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedMethodReference"));
+		assertTrue(contains(usedAppMethods.keySet(), "Main", "unusedMethodReference"));
+	}
+
 	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map,
 	                                             String className, String methodName){
 		MethodData methodData = null;
