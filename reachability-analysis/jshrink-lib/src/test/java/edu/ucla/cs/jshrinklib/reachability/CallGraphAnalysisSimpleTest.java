@@ -379,6 +379,7 @@ public class CallGraphAnalysisSimpleTest {
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "main"));
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedMethodReference"));
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "unusedMethodReference"));
+		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedInCollectionMethodReference"));
 	}
 
 	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map,
