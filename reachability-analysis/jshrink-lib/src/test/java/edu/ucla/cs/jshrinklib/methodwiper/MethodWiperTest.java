@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import edu.ucla.cs.jshrinklib.TestUtils;
+import edu.ucla.cs.jshrinklib.reachability.CallGraphAnalysisSimpleTest;
+import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import soot.*;
 
@@ -418,5 +420,25 @@ public class MethodWiperTest {
 				"\tat Test.main(Test.java)\n";
 
 		assertEquals(expected, output);
+	}
+
+	@Test
+	public void removeReferencedMethod() throws IOException{
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		File project = new File(classLoader.getResource("method-reference-project").getFile());
+		File projectCopy = File.createTempFile("method-reference-project", "");
+		projectCopy.delete();
+		FileUtils.copyDirectory(project, projectCopy);
+
+		File classFile = new File(projectCopy.getAbsolutePath() + File.separator + "target/classes/References.class");
+
+		final String workingClasspath=classFile.getParentFile().getAbsolutePath();
+		SootClass referenceClass = TestUtils.getSootClass(workingClasspath, "References");
+		assertTrue(MethodWiper.removeMethod(referenceClass.getMethodByName("unusedMethodReference")));
+
+		FileUtils.copyFile(TestUtils.createClass(referenceClass), classFile);
+		String output = TestUtils.runClass(workingClasspath, "Main");
+
+		assertEquals("usedMethodReference has been called by main" + System.lineSeparator(), output);
 	}
 }
