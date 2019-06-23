@@ -1,8 +1,6 @@
 package edu.ucla.cs.jshrinklib.util;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
@@ -250,25 +248,41 @@ public class SootUtils {
 		Queue<SootMethod> stack = new LinkedList<SootMethod>();
 		stack.add(parent);
 
+		Map<SootMethod, Set<SootMethod>> visitedSootMethod = new HashMap<SootMethod, Set<SootMethod>>();
+
 		while(!stack.isEmpty()) {
 			SootMethod par = stack.poll();
-			MethodData parentMethodData = sootMethodToMethodData(par);
-			usedClass.add(parentMethodData.getClassName());
+			//MethodData parentMethodData = sootMethodToMethodData(par);
+			usedClass.add(par.getDeclaringClass().getName());
 
 			Iterator<MethodOrMethodContext> targets = new Targets(cg.edgesOutOf(par));
 			while (targets.hasNext()) {
 				SootMethod method = (SootMethod) targets.next();
-				MethodData methodMethodData = sootMethodToMethodData(method);
-				if (!visited.containsKey(methodMethodData)) {
-					visited.put(methodMethodData, new HashSet<MethodData>());
-				} else if (visited.get(methodMethodData).contains(parentMethodData)) {
+				//MethodData methodMethodData = sootMethodToMethodData(method);
+
+				if (!visitedSootMethod.containsKey(method)) {
+					visitedSootMethod.put(method, new HashSet<SootMethod>());
+				} else if (visitedSootMethod.get(method).contains(par)) {
 					continue;
 				}
 
-				visited.get(methodMethodData).add(parentMethodData);
+				visitedSootMethod.get(method).add(par);
 				stack.add(method);
+
 			}
 		}
+
+		for(Map.Entry<SootMethod, Set<SootMethod>> entry: visitedSootMethod.entrySet()){
+			MethodData methodDataKey = sootMethodToMethodData(entry.getKey());
+			if(!visited.containsKey(methodDataKey)){
+				visited.put(sootMethodToMethodData(entry.getKey()), new HashSet<MethodData>());
+			}
+
+			for(SootMethod sootMethod: entry.getValue()){
+				visited.get(methodDataKey).add(sootMethodToMethodData(sootMethod));
+			}
+		}
+
 	}
 
 	public static boolean modifiableSootClass(SootClass sootClass){

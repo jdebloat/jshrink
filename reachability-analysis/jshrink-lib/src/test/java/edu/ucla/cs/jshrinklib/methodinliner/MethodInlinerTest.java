@@ -8,7 +8,6 @@ import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import soot.G;
 import soot.Scene;
@@ -17,8 +16,6 @@ import soot.SootMethod;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -84,6 +81,36 @@ public class MethodInlinerTest {
 		this.callgraph = SootUtils.mergeCallGraphMaps(
 				SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedAppMethods()),
 				SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedLibMethods()));
+	}
+
+	public void setup_dynamicDispatchTest(){
+		ClassLoader classLoader = MethodInlinerTest.class.getClassLoader();
+		original = new File(classLoader.getResource("dynamic-dispatch-project").getFile());
+
+		try{
+			backup = File.createTempFile("backup", "");
+			backup.delete();
+			FileUtils.copyDirectory(original,backup);
+		} catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		appClassPath.add(new File(backup.getAbsolutePath()
+			+ File.separator + "target" + File.separator + "classes"));
+
+		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
+			false, new HashSet<MethodData>() );
+
+		CallGraphAnalysis callGraphAnalysis =
+			new CallGraphAnalysis(libJarPath, appClassPath, appTestPath, epp,true);
+		callGraphAnalysis.setup();
+		callGraphAnalysis.run();
+
+		SootUtils.setup_trimming(libJarPath,appClassPath,appTestPath);
+		this.callgraph = SootUtils.mergeCallGraphMaps(
+			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedAppMethods()),
+			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedLibMethods()));
 	}
 
 	public void setup_packageInlinerTest(){
@@ -228,5 +255,26 @@ public class MethodInlinerTest {
 		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 		assertEquals(0, inlineData.getInlineLocations().size());
 		ClassFileUtils.compressJars(decompressedJars);
+	}
+
+	@Test
+	public void dynamicDispatchTest() throws IOException{
+		setup_dynamicDispatchTest();
+		//Reminder: I'm using Spark instead of CHA here.
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
+
+		assertEquals(2, inlineData.getInlineLocations().size());
+
+		assertTrue(inlineData.getInlineLocations()
+			.containsKey(TestUtils.getMethodDataFromSignature("<Main: public static void dynamicDispatch2(Parent)>")));
+		assertTrue(inlineData.getInlineLocations()
+			.get(TestUtils.getMethodDataFromSignature("<Main: public static void dynamicDispatch2(Parent)>"))
+			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+
+		assertTrue(inlineData.getInlineLocations()
+			.containsKey(TestUtils.getMethodDataFromSignature("<ChildsChild: public java.lang.String bla()>")));
+		assertTrue(inlineData.getInlineLocations()
+			.get(TestUtils.getMethodDataFromSignature("<ChildsChild: public java.lang.String bla()>"))
+			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void dynamicDispatch2(Parent)>")));
 	}
 }

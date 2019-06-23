@@ -40,8 +40,9 @@ public class MavenSingleProjectAnalyzerTest {
 
 	@Test @Ignore
 	public void testMavenProjectWithNoSubmodulesSparkOnly() {
-		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
+
+		String junit_project = new File(MavenSingleProjectAnalyzer.class.getClassLoader()
+			.getResource("junit4").getFile()).getAbsolutePath();
 
 		MavenSingleProjectAnalyzer runner =
 				new MavenSingleProjectAnalyzer(junit_project,
@@ -64,8 +65,8 @@ public class MavenSingleProjectAnalyzerTest {
 	@Test @Ignore
 	public void testMavenProjectWithNoSubmodulesBothSparkAndTamiFlex() {
 
-		String junit_project = gitGetter.addGitHubProject("junit-team","junit",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/junit-team_junit")).getAbsolutePath();
+		String junit_project = new File(MavenSingleProjectAnalyzer.class.getClassLoader()
+			.getResource("junit4").getFile()).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -84,7 +85,7 @@ public class MavenSingleProjectAnalyzerTest {
 	public void testMavenProjectWithOneSubmoduleSparkOnly() {
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = gitGetter.addGitHubProject("google","gson",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
+				"aa236ec38d39f434c1641aeaef9241aec18affde").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -105,7 +106,7 @@ public class MavenSingleProjectAnalyzerTest {
 
 		// the gson project has many submodules but only one submodule is actually built
 		String gson_project = gitGetter.addGitHubProject("google","gson",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/google_gson")).getAbsolutePath();
+				"aa236ec38d39f434c1641aeaef9241aec18affde").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -125,7 +126,7 @@ public class MavenSingleProjectAnalyzerTest {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
+				"31eaaeb410174004196c9ef9c9469e0d02afd94b").getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -146,7 +147,7 @@ public class MavenSingleProjectAnalyzerTest {
 		// the essentials project has multiple modules compiled but only one module has 
 		// real Java class files, the other two only have resources
 		String essentials_project = gitGetter.addGitHubProject("greenrobot","essentials",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/greenrobot_essentials")).getAbsolutePath();;
+				"31eaaeb410174004196c9ef9c9469e0d02afd94b").getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -167,7 +168,7 @@ public class MavenSingleProjectAnalyzerTest {
 		// four of them have java class files and only two of them 
 		// have test classes
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
+				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -191,7 +192,7 @@ public class MavenSingleProjectAnalyzerTest {
 		// four of them have java class files and only two of them 
 		// have test classes
 		String cglib_project = gitGetter.addGitHubProject("cglib","cglib",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/cglib_cglib")).getAbsolutePath();
+				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -210,7 +211,7 @@ public class MavenSingleProjectAnalyzerTest {
 	public void testMavenProjectWithMultiSubmodules3SparkOnly() {
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
+				"b0073dade44d9085052043f0b1e1952f0515cde7").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -230,7 +231,7 @@ public class MavenSingleProjectAnalyzerTest {
 		
 		// the pf4j project has two submodules and one of them has two subsubmodules
 		String pf4j_project = gitGetter.addGitHubProject("decebals","pf4j",
-			new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/decebals_pf4j")).getAbsolutePath();
+			"b0073dade44d9085052043f0b1e1952f0515cde7").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),
@@ -245,7 +246,7 @@ public class MavenSingleProjectAnalyzerTest {
 		assertEquals(384, runner.getUsedAppMethods().size());
 	}
 
-	@Test
+	@Test @Ignore
 	public void testCallGraphInfo(){
 		ClassLoader classLoader = MavenSingleProjectAnalyzerTest.class.getClassLoader();
 		File mavenProject = new File(classLoader.getResource("module-test-project").getFile());
@@ -338,7 +339,7 @@ public class MavenSingleProjectAnalyzerTest {
 	@Test @Ignore
 	public void testNPEInJCTools() {
 		String jctools_project = gitGetter.addGitHubProject("JCTools","JCTools",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/JCTools_JCTools")).getAbsolutePath();
+				"aeeffff7815c97fd5d57dfdaaea1a6eaba2e15dd").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()), Optional.empty(),true,
@@ -350,8 +351,7 @@ public class MavenSingleProjectAnalyzerTest {
 	@Test @Ignore
 	public void testClassResolution() {
 		String project = gitGetter.addGitHubProject("davidmoten","rxjava-extras",
-				new File("/media/troy/Disk2/ONR/BigQuery/sample-projects/davidmoten_rxjava-extras"))
-			.getAbsolutePath();
+				"a91d2ba7d454843250e0b0fce36084f9fb02a551").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project,
 				new EntryPointProcessor(true, false, true,
 					false, new HashSet<MethodData>()),

@@ -23,14 +23,14 @@ public class GitGetter {
 		assert(this.gitDir != null);
 	}
 
-	public File addGitHubProject(String username, String project, File toCheck){
+	public File addGitHubProject(String username, String project, String commit, File toCheck){
 		if(toCheck.exists()){
 			return toCheck;
 		}
-		return addGitHubProject(username, project);
+		return addGitHubProject(username, project, commit);
 	}
 
-	public File addGitHubProject(String username, String project){
+	public File addGitHubProject(String username, String project, String commit){
 		File localRepo = new File(this.gitDir.getAbsolutePath() + File.separator + username + "_" + project);
 
 		if(!localRepo.exists()) {
@@ -39,7 +39,8 @@ public class GitGetter {
 			clone.setDirectory(localRepo);
 			clone.setURI(remoteRepo);
 			try {
-				clone.call();
+				Git git = clone.call();
+				git.checkout().setName(commit).call();
 			} catch (Exception e) {
 				System.err.println("Failed to get repo \"" + remoteRepo + "\".");
 				System.err.println(e.fillInStackTrace());

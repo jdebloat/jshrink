@@ -3,11 +3,9 @@ package edu.ucla.cs.jshrinklib.methodinliner;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
+import javafx.util.Pair;
 import soot.*;
-import soot.jimple.FieldRef;
-import soot.jimple.InvokeExpr;
-import soot.jimple.InvokeStmt;
-import soot.jimple.Stmt;
+import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.jimple.toolkits.invoke.SiteInliner;
@@ -48,6 +46,10 @@ public class MethodInliner {
 
 				//We are only interested inlining methods if there is only one line site
 				if (entry.getValue().size() != 1) {
+					if(debug){
+						System.out.println();
+						System.out.println("More than one call location for " + entry.getKey().getSignature());
+					}
 					continue;
 				}
 
@@ -156,7 +158,7 @@ public class MethodInliner {
 				}
 
 				Body b = caller.retrieveActiveBody();
-				List<Stmt> toInline = toInline(b, callee);
+				List<Pair<Stmt, Boolean>> toInline = toInline(b, callee);
 
 				// There must be exactly 1 inline site in the caller method.
 				if (toInline.size() != 1) {
@@ -166,7 +168,33 @@ public class MethodInliner {
 					continue;
 				}
 
-				Stmt site = toInline.iterator().next();
+				Stmt site = toInline.get(0).getKey();
+
+				//If it's an instance of Dynamic Invocation, this is a special case that must be handled carefully.
+				//If they are multiple potential targets, then we must skip this potential inlining.
+				if(toInline.get(0).getValue()){
+					Set<SootMethod> calledFromCaller = new HashSet<SootMethod>();
+					for( Map.Entry<SootMethod, Set<SootMethod>> entry2 : sortedCallgraph.entrySet()){
+						if(entry2.getValue().contains(caller)){
+							calledFromCaller.add(entry2.getKey());
+						}
+					}
+
+					boolean cont = false;
+					for(SootMethod sootMethod: calledFromCaller){
+						if(!sootMethod.equals(callee) && sootMethod.getSubSignature().equals(callee.getSubSignature())){
+							cont = true;
+							break;
+						}
+					}
+
+					if(cont){
+						if(debug){
+							System.out.println("Failed: Dynamic Dispatch with more than one candidate.");
+						}
+						continue;
+					}
+				}
 
 				/*
 				I'm not sure exactly what this does, but I think it's good to use Soot's own "Inlinability" check here.
@@ -217,7 +245,7 @@ public class MethodInliner {
 				//I don't know why I have to do this again, but I get errors otherwise.
 				b = caller.retrieveActiveBody();
 				toInline = toInline(b, callee);
-				site = toInline.iterator().next();
+				site = toInline.get(0).getKey();
 
 
 				//Inline the method
@@ -256,8 +284,9 @@ public class MethodInliner {
 		return toReturn;
 	}
 
-	private static List<Stmt> toInline(Body b, SootMethod callee){
-		List<Stmt> toReturn = new ArrayList<Stmt>();
+	//Returns the statements, and whether they are an dynamic invocation or not.
+	private static List<Pair<Stmt, Boolean>> toInline(Body b, SootMethod callee){
+		List<Pair<Stmt, Boolean>> toReturn = new ArrayList<Pair<Stmt, Boolean>>();
 		for (Unit u : b.getUnits()) {
 			InvokeExpr invokeExpr = null;
 			if(u instanceof InvokeStmt){
@@ -266,10 +295,18 @@ public class MethodInliner {
 				invokeExpr = ((JAssignStmt) u).getInvokeExpr();
 			}
 
+
+
 			if(invokeExpr != null){
 				SootMethod sootMethod = invokeExpr.getMethod();
-				if(sootMethod.equals(callee)){
-					toReturn.add((Stmt) u);
+				if(invokeExpr instanceof  DynamicInvokeExpr || invokeExpr instanceof VirtualInvokeExpr){
+					if(sootMethod.getSubSignature().equals(callee.getSubSignature())){
+						toReturn.add(new Pair<Stmt, Boolean>((Stmt) u, true));
+					}
+				} else {
+					if(sootMethod.equals(callee)){
+						toReturn.add(new Pair<Stmt, Boolean>((Stmt) u, false));
+					}
 				}
 			}
 		}
