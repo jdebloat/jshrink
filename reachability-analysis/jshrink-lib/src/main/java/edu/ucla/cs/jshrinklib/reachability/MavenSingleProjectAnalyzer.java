@@ -511,37 +511,66 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 			// aggregate all used methods from each submodule (if any) into one set
 			HashMap<String, HashSet<MethodData>> new_entry_points = new HashMap<String, HashSet<MethodData>>();
+
+			//aggregate all methods to be used to search caller methods
+			Set<MethodData> allMethods = new HashSet<MethodData>();
+			allMethods.addAll(testMethods);
+			allMethods.addAll(appMethods);
+			allMethods.addAll(libMethods);
+
+
 			for(String module : tamiflex.used_methods.keySet()) {
 				HashSet<MethodData> set = new HashSet<MethodData>();
+
+				//resolve all the caller methods to method data objects and add them to used_methods to be processed by the next loop
+				HashMap<String, ArrayList<MethodData>> processed_callers = new HashMap<String, ArrayList<MethodData>>();
+
+				for (String calledFrom : tamiflex.used_methods_callers.get(module)) {
+					String[] calledFromSplit = calledFrom.split("\\.");
+					String calledFromClass = "";
+					for(int i=0; i<calledFromSplit.length -1 ; i++){
+						calledFromClass += calledFromSplit[i];
+						if(i != (calledFromSplit.length -2)){
+							calledFromClass += ".";
+						}
+					}
+					String calledFromMethodName = calledFromSplit[calledFromSplit.length-1];
+
+					//search for caller method in all methods
+					for(MethodData md: allMethods){
+						if(calledFromClass.equals(md.getClassName()) && calledFromMethodName.equals(md.getName())){
+							ArrayList methodarr;
+							if(processed_callers.containsKey(calledFrom)){
+								//if exists, get the resolved methods array
+								methodarr = processed_callers.get(calledFrom);
+							}
+							else{
+								//create new array
+								methodarr = new ArrayList<MethodData>();
+							}
+							methodarr.add(md);
+							processed_callers.put(calledFrom, methodarr);
+
+							//insert into used_methods array to be processed by the next loop
+							tamiflex.used_methods.get(module).put( md.getClassName()+": "+md.getSubSignature(),new HashSet<String>());
+						}
+					}
+				}
+
+				//process used_methods
 				for(Map.Entry<String, Set<String>> entry : tamiflex.used_methods.get(module).entrySet()) {
 					String record = entry.getKey();
 					String[] ss = record.split(": ");
 					String class_name1 = ss[0];
 					String method_signature1 = ss[1];
 
-					Set<MethodData> allMethods = new HashSet<MethodData>();
-					allMethods.addAll(testMethods);
-					allMethods.addAll(appMethods);
-					allMethods.addAll(libMethods);
-
 					Set<MethodData> calledFromMethodData = new HashSet<MethodData>();
 					for(String calledFrom : entry.getValue()){
-						//System.out.println("CALLED FROM: " + calledFrom);
-						String[] calledFromSplit = calledFrom.split("\\.");
-						String calledFromClass = "";
-						for(int i=0; i<calledFromSplit.length -1 ; i++){
-							calledFromClass += calledFromSplit[i];
-							if(i != (calledFromSplit.length -2)){
-								calledFromClass += ".";
-							}
+						//TEMP FIX: add first entry from the resolved methods, might need to be changed later
+						if(processed_callers.containsKey(calledFrom)){
+							calledFromMethodData.add(processed_callers.get(calledFrom).get(0));
 						}
-						String calledFromMethodName = calledFromSplit[calledFromSplit.length-1];
-						for(MethodData md: allMethods){
-							if(calledFromClass.equals(md.getClassName())
-								&& calledFromMethodName.equals(md.getName())){
-								calledFromMethodData.add(md);
-							}
-						}
+
 					}
 					
 					boolean foundInApp = false;
