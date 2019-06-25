@@ -568,7 +568,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					for(String calledFrom : entry.getValue()){
 						//TEMP FIX: add first entry from the resolved methods, might need to be changed later
 						if(processed_callers.containsKey(calledFrom)){
-							calledFromMethodData.add(processed_callers.get(calledFrom).get(0));
+							processed_callers.get(calledFrom).forEach((caller_md)->calledFromMethodData.add(caller_md));
 						}
 
 					}
