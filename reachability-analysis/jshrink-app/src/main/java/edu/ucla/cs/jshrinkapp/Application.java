@@ -198,6 +198,9 @@ public class Application {
 		Set<String> allAppClasses = jShrink.getAllAppClasses();
 		Set<String> allLibClasses = jShrink.getAllLibClasses();
 
+		toLog.append("app_num_classes_before," + allAppClasses.size() + System.lineSeparator());
+		toLog.append("lib_num_classes_before," + allLibClasses.size() + System.lineSeparator());
+
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
 			if(commandLineParser.isVerbose()){
@@ -372,6 +375,8 @@ public class Application {
 				(allAppFieldsBefore.size() - appFieldsRemoved.size()) + System.lineSeparator());
 		toLog.append("libs_num_fields_after," +
 				(allLibFieldsBefore.size() - libFieldsRemoved.size()) + System.lineSeparator());
+		toLog.append("app_num_classes_after," + (allAppClasses.size() - appClassesRemoved.size()) + System.lineSeparator());
+		toLog.append("lib_num_classes_after," + (allLibClasses.size() - libClassesRemoved.size()) + System.lineSeparator());
 		toLog.append("app_size_after," + jShrink.getAppSize(true) + System.lineSeparator());
 		toLog.append("libs_size_after," + jShrink.getLibSize(true) + System.lineSeparator());
 

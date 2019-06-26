@@ -39,6 +39,8 @@ public class TamiFlexRunner {
 	public HashMap<String, HashSet<String>> accessed_fields;
 	// methods that are referenced or invoked via Java reflection
 	public HashMap<String, Map<String, Set<String>>> used_methods;
+	// methods that contain the invocation of the methods in used_methods
+	public HashMap<String, Set<String>> used_methods_callers;
 	
 	public TamiFlexRunner(String tamiflexJarPath, String mavenProjectPath, boolean rerunTamiFlex) {
 		this.tamiflex_path = tamiflexJarPath;
@@ -47,6 +49,7 @@ public class TamiFlexRunner {
 		accessed_classes = new HashMap<String, HashSet<String>>();
 		accessed_fields = new HashMap<String, HashSet<String>>();
 		used_methods = new HashMap<String, Map<String, Set<String>>>();
+		used_methods_callers = new HashMap<String, Set<String>>();
 	}
 	
 	public void run() throws IOException {
@@ -245,8 +248,16 @@ public class TamiFlexRunner {
 
 							if(!containing_method.isEmpty()){
 								set.get(reference).add(containing_method);
+
+
+								if(!used_methods_callers.containsKey(module)){
+									used_methods_callers.put(module, new HashSet<String>());
+								}
+
+								used_methods_callers.get(module).add(containing_method);
 							}
 							used_methods.put(module, set);
+
 						} else {
 							// this is a field in the format of "field_type field_name"
 							HashSet<String> set;
@@ -270,6 +281,7 @@ public class TamiFlexRunner {
 						accessed_classes.put(module, set);
 					}
 				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
