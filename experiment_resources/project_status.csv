@@ -20,7 +20,7 @@ facebook_nifty,BUILD_FAILURE
 google_google-http-java-client,BUILD_FAILURE
 google_google-java-format,ISSUE_#36
 google_gson,DONE
-google_guava,ISSUE_#67
+google_guava,ISSUE_#69
 google_guice,ISSUE_#68
 google_jimfs,ISSUE_#36
 google_truth,ISSUE_#26
