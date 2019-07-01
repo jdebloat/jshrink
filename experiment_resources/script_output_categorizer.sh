@@ -27,6 +27,12 @@ cat ${input_file} | while read line; do
 		project_status="ISSUE_#34"
 	elif [[ ${line} == *"was found in an archive"* ]]; then
 		project_status="ISSUE_#30"
+	elif [[ ${line} == *"MALFORMED"* ]];then
+		project_status="ISSUE_#37"
+	elif [[ ${line} == *"Exception in thread \"main\" java.lang.IllegalArgumentException"* ]]; then
+		project_status="ISSUE_#68"
+	elif [[ ${line} == *"Failed to load"* ]]; then
+		project_status="ISSUE_#26"
 	fi
 done
 
