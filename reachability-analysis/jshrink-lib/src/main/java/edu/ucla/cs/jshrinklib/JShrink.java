@@ -33,7 +33,9 @@ public class JShrink {
 	private long libSizeDecompressed = -1;
 	private long appSizeCompressed = -1;
 	private long appSizeDecompressed = -1;
-	private Set<String> unmodifiableClasses = new HashSet<String>();
+
+	//Map<Class,Exception thrown by Soot>
+	private Map<String,String> unmodifiableClasses = new HashMap<String, String>();
 	private boolean runTests;
 	private Optional<Map<MethodData, Set<MethodData>>> callGraphs = Optional.empty();
 
@@ -233,7 +235,7 @@ public class JShrink {
 		return this.getProjectAnalyserRun().getUsedTestClasses();
 	}
 
-	public Set<String> getUnmodifiableClasses() {
+	public Map<String, String> getUnmodifiableClasses() {
 		return this.unmodifiableClasses;
 	}
 
@@ -254,7 +256,7 @@ public class JShrink {
 		}
 
 		ClassCollapserAnalysis classCollapserAnalysis =
-			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints(), unmodifiableClasses);
+			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints(), unmodifiableClasses.keySet());
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.run(classCollapserAnalysis, this.getTestClasses());
@@ -325,7 +327,7 @@ public class JShrink {
 		classPaths.addAll(this.getProjectAnalyser().getAppClasspaths());
 		classPaths.addAll(this.getProjectAnalyser().getLibClasspaths());
 
-		InlineData output = MethodInliner.inlineMethods(callgraph, classPaths, unmodifiableClasses);
+		InlineData output = MethodInliner.inlineMethods(callgraph, classPaths, unmodifiableClasses.keySet());
 		this.classesToModify.addAll(output.getClassesModified());
 
 		return output;
@@ -373,7 +375,7 @@ public class JShrink {
 		//Remove the classes and not the classes affected.
 		for(MethodData methodData : toRemove){
 			if(!removedMethods.contains(methodData)) {
-				if(unmodifiableClasses.contains(methodData.getClassName())) {
+				if(unmodifiableClasses.containsKey(methodData.getClassName())) {
 					// this class cannot be modified by Soot
 					continue;
 				}
@@ -553,7 +555,9 @@ public class JShrink {
 		for(String className : this.getProjectAnalyserRun().getAppClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
-				unmodifiableClasses.add(className);
+				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
+				assert(exceptionMessage.isPresent());
+				unmodifiableClasses.put(className, exceptionMessage.get());
 				continue;
 			}
 			classesToRewrite.add(sootClass);
@@ -561,7 +565,9 @@ public class JShrink {
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
-				unmodifiableClasses.add(className);
+				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
+				assert(exceptionMessage.isPresent());
+				unmodifiableClasses.put(className, exceptionMessage.get());
 				continue;
 			}
 			classesToRewrite.add(sootClass);
@@ -573,7 +579,9 @@ public class JShrink {
 		for(String className : this.getProjectAnalyserRun().getTestClasses()) {
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
-				unmodifiableClasses.add(className);
+				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
+				assert(exceptionMessage.isPresent());
+				unmodifiableClasses.put(className, exceptionMessage.get());
 			}
 			// no need to rewrite since we do not measure the size of test code
 //			classesToRewrite.add(sootClass);
@@ -630,7 +638,7 @@ public class JShrink {
 	private void modifyClasses(Set<SootClass> classesToRewrite, Set<File> classPaths){
 		for (SootClass sootClass : classesToRewrite) {
 			try {
-				if(unmodifiableClasses.contains(sootClass.getName())) {
+				if(unmodifiableClasses.containsKey(sootClass.getName())) {
 					if(verbose) {
 						// we will not update the class since it will cause exceptions when writing out to bytecode based on
 						// the first soot pass. But this may cause a problem when loading or running the unmodified class.
@@ -693,7 +701,7 @@ public class JShrink {
 
 		// modify each Soot class
 		for(String className : toRemoveByClassName.keySet()) {
-			if(unmodifiableClasses.contains(className)) {
+			if(unmodifiableClasses.containsKey(className)) {
 				// do not remove a field in an unmodifiable class since the class cannot be updated anyway
 				continue;
 			}

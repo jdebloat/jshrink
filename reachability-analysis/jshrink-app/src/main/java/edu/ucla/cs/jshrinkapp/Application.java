@@ -36,6 +36,8 @@ public class Application {
 	/*package*/ static TestOutput testOutputBefore = null;
 	/*package*/ static TestOutput testOutputAfter = null;
 
+	/*package*/ static Map<String, String> unmodifiableClass = null;
+
 	public static void main(String[] args) {
 
 		long startTime = System.nanoTime();
@@ -51,6 +53,7 @@ public class Application {
 		wipedMethodBodyWithExceptionAndMessage = false;
 		testOutputBefore = null;
 		testOutputAfter = null;
+		unmodifiableClass = new HashMap<String, String>();
 
 		StringBuilder toLog = new StringBuilder();
 
@@ -119,6 +122,8 @@ public class Application {
 		}
 
 		jShrink.makeSootPass();
+
+		unmodifiableClass.putAll(jShrink.getUnmodifiableClasses());
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("Done making \"soot pass\"!");
@@ -473,7 +478,8 @@ public class Application {
 
 		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputBefore.getTestOutputText()) : Optional.empty(),
-			commandLineParser.isRunTests() ? Optional.of(testOutputAfter.getTestOutputText()) : Optional.empty());
+			commandLineParser.isRunTests() ? Optional.of(testOutputAfter.getTestOutputText()) : Optional.empty(),
+			unmodifiableClass);
 
 		if(commandLineParser.isVerbose()){
 			System.out.println("Output logging info to \"" + commandLineParser.getLogDirectory() + "\".");
@@ -481,7 +487,8 @@ public class Application {
 	}
 
 	private static void outputToLogDirectory(File directory, String log, String verboseLog,
-	                                         Optional<String> testOutputBefore, Optional<String> testOutputAfter){
+	                                         Optional<String> testOutputBefore, Optional<String> testOutputAfter,
+	                                         Map<String, String> unmodifiableClasses){
 
 		try {
 			FileWriter fileWriter =
@@ -507,6 +514,18 @@ public class Application {
 				fileWriter.write(testOutputAfter.get());
 				fileWriter.close();
 			}
+
+			StringBuilder unmodifiableClassesString = new StringBuilder();
+			for(Map.Entry<String, String> entry : unmodifiableClasses.entrySet()){
+				unmodifiableClassesString.append(entry.getKey() + System.lineSeparator() + entry.getValue()
+					+ System.lineSeparator() + System.lineSeparator());
+			}
+
+			fileWriter =
+				new FileWriter(directory.getAbsolutePath() + File.separator + "unmodifiable_classes_log.dat");
+			fileWriter.write(unmodifiableClassesString.toString());
+			fileWriter.close();
+
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);

@@ -847,6 +847,7 @@ public class ApplicationTest {
 		assertTrue(new File(expected.getAbsolutePath() + File.separator + "log.dat").exists());
 		assertTrue(new File(expected.getAbsolutePath() + File.separator + "test_output_before.dat").exists());
 		assertTrue(new File(expected.getAbsolutePath() + File.separator + "test_output_after.dat").exists());
+		assertTrue(new File(expected.getAbsolutePath() + File.separator + "unmodifiable_classes_log.dat").exists());
 
 		expected.delete();
 	}
