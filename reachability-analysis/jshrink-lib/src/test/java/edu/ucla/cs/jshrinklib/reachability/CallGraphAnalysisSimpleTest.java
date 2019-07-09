@@ -382,6 +382,35 @@ public class CallGraphAnalysisSimpleTest {
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedInCollectionMethodReference"));
 	}
 
+	@Test
+	public void testInterfaceDefaults(){
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		List<File> libJarPath = new ArrayList<File>();
+		List<File> appClassPath = new ArrayList<File>();
+		List<File> appTestPath = new ArrayList<File>();
+		appClassPath.add(new File(classLoader.getResource("interface-methods" + File.separator + "target"
+			+ File.separator + "classes").getFile()));
+
+		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+			new EntryPointProcessor(true, false, false,
+				false, new HashSet<MethodData>()), false);
+		runner.run();
+
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Application", "main"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Implementor", "interfaceAMethod"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Implementor", "interfaceBMethod"));
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Implementor", "helloWorld"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Implementor", "bar"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceA", "helloWorld"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceA", "goodbyeWorld"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceA", "interfaceAMethod"));
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceB", "foo"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceB", "bar"));
+		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceB", "interfaceBMethod"));
+	}
+
 	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map,
 	                                             String className, String methodName){
 		MethodData methodData = null;
