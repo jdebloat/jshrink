@@ -382,6 +382,12 @@ public class MethodWiperTest {
 	}
 
 	@Test
+	public void removeDefaultInterfaceMethod(){
+		SootClass sootClass = getSootClassFromResources("InterfaceTest");
+		assertTrue(MethodWiper.removeMethod(sootClass.getMethodByName("defaultMethod")));
+	}
+
+	@Test
 	public void wipeTinyMethodBody(){
 		SootClass sootClass = getSootClassFromResources("TinyMethodTest");
 		assertFalse(MethodWiper.wipeMethodBodyAndInsertRuntimeException(sootClass.getMethodByName("getNum")
