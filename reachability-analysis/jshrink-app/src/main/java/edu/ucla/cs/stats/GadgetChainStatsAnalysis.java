@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
 
-public class GadgetChainAnalysis {
+public class GadgetChainStatsAnalysis {
     public static void main(String[] args) throws IOException {
         HashMap<String, Set<String>> gadgets = GadgetAnalyzer.loadGadgetChains();
         int sum = 0;
