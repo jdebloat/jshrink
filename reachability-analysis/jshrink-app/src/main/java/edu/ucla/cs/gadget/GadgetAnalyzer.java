@@ -66,7 +66,7 @@ public class GadgetAnalyzer {
         }
     }
 
-    private static HashMap<String, Set<String>> loadGadgetChains() throws IOException {
+    public static HashMap<String, Set<String>> loadGadgetChains() throws IOException {
         HashMap<String, Set<String>> allGadgetChains = new HashMap<String, Set<String>>();
         File dir = new File(GadgetAnalyzer.class.getClassLoader().getResource("gadget-chain").getFile());
         for(File f : dir.listFiles()) {
