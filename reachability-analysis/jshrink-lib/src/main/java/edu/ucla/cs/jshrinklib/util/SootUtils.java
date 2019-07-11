@@ -310,4 +310,23 @@ public class SootUtils {
 
 		return true;
 	}
+
+	public static Optional<String> getUnmodifiableClassException(SootClass sootClass){
+		try {
+			for(SootMethod m: sootClass.getMethods()){
+				if(m.isConcrete()) {
+					m.retrieveActiveBody();
+				}
+			}
+
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter writerOut = new PrintWriter(stringWriter);
+			JasminClass jasminClass = new JasminClass(sootClass);
+
+		}catch (Exception e){
+			return Optional.of(e.getLocalizedMessage());
+		}
+
+		return Optional.empty();
+	}
 }
