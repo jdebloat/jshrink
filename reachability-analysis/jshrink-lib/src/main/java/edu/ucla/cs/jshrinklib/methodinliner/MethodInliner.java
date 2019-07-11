@@ -2,8 +2,6 @@ package edu.ucla.cs.jshrinklib.methodinliner;
 
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
-import fj.P;
-import javafx.util.Pair;
 import soot.*;
 import soot.jimple.*;
 import soot.jimple.internal.JAssignStmt;
@@ -158,7 +156,7 @@ public class MethodInliner {
 				}
 
 				Body b = caller.retrieveActiveBody();
-				List<Pair<Stmt, Boolean>> toInline = toInline(b, callee);
+				List<Map.Entry<Stmt, Boolean>> toInline = toInline(b, callee);
 
 				// There must be exactly 1 inline site in the caller method.
 				if (toInline.size() != 1) {
@@ -285,8 +283,8 @@ public class MethodInliner {
 	}
 
 	//Returns the statements, and whether they are an dynamic invocation or not.
-	private static List<Pair<Stmt, Boolean>> toInline(Body b, SootMethod callee){
-		List<Pair<Stmt, Boolean>> toReturn = new ArrayList<Pair<Stmt, Boolean>>();
+	private static List<Map.Entry<Stmt, Boolean>> toInline(Body b, SootMethod callee){
+		List<Map.Entry<Stmt, Boolean>> toReturn = new ArrayList<Map.Entry<Stmt, Boolean>>();
 		for (Unit u : b.getUnits()) {
 			InvokeExpr invokeExpr = null;
 			if(u instanceof InvokeStmt){
@@ -301,11 +299,11 @@ public class MethodInliner {
 				SootMethod sootMethod = invokeExpr.getMethod();
 				if(invokeExpr instanceof  DynamicInvokeExpr || invokeExpr instanceof VirtualInvokeExpr){
 					if(sootMethod.getSubSignature().equals(callee.getSubSignature())){
-						toReturn.add(new Pair<Stmt, Boolean>((Stmt) u, true));
+						toReturn.add(new HashMap.SimpleEntry<Stmt, Boolean>((Stmt) u, true));
 					}
 				} else {
 					if(sootMethod.equals(callee)){
-						toReturn.add(new Pair<Stmt, Boolean>((Stmt) u, false));
+						toReturn.add(new HashMap.SimpleEntry<Stmt, Boolean>((Stmt) u, false));
 					}
 				}
 			}
