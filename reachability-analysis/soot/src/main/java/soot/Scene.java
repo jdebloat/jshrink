@@ -1750,9 +1750,13 @@ public class Scene // extends AbstractHost
     } else {
       for (final String path : Options.v().process_dir()) {
         for (String cl : SourceLocator.v().getClassesUnder(path)) {
-          SootClass theClass = loadClassAndSupport(cl);
-          if (!theClass.isPhantom) {
-            theClass.setApplicationClass();
+          // If a project uses jars built by Java 9, there will be a module-info.class
+          // in the jar, which causes IllegalArgumentException in ASM
+          if(!cl.equals("module-info")) {
+            SootClass theClass = loadClassAndSupport(cl);
+            if (!theClass.isPhantom) {
+              theClass.setApplicationClass();
+            }
           }
         }
       }
