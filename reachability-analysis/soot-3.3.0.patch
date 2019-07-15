@@ -1,21 +1,25 @@
 diff --git a/reachability-analysis/soot/src/main/java/soot/Scene.java b/reachability-analysis/soot/src/main/java/soot/Scene.java
-index 169b1e459..45ef7b209 100755
+index 45ef7b209..385a931f3 100755
 --- a/reachability-analysis/soot/src/main/java/soot/Scene.java
 +++ b/reachability-analysis/soot/src/main/java/soot/Scene.java
-@@ -1750,9 +1750,13 @@ public class Scene // extends AbstractHost
-     } else {
-       for (final String path : Options.v().process_dir()) {
+@@ -1752,10 +1752,16 @@ public class Scene // extends AbstractHost
          for (String cl : SourceLocator.v().getClassesUnder(path)) {
--          SootClass theClass = loadClassAndSupport(cl);
--          if (!theClass.isPhantom) {
--            theClass.setApplicationClass();
-+          // If a project uses jars built by Java 9, there will be a module-info.class
-+          // in the jar, which causes IllegalArgumentException in ASM
-+          if(!cl.equals("module-info")) {
-+            SootClass theClass = loadClassAndSupport(cl);
-+            if (!theClass.isPhantom) {
-+              theClass.setApplicationClass();
-+            }
+           // If a project uses jars built by Java 9, there will be a module-info.class
+           // in the jar, which causes IllegalArgumentException in ASM
+-          if(!cl.equals("module-info")) {
+-            SootClass theClass = loadClassAndSupport(cl);
+-            if (!theClass.isPhantom) {
+-              theClass.setApplicationClass();
++          if(!cl.startsWith("META-INF") && !cl.endsWith("module-info")) {
++            try {
++              SootClass theClass = loadClassAndSupport(cl);
++              if (!theClass.isPhantom) {
++                theClass.setApplicationClass();
++              }
++            }catch(Exception e){
++              e.printStackTrace();
++              System.out.println("Problem class: " + cl);
++              System.exit(1);
+             }
            }
          }
-       }
