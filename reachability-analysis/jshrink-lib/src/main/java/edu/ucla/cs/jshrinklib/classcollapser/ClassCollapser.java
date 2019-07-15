@@ -414,6 +414,23 @@ public class ClassCollapser {
             }
         }
 
+        //The final modifier can be problematic, best just to remove them to be save
+        if(to.isFinal()){
+            to.setModifiers(to.getModifiers() - Modifier.FINAL);
+        }
+
+        for(SootMethod sootMethod : to.getMethods()){
+            if(sootMethod.isFinal()) {
+                sootMethod.setModifiers(sootMethod.getModifiers() - Modifier.FINAL);
+            }
+        }
+
+        for(SootField sootField : to.getFields()){
+            if(sootField.isFinal()){
+                sootField.setModifiers(sootField.getModifiers() - Modifier.FINAL);
+            }
+        }
+
         return toReturn;
     }
 
