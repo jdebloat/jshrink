@@ -47,7 +47,7 @@ SOURCES=../agent_util_jshrink/agent_util.c ../java_crw_jshrink/java_crw_jshrink.
 JAVA_SOURCES=Mtrace.java
 
 # Name of jar file that needs to be created
-JARFILE=jmtrace.jar
+JARFILE=../build/jmtrace.jar
 
 # Linux GNU C Compiler
 # GNU Compiler options needed to build it
@@ -62,7 +62,7 @@ endif
 # Object files needed to create library
 OBJECTS=$(SOURCES:.c=.o)
 # Library name and options needed to build it
-LIBRARY=lib$(LIBNAME).so
+LIBRARY=../build/lib$(LIBNAME).so
 LDFLAGS=-Wl,-soname=$(LIBRARY) -static-libgcc
 # Libraries we are dependent on
 LIBRARIES=-L$(JDK)/jre/lib/$(LIBARCH) -lc
