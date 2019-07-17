@@ -23,3 +23,18 @@ index 45ef7b209..385a931f3 100755
              }
            }
          }
+
+diff --git a/reachability-analysis/soot/src/main/java/soot/SourceLocator.java b/reachability-analysis/soot/src/main/java/soot/SourceLocator.java
+index 818c043ef..daf2d0cbf 100755
+--- a/reachability-analysis/soot/src/main/java/soot/SourceLocator.java
++++ b/reachability-analysis/soot/src/main/java/soot/SourceLocator.java
+@@ -375,9 +375,6 @@ public class SourceLocator {
+           } else if (fileName.endsWith(".jimple")) {
+             int index = fileName.lastIndexOf(".jimple");
+             classes.add(prefix + fileName.substring(0, index));
+-          } else if (fileName.endsWith(".java")) {
+-            int index = fileName.lastIndexOf(".java");
+-            classes.add(prefix + fileName.substring(0, index));
+           } else if (fileName.endsWith(".dex")) {
+             try {
+               for (DexFileProvider.DexContainer container : DexFileProvider.v().getDexFromSource(element)) {
