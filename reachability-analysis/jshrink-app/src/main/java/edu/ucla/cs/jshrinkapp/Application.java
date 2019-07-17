@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucla.cs.jshrinklib.JShrink;
+import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapser;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.methodinliner.InlineData;
@@ -470,6 +471,22 @@ public class Application {
 
 		for(FieldData fieldData : appFieldsRemoved){
 			toLogVerbose.append("LIB_FIELD_REMOVED," + fieldData.toString() + System.lineSeparator());
+		}
+
+		if(commandLineParser.collapseClasses() && classCollapserData!=null){
+			for(String classString : classCollapserData.getClassesToRemove()){
+				toLogVerbose.append("CLASS_REMOVED_VIA_CLASS_COLLAPSE," + classString + System.lineSeparator());
+			}
+
+			for(String classesToRewrite : classCollapserData.getClassesToRewrite()){
+				toLogVerbose.append("CLASSES_TO_REWRITE_VIA_CLASS_COLLAPSE," + classesToRewrite + System.lineSeparator());
+			}
+
+			for(MethodData methodData : classCollapserData.getRemovedMethods()){
+				toLogVerbose.append("METHODS_REMOVED_VIA_CLASS_COLLAPSE," + methodData +  System.lineSeparator());
+			}
+
+			toLogVerbose.append(ClassCollapser.log);
 		}
 
 
