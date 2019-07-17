@@ -41,6 +41,7 @@ public class JMTraceRunner extends TamiFlexRunner{
 		projectPath = mavenProjectPath;
 		mtraceJARPath = JMTraceHomeDir+File.separator+"jmtrace.jar";
 		mtraceLibPath = JMTraceHomeDir+File.separator+"libjmtrace.so";
+		this.resolvePath();
 	}
 
 	@Override
