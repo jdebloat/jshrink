@@ -23,6 +23,7 @@ public class JShrink {
 	private File projectDir;
 	private EntryPointProcessor entryPointProcessor;
 	private Optional<File> tamiflex;
+	private Optional<File> jmtrace;
 	private boolean useSpark;
 	private boolean verbose;
 	private Optional<IProjectAnalyser> projectAnalyser = Optional.empty();
@@ -70,7 +71,7 @@ public class JShrink {
 
 	public static JShrink createInstance(File projectDir,
 	                                  EntryPointProcessor entryPointProcessor,
-	                                  Optional<File> tamiflex,
+	                                  Optional<File> tamiflex, Optional<File> jmtrace,
 	                                  boolean useSpark, boolean verbose, boolean executeTests) throws IOException{
 		/*
 		Due to Soot using a singleton pattern, I use a singleton pattern here to ensure safety.
@@ -79,7 +80,7 @@ public class JShrink {
 		if(instance.isPresent()){
 			throw new IOException("Instance of JShrink already exists. Please use \"getInstance\".");
 		}
-		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, useSpark, verbose, executeTests));
+		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, jmtrace, useSpark, verbose, executeTests));
 		return instance.get();
 	}
 
@@ -96,13 +97,14 @@ public class JShrink {
 
 	public static JShrink resetInstance(File projectDir,
 	                                    EntryPointProcessor entryPointProcessor,
-	                                    Optional<File> tamiflex,
+	                                    Optional<File> tamiflex, Optional<File> jmtrace,
 	                                    boolean useSpark, boolean verbose, boolean executeTests) throws IOException{
 		if(instance.isPresent()){
 			instance.get().reset();
 			instance.get().projectDir = projectDir;
 			instance.get().entryPointProcessor = entryPointProcessor;
 			instance.get().tamiflex = tamiflex;
+			instance.get().jmtrace = jmtrace;
 			instance.get().useSpark = useSpark;
 			instance.get().verbose = verbose;
 			instance.get().runTests = executeTests;
@@ -116,11 +118,12 @@ public class JShrink {
 		throw new IOException("Instance of JShrink does not exist. Please use \"createInstance\".");
 	}
 
-	private JShrink(File projectDir, EntryPointProcessor entryPointProcessor, Optional<File> tamiflex,
+	private JShrink(File projectDir, EntryPointProcessor entryPointProcessor, Optional<File> tamiflex, Optional<File> jmtrace,
 	                boolean useSpark, boolean verbose, boolean executeTests){
 			this.projectDir = projectDir;
 			this.entryPointProcessor = entryPointProcessor;
 			this.tamiflex = tamiflex;
+			this.jmtrace = jmtrace;
 			this.useSpark = useSpark;
 			this.verbose = verbose;
 			this.runTests = executeTests;
@@ -143,7 +146,7 @@ public class JShrink {
 		//Just supporting MavenSingleProjectAnalysis for now
 		this.projectAnalyser = Optional.of(
 			new MavenSingleProjectAnalyzer(this.projectDir.getAbsolutePath(),
-				this.entryPointProcessor, this.tamiflex, this.useSpark, this.verbose, this.runTests));
+				this.entryPointProcessor, this.tamiflex, this.jmtrace, this.useSpark, this.verbose, this.runTests));
 
 		((MavenSingleProjectAnalyzer) this.projectAnalyser.get()).setCompileProject(!alreadyCompiled);
 

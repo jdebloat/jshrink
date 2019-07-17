@@ -28,6 +28,7 @@ public class ApplicationCommandLineParser {
 	private final Optional<String> exceptionMessage;
 	private final boolean exception;
 	private final Optional<File> tamiflex;
+	private final Optional<File> jmtrace;
 	private final boolean removeClasses;
 	private final boolean spark;
 	private final boolean inlineMethods;
@@ -51,7 +52,6 @@ public class ApplicationCommandLineParser {
 	public ApplicationCommandLineParser(String[] args) throws FileNotFoundException, ParseException {
 		CommandLineParser parser = new DefaultParser();
 		CommandLine commandLine = null;
-
 		try{
 			commandLine = parser.parse(ApplicationCommandLineParser.getOptions(), args);
 		} catch (ParseException e){
@@ -145,7 +145,7 @@ public class ApplicationCommandLineParser {
 			this.exceptionMessage = Optional.empty();
 		}
 
-		if(commandLine.hasOption("f")){
+		if (commandLine.hasOption("f")){
 			File tamiFlexJar = new File(commandLine.getOptionValue("f"));
 			if(!tamiFlexJar.exists()){
 				throw new FileNotFoundException("Specified TamiFlex jar (\"" + tamiFlexJar.getAbsolutePath() + "\") " +
@@ -156,8 +156,20 @@ public class ApplicationCommandLineParser {
 						"is a directory. Jar file expected.");
 			}
 			this.tamiflex = Optional.of(tamiFlexJar);
-		} else {
+		}
+		else{
 			this.tamiflex = Optional.empty();
+		}
+		if(commandLine.hasOption("jm")){
+			File jmTraceHomePath=new File(commandLine.getOptionValue("jm"));
+			if(!jmTraceHomePath.exists()){
+				throw new FileNotFoundException("Specified path (\"" + jmTraceHomePath.getAbsolutePath() + "\") " +
+						"does not exist.");
+			}
+			this.jmtrace = Optional.of(jmTraceHomePath);
+		}
+		else {
+			this.jmtrace = Optional.empty();
 		}
 
 		this.removeClasses = commandLine.hasOption("o");
@@ -394,6 +406,14 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option jmTraceOption = Option.builder("jm")
+				.desc("Enable JMTrace")
+				.longOpt("jmtrace")
+				.hasArg(true)
+				.argName("JMTrace Home Dir")
+				.required(false)
+				.build();
+
 		Option removeMethodsOption = Option.builder("r")
 			.desc("Remove methods header and body (by default, the bodies are wiped)")
 			.longOpt("remove-methods")
@@ -490,6 +510,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(skipMethodWiping);
 		toReturn.addOption(removeFieldsOption);
 		toReturn.addOption(logDirectoryOption);
+		toReturn.addOption(jmTraceOption);
 
 		return toReturn;
 	}
@@ -562,6 +583,10 @@ public class ApplicationCommandLineParser {
 
 	public Optional<File> getTamiflex(){
 		return this.tamiflex;
+	}
+
+	public Optional<File> getJmtrace(){
+		return this.jmtrace;
 	}
 
 	public boolean removeClasses(){
