@@ -11,3 +11,4 @@
 *.lst
 reachability-analysis/soot/eclipse
 reachability-analysis/soot/doc
+reachability-analysis/src
