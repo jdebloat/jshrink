@@ -490,18 +490,32 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		if(tamiFlexJar.isPresent() || jmtrace.isPresent()) {
 			//TamiFlexRunner
 			TamiFlexRunner tamiflex;
-			if(jmtrace.isPresent()){
-				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
-			}
-			else{
+
+			if(tamiFlexJar.isPresent()){
 				tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),	project_path, false);
 			}
+			else{
+				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+			}
+
 			try {
 				tamiflex.run();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			//if both options were present
+			if(jmtrace.isPresent() && tamiFlexJar.isPresent()){
+				JMTraceRunner jmtrunner = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+				try {
+					jmtrunner.run(tamiflex);
 
+					//resetting results to merged results
+					tamiflex = (TamiFlexRunner) jmtrunner;
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
 				Set<String> usedClassesInModule = tamiflex.accessed_classes.get(module);

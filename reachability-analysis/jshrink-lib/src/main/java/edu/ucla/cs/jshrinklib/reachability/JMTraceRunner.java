@@ -43,7 +43,13 @@ public class JMTraceRunner extends TamiFlexRunner{
 		mtraceLibPath = JMTraceHomeDir+File.separator+"libjmtrace.so";
 		this.resolvePath();
 	}
-
+	public void run(TamiFlexRunner tamiflex) throws IOException{
+		super.accessed_classes=tamiflex.accessed_classes;
+		super.used_methods=tamiflex.used_methods;
+		super.accessed_fields=tamiflex.accessed_fields;
+		super.used_methods_callers=tamiflex.used_methods_callers;
+		this.run();
+	}
 	@Override
 	public void run() throws IOException{
 		if(!this.resolvePath()){
