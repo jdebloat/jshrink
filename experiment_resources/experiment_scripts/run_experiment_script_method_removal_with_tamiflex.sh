@@ -7,6 +7,9 @@ DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
+JSHRINK_MTRACE="${PWD}/jshrink-mtrace"                                  
+JMTRACE="${JSHRINK_MTRACE}/jmtrace"                                     
+MTRACE_BUILD="${JSHRINK_MTRACE}/build"
 TIMEOUT=36000 #10 hours
 OUTPUT_LOG_DIR="${PWD}/method_removal_with_tamiflex_output_log"
 
@@ -32,6 +35,14 @@ if [ ! -f "${DEBLOAT_APP}" ]; then
 	exit 1
 fi
 
+{                                                                       
+        #Make jtrace                                                    
+        cd "${JMTRACE}"                                                 
+        make clean                                                      
+        ./makeit.sh                                                     
+        cd ${PWD}                                                       
+}&>/dev/null 
+
 cat ${WORK_LIST} |  while read item; do
 	item_dir="${PROJECT_DIR}/${item}"
 	cd "${item_dir}"
@@ -44,7 +55,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 10 hour timeout
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
