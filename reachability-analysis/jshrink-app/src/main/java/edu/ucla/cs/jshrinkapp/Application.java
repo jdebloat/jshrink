@@ -102,11 +102,11 @@ public class Application {
 		try {
 			if(JShrink.instanceExists()){
 				jShrink = JShrink.resetInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
+					commandLineParser.getTamiflex(), commandLineParser.getJmtrace(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
 					commandLineParser.isRunTests());
 			} else {
 				jShrink = JShrink.createInstance(commandLineParser.getMavenDirectory().get(), entryPointProcessor,
-					commandLineParser.getTamiflex(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
+					commandLineParser.getTamiflex(), commandLineParser.getJmtrace(), commandLineParser.useSpark(), commandLineParser.isVerbose(),
 					commandLineParser.isRunTests());
 			}
 		} catch (IOException e) {
