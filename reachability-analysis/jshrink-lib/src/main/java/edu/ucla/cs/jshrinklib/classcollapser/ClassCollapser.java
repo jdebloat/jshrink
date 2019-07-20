@@ -358,7 +358,22 @@ public class ClassCollapser {
                         }
                     }
                 }
-            }
+            } else if(method.getName().equals("<clinit>")){
+				Body b = method.retrieveActiveBody();
+				for (Unit u : b.getUnits()) {
+					if (u instanceof JAssignStmt) {
+						JAssignStmt stmt = (JAssignStmt) u;
+						if (stmt.containsFieldRef()) {
+							FieldRef fr = stmt.getFieldRef();
+							SootFieldRef oldFieldRef = fr.getFieldRef();
+							AbstractSootFieldRef newFieldRef =
+								new AbstractSootFieldRef(to, oldFieldRef.name(),
+									oldFieldRef.type(), oldFieldRef.isStatic());
+							fr.setFieldRef(newFieldRef);
+						}
+					}
+				}
+			}
             if (inlinee != null && toInLine != null) {
                 Body b = inlinee.retrieveActiveBody();
                 // inline the constructor
