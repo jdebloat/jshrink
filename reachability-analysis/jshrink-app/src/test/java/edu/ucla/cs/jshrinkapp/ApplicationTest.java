@@ -911,7 +911,7 @@ public class ApplicationTest {
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), false, false, true);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), Optional.empty(), false, false, true);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
@@ -1372,5 +1372,53 @@ public class ApplicationTest {
 		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 
 		assertTrue(jarIntact());
+	}
+	@Test
+	public void runMethodRemovalOnProjectWithJMTrace() {
+		//This test ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getSimpleTestProjectDir() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--run-tests ");
+		arguments.append("--verbose ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+
+	}
+	@Test
+	public void runMethodRemovalOnProjectWithTamiflexAndJMTrace() {
+		//This test ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		String project_path = getSimpleTestProjectDir().getAbsolutePath();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + project_path + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--run-tests ");
+		arguments.append("--verbose ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+
 	}
 }

@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 
 public class ClassCollapser {
 
+    //This is a hacky way to get logging information. TODO: Fix this at some point
+    public static StringBuilder log = new StringBuilder();
+
     private final Set<String> classesToRewrite;
     private final Set<String> classesToRemove;
     private final Set<MethodData> removedMethods;
@@ -355,7 +358,22 @@ public class ClassCollapser {
                         }
                     }
                 }
-            }
+            } else if(method.getName().equals("<clinit>")){
+				Body b = method.retrieveActiveBody();
+				for (Unit u : b.getUnits()) {
+					if (u instanceof JAssignStmt) {
+						JAssignStmt stmt = (JAssignStmt) u;
+						if (stmt.containsFieldRef()) {
+							FieldRef fr = stmt.getFieldRef();
+							SootFieldRef oldFieldRef = fr.getFieldRef();
+							AbstractSootFieldRef newFieldRef =
+								new AbstractSootFieldRef(to, oldFieldRef.name(),
+									oldFieldRef.type(), oldFieldRef.isStatic());
+							fr.setFieldRef(newFieldRef);
+						}
+					}
+				}
+			}
             if (inlinee != null && toInLine != null) {
                 Body b = inlinee.retrieveActiveBody();
                 // inline the constructor
@@ -414,6 +432,23 @@ public class ClassCollapser {
             }
         }
 
+        //The final modifier can be problematic, best just to remove them to be save
+        if(to.isFinal()){
+            to.setModifiers(to.getModifiers() - Modifier.FINAL);
+        }
+
+        for(SootMethod sootMethod : to.getMethods()){
+            if(sootMethod.isFinal()) {
+                sootMethod.setModifiers(sootMethod.getModifiers() - Modifier.FINAL);
+            }
+        }
+
+        for(SootField sootField : to.getFields()){
+            if(sootField.isFinal()){
+                sootField.setModifiers(sootField.getModifiers() - Modifier.FINAL);
+            }
+        }
+
         return toReturn;
     }
 
@@ -428,18 +463,26 @@ public class ClassCollapser {
 
         boolean changed = false;
         if (c.hasSuperclass() && c.getSuperclass().getName().equals(changeFrom.getName())) {
+            log.append("CHANGE_SUPER_CLASS_IN_CLASS_COLLAPSER," + c.getName() + " super class changed from "
+                + c.getSuperclass().getName() + " to " + changeTo + System.lineSeparator());
             c.setSuperclass(changeTo);
             changed = true;
         }
         if (c.getInterfaces().contains(changeFrom)) {
+            log.append("REMOVED_INTERFACE_IN_CLASS_COLLAPSER," + changeFrom + " in " + c.getName()
+                + System.lineSeparator());
             c.removeInterface(changeFrom);
             if(!c.getInterfaces().contains(changeTo)) {
+                log.append("ADDED_INTERFACE_IN_CLASS_COLLAPSER," + changeTo + " in " + c.getName()
+                    + System.lineSeparator());
                 c.addInterface(changeTo);
             }
             changed = true;
         }
         for (SootField f: c.getFields()) {
             if (f.getType() == Scene.v().getType(changeFrom.getName())) {
+                log.append("CHANGED_TYPE_IN_CLASS_COLLAPSER," + f.getType() + "type for variable " + f.getName()
+                    + "in class " + c.getName() + " to " + f.getType() + System.lineSeparator());
                 f.setType(Scene.v().getType(changeTo.getName()));
                 changed = true;
             }
@@ -497,6 +540,10 @@ public class ClassCollapser {
                         }
                     }
                     annotation.setElems(newValues);
+                    for(AnnotationElem annotationElem : newValues){
+                        log.append("ADDED_ANNOTATION_ELEMENT_IN_CLASS_COLLAPSER," + annotation.toString()
+                            + " from class " + c.getName() + System.lineSeparator());
+                    }
                 }
             }
         }

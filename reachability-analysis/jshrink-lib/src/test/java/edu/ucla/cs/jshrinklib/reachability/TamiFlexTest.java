@@ -5,7 +5,11 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import edu.ucla.cs.jshrinklib.GitGetter;
 import org.apache.commons.io.FileUtils;
@@ -390,6 +394,49 @@ public class TamiFlexTest {
 			assertTrue(content.contains("dontNormalize = true"));
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void compareTamiflexWithJMTrace(){
+		String project_path = "/home/jay/call-graph-analysis/experiment_resources/sample-projects/sockeqwe_fragmentargs";
+		String jmTraceHome = "/home/jay/openjdktest/test/jshrink-mtrace";
+		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
+				.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
+
+		JMTraceRunner jmt = new JMTraceRunner(jmTraceHome, project_path);
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+
+		class Helper{
+			public Set<?> disjunction(Set<?> s1, Set<?> s2){
+				return  s1.stream().filter(x-> !s2.contains(x)).collect(Collectors.toSet());
+			}
+		}
+		try {
+			jmt.run();
+			tamiflex.run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Helper h = new Helper();
+		for(String module : tamiflex.accessed_classes.keySet()){
+			System.out.flush();
+			System.out.println("For module "+module);
+			System.out.println("Classes only in JMTrace");
+			Set<?> jmtrace_only = h.disjunction(jmt.accessed_classes.get(module), tamiflex.accessed_classes.get(module));
+			System.out.println(Arrays.toString(jmtrace_only.toArray()));
+
+			System.out.println("Classes only in Tamiflex");
+			Set<?> tamiflex_only = h.disjunction(tamiflex.accessed_classes.get(module), jmt.accessed_classes.get(module));
+			System.out.println(Arrays.toString(tamiflex_only.toArray()));
+
+			System.out.println("Methods only in JMTrace");
+			jmtrace_only = h.disjunction(jmt.used_methods.get(module).keySet(), tamiflex.used_methods.get(module).keySet());
+			System.out.println(Arrays.toString(jmtrace_only.toArray()));
+
+			System.out.println("Methods only in Tamiflex");
+			tamiflex_only = h.disjunction(tamiflex.used_methods.get(module).keySet(), jmt.used_methods.get(module).keySet());
+			System.out.println(Arrays.toString(tamiflex_only.toArray()));
 		}
 	}
 }

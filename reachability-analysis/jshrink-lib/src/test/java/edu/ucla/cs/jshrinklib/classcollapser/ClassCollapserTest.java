@@ -5,6 +5,7 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ClassUtils;
 import org.junit.After;
 import org.junit.Test;
 import soot.*;
@@ -303,4 +304,168 @@ public class ClassCollapserTest {
         ClassCollapser.mergeTwoClasses(Implementation, Interface, new HashMap<MethodData, Set<MethodData>>());
         ClassCollapser.mergeTwoClasses(B, A, new HashMap<MethodData, Set<MethodData>>());
     }
+
+    @Test
+    public void testIssue76(){
+        String overridePath
+            = new File(ClassCollapser.class.getClassLoader()
+            .getResource("classcollapser" + File.separator
+                + "issue76" + File.separator + "target" + File.separator + "classes").getFile()).getAbsolutePath();
+        TestUtils.soot_setup(overridePath);
+
+        Set<String> appClasses = new HashSet<String>();
+        appClasses.add("A");
+        appClasses.add("B");
+        appClasses.add("C");
+        appClasses.add("Main");
+
+        Set<String> usedAppClasses = new HashSet<String>();
+        usedAppClasses.add("A");
+        usedAppClasses.add("B");
+        usedAppClasses.add("Main");
+
+        MethodData m1 = new MethodData("saySomething", "B", "java.lang.String", new String[] {}, true, false);
+        MethodData m2 = new MethodData("<init>", "B", "void", new String[] {}, true, false);
+        MethodData m3 = new MethodData("uniqueToB", "B", "java.lang.String", new String[] {}, true, false);
+        MethodData m4 = new MethodData("uniqueToA", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m5 = new MethodData("<init>", "A", "void", new String[] {"java.lang.String"}, true, false);
+        MethodData m6 = new MethodData("getClassType", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m7 = new MethodData("saySomething", "A", "java.lang.String", new String[] {}, true, false);
+        MethodData m8 = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
+
+        Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
+        usedAppMethodData.add(m1);
+        usedAppMethodData.add(m2);
+        usedAppMethodData.add(m3);
+        usedAppMethodData.add(m4);
+        usedAppMethodData.add(m5);
+        usedAppMethodData.add(m6);
+        usedAppMethodData.add(m7);
+        usedAppMethodData.add(m8);;
+
+        Map<MethodData, Set<MethodData>> callGraph = new HashMap<MethodData, Set<MethodData>>();
+        Set<MethodData> m1_callers = new HashSet<MethodData>();
+        m1_callers.add(m8);
+        callGraph.put(m1, m1_callers);
+        Set<MethodData> m2_callers = new HashSet<MethodData>();
+        m2_callers.add(m8);
+        callGraph.put(m2, m2_callers);
+        Set<MethodData> m3_callers = new HashSet<MethodData>();
+        m3_callers.add(m8);
+        callGraph.put(m3, m3_callers);
+        Set<MethodData> m4_callers = new HashSet<MethodData>();
+        m4_callers.add(m8);
+        callGraph.put(m4, m4_callers);
+        // the superclass constructor is only called in the subclass constructor
+        Set<MethodData> m5_callers = new HashSet<MethodData>();
+        m5_callers.add(m2);
+        callGraph.put(m5, m5_callers);
+        Set<MethodData> m6_callers = new HashSet<MethodData>();
+        m6_callers.add(m8);
+        callGraph.put(m6, m6_callers);
+        // this is a virtual call, therefore the caller set is set to empty
+        callGraph.put(m7, new HashSet<MethodData>());
+        // main is the entry method, so its caller set is also empty
+        callGraph.put(m8, new HashSet<MethodData>());
+
+        Set<MethodData> entryPoints = new HashSet<MethodData>();
+        entryPoints.add(m8);
+
+        ClassCollapserAnalysis classCollapserAnalysis
+            = new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints, new HashSet<String>());
+        classCollapserAnalysis.run();
+
+        ClassCollapser classCollapser = new ClassCollapser();
+        classCollapser.run(classCollapserAnalysis, new HashSet<String>());
+
+        ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
+
+
+        SootClass A = TestUtils.getSootClass(overridePath, "A");
+
+        assertTrue(!A.isFinal());
+    }
+
+	@Test
+	public void classClassifierTest_issue73() throws IOException{
+		String overridePath
+			= new File(ClassCollapser.class.getClassLoader()
+			.getResource("classcollapser" + File.separator
+				+ "issue73" + File.separator + "target" + File.separator + "classes").getFile()).getAbsolutePath();
+		TestUtils.soot_setup(overridePath);
+
+		Set<String> appClasses = new HashSet<String>();
+		appClasses.add("A");
+		appClasses.add("B");
+		appClasses.add("C");
+		appClasses.add("Main");
+
+		Set<String> usedAppClasses = new HashSet<String>();
+		usedAppClasses.add("A");
+		usedAppClasses.add("B");
+		usedAppClasses.add("Main");
+
+		MethodData m1 = new MethodData("saySomething", "B", "java.lang.String", new String[] {}, true, false);
+		MethodData m2 = new MethodData("<init>", "B", "void", new String[] {}, true, false);
+		MethodData m3 = new MethodData("uniqueToB", "B", "java.lang.String", new String[] {}, true, false);
+		MethodData m4 = new MethodData("uniqueToA", "A", "java.lang.String", new String[] {}, true, false);
+		MethodData m5 = new MethodData("<init>", "A", "void", new String[] {"java.lang.String"}, true, false);
+		MethodData m6 = new MethodData("getClassType", "A", "java.lang.String", new String[] {}, true, false);
+		MethodData m7 = new MethodData("saySomething", "A", "java.lang.String", new String[] {}, true, false);
+		MethodData m8 = new MethodData("main", "Main", "void", new String[] {"java.lang.String[]"}, true, true);
+
+		Set<MethodData> usedAppMethodData = new HashSet<MethodData>();
+		usedAppMethodData.add(m1);
+		usedAppMethodData.add(m2);
+		usedAppMethodData.add(m3);
+		usedAppMethodData.add(m4);
+		usedAppMethodData.add(m5);
+		usedAppMethodData.add(m6);
+		usedAppMethodData.add(m7);
+		usedAppMethodData.add(m8);;
+
+		Map<MethodData, Set<MethodData>> callGraph = new HashMap<MethodData, Set<MethodData>>();
+		Set<MethodData> m1_callers = new HashSet<MethodData>();
+		m1_callers.add(m8);
+		callGraph.put(m1, m1_callers);
+		Set<MethodData> m2_callers = new HashSet<MethodData>();
+		m2_callers.add(m8);
+		callGraph.put(m2, m2_callers);
+		Set<MethodData> m3_callers = new HashSet<MethodData>();
+		m3_callers.add(m8);
+		callGraph.put(m3, m3_callers);
+		Set<MethodData> m4_callers = new HashSet<MethodData>();
+		m4_callers.add(m8);
+		callGraph.put(m4, m4_callers);
+		// the superclass constructor is only called in the subclass constructor
+		Set<MethodData> m5_callers = new HashSet<MethodData>();
+		m5_callers.add(m2);
+		callGraph.put(m5, m5_callers);
+		Set<MethodData> m6_callers = new HashSet<MethodData>();
+		m6_callers.add(m8);
+		callGraph.put(m6, m6_callers);
+		// this is a virtual call, therefore the caller set is set to empty
+		callGraph.put(m7, new HashSet<MethodData>());
+		// main is the entry method, so its caller set is also empty
+		callGraph.put(m8, new HashSet<MethodData>());
+
+		Set<MethodData> entryPoints = new HashSet<MethodData>();
+		entryPoints.add(m8);
+
+		ClassCollapserAnalysis classCollapserAnalysis
+			= new ClassCollapserAnalysis(appClasses,usedAppClasses,usedAppMethodData, callGraph, entryPoints, new HashSet<String>());
+		classCollapserAnalysis.run();
+
+		ClassCollapser classCollapser = new ClassCollapser();
+		classCollapser.run(classCollapserAnalysis, new HashSet<String>());
+
+		ClassCollapserData classCollapserData = classCollapser.getClassCollapserData();
+
+		SootClass A = TestUtils.getSootClass(overridePath, "A");
+
+		SootMethod clinit = A.getMethodByName("<clinit>");
+
+		//This is the offending line.
+		assertFalse(clinit.getActiveBody().toString().contains("<B: A BInstance> = $r0;"));
+	}
 }

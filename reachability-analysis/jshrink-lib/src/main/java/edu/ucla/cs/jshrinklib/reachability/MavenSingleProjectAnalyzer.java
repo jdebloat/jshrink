@@ -62,6 +62,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final EntryPointProcessor entryPointProcessor;
 	private final Set<MethodData> entryPoints;
 	private final Optional<File> tamiFlexJar;
+	private final Optional<File> jmtrace;
 	private final Set<CallGraph> callgraphs;
 	private final boolean useSpark;
 	private final boolean verbose;
@@ -70,7 +71,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean runTests;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
-									  Optional<File> tamiFlex,
+									  Optional<File> tamiFlex, Optional<File> jmtrace,
 	                                  boolean useSpark, boolean verbose, boolean executeTests) {
 		project_path = pathToMavenProject;
 		
@@ -104,6 +105,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		entryPointProcessor = entryPointProc;
 		entryPoints = new HashSet<MethodData>();
 		tamiFlexJar = tamiFlex;
+		this.jmtrace = jmtrace;
 		this.callgraphs = new HashSet<CallGraph>();
 		this.useSpark = useSpark;
 		this.verbose = verbose;
@@ -485,15 +487,35 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		}
 		
 		// (optional) use tamiflex to dynamically identify reflection calls
-		if(tamiFlexJar.isPresent()) {
-			TamiFlexRunner tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),
-					project_path, false);
+		if(tamiFlexJar.isPresent() || jmtrace.isPresent()) {
+			//TamiFlexRunner
+			TamiFlexRunner tamiflex;
+
+			if(tamiFlexJar.isPresent()){
+				tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),	project_path, false);
+			}
+			else{
+				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+			}
+
 			try {
 				tamiflex.run();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			//if both options were present
+			if(jmtrace.isPresent() && tamiFlexJar.isPresent()){
+				JMTraceRunner jmtrunner = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+				try {
+					jmtrunner.run(tamiflex);
 
+					//resetting results to merged results
+					tamiflex = (TamiFlexRunner) jmtrunner;
+
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
 				Set<String> usedClassesInModule = tamiflex.accessed_classes.get(module);
@@ -526,6 +548,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				HashMap<String, ArrayList<MethodData>> processed_callers = new HashMap<String, ArrayList<MethodData>>();
 
 				for (String calledFrom : tamiflex.used_methods_callers.get(module)) {
+					if(calledFrom==null) continue;
+
 					String[] calledFromSplit = calledFrom.split("\\.");
 					String calledFromClass = "";
 					for(int i=0; i<calledFromSplit.length -1 ; i++){
@@ -566,7 +590,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 					Set<MethodData> calledFromMethodData = new HashSet<MethodData>();
 					for(String calledFrom : entry.getValue()){
-						//TEMP FIX: add first entry from the resolved methods, might need to be changed later
+						//TEMP FIX: add all entry from the resolved methods, might need to be changed later
 						if(processed_callers.containsKey(calledFrom)){
 							processed_callers.get(calledFrom).forEach((caller_md)->calledFromMethodData.add(caller_md));
 						}
@@ -653,6 +677,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			// aggregate all accessed fields from each submodule (if any) into one set
 			for(String module : tamiflex.accessed_fields.keySet()) {
 				for(String record : tamiflex.accessed_fields.get(module)) {
+					if(record == null) continue;
+
 					String[] ss = record.split(": ");
 					String ownerClassName = ss[0];
 					String fieldSignature = ss[1];

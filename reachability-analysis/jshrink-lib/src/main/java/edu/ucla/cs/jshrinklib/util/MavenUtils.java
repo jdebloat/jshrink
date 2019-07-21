@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,6 +104,28 @@ public class MavenUtils {
 		} else {
 			// stop traversing in this dir
 			return;
+		}
+	}
+
+	public static HashMap<String, File> backupModulePOMS(HashMap<String, File> modules) throws IOException {
+		HashMap<String, File> POMMap = new HashMap<String, File>();
+		for(Map.Entry<String, File> entry: modules.entrySet()){
+			File pom_file = new File(entry.getValue().getAbsolutePath() + File.separator + "pom.xml");
+			// save a copy of the pom file
+			File copy = new File(pom_file.getAbsolutePath() + ".tmp");
+			FileUtils.copyFile(pom_file, copy);
+			POMMap.put(entry.getKey(), pom_file);
+		}
+		return POMMap;
+	}
+	public static void restoreModulePOMS(HashMap<String, File> POMMap) throws IOException {
+		for(Map.Entry<String, File> entry: POMMap.entrySet()){
+			File pom_file = entry.getValue();
+			File copy = new File(pom_file.getAbsolutePath() + ".tmp");
+			if(copy.exists()){
+				FileUtils.copyFile(copy, pom_file);
+				copy.delete();
+			}
 		}
 	}
 }
