@@ -79,7 +79,6 @@ public class Application {
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(commandLineParser.includeMainEntryPoint(),
 			commandLineParser.includePublicEntryPoints(),
 			commandLineParser.includeTestEntryPoints(),
-			true,
 			commandLineParser.getCustomEntryPoints());
 
 		// These can all be seen as TODOs for now.

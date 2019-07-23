@@ -69,7 +69,7 @@ public class MavenProjectAnalysis {
 				}
 
 				MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(proj_path,
-						new EntryPointProcessor(true, false, true, false,
+						new EntryPointProcessor(true, false, true,
 								new HashSet<MethodData>()), Optional.empty(), Optional.empty(), false, false, true);
 				runner.run();
 				

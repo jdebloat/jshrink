@@ -49,7 +49,7 @@ public class JShrinkTest {
 		resetSimpleTestProjectDir();
 		entryPointProcessor =
 			new EntryPointProcessor(true, false,
-				false,true, new HashSet<MethodData>());
+				false,new HashSet<MethodData>());
 		tamiflex = Optional.empty();
 		jmtrace = Optional.empty();
 		useSpark = true;
