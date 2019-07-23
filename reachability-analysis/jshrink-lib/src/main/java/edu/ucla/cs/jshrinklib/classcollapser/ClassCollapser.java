@@ -482,7 +482,7 @@ public class ClassCollapser {
         for (SootField f: c.getFields()) {
             if (f.getType() == Scene.v().getType(changeFrom.getName())) {
                 log.append("CHANGED_TYPE_IN_CLASS_COLLAPSER," + f.getType() + "type for variable " + f.getName()
-                    + "in class " + c.getName() + " to " + f.getType() + System.lineSeparator());
+                    + "in class " + c.getName() + " to " + Scene.v().getType(changeTo.getName()) + System.lineSeparator());
                 f.setType(Scene.v().getType(changeTo.getName()));
                 changed = true;
             }
@@ -541,7 +541,7 @@ public class ClassCollapser {
                     }
                     annotation.setElems(newValues);
                     for(AnnotationElem annotationElem : newValues){
-                        log.append("ADDED_ANNOTATION_ELEMENT_IN_CLASS_COLLAPSER," + annotation.toString()
+                        log.append("ADDED_ANNOTATION_ELEMENT_IN_CLASS_COLLAPSER," + annotationElem.toString()
                             + " from class " + c.getName() + System.lineSeparator());
                     }
                 }
