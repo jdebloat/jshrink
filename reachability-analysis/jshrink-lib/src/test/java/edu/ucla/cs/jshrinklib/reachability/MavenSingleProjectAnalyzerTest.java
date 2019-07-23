@@ -47,7 +47,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner =
 				new MavenSingleProjectAnalyzer(junit_project,
 						new EntryPointProcessor(true, false, true,
-							false, new HashSet<MethodData>()),
+							 new HashSet<MethodData>()),
 						Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -69,7 +69,7 @@ public class MavenSingleProjectAnalyzerTest {
 			.getResource("junit4").getFile()).getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()), Optional.empty(),  true, false, true);
 		runner.setup();
 		runner.run();
@@ -88,7 +88,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"aa236ec38d39f434c1641aeaef9241aec18affde").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -109,7 +109,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"aa236ec38d39f434c1641aeaef9241aec18affde").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -129,7 +129,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"31eaaeb410174004196c9ef9c9469e0d02afd94b").getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -150,7 +150,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"31eaaeb410174004196c9ef9c9469e0d02afd94b").getAbsolutePath();;
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()),Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -171,7 +171,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -195,7 +195,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()),Optional.empty(),true, false, true);
 		runner.setup();
 		runner.run();
@@ -214,7 +214,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"b0073dade44d9085052043f0b1e1952f0515cde7").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(),Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -234,7 +234,7 @@ public class MavenSingleProjectAnalyzerTest {
 			"b0073dade44d9085052043f0b1e1952f0515cde7").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -251,7 +251,7 @@ public class MavenSingleProjectAnalyzerTest {
 		ClassLoader classLoader = MavenSingleProjectAnalyzerTest.class.getClassLoader();
 		File mavenProject = new File(classLoader.getResource("module-test-project").getFile());
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(mavenProject.getAbsolutePath(),
-				new EntryPointProcessor(true, false, false,false,
+				new EntryPointProcessor(true, false, false,
 						new HashSet<MethodData>()), Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();
@@ -342,7 +342,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"aeeffff7815c97fd5d57dfdaaea1a6eaba2e15dd").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()), Optional.empty(), Optional.empty(), true,
+					new HashSet<MethodData>()), Optional.empty(), Optional.empty(), true,
 			false, true);
 		runner.setup();
 		runner.run();
@@ -354,7 +354,7 @@ public class MavenSingleProjectAnalyzerTest {
 				"a91d2ba7d454843250e0b0fce36084f9fb02a551").getAbsolutePath();
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project,
 				new EntryPointProcessor(true, false, true,
-					false, new HashSet<MethodData>()),
+					new HashSet<MethodData>()),
 				Optional.empty(), Optional.empty(), true, false, true);
 		runner.setup();
 		runner.run();

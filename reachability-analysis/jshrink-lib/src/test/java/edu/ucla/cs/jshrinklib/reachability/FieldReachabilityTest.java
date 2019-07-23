@@ -31,7 +31,7 @@ public class FieldReachabilityTest {
         CallGraphAnalysis runner =
                 new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
                         new EntryPointProcessor(false, false,
-                                false,false, entryMethods), false);
+                                false,entryMethods), false);
         runner.run();
         assertEquals(0, runner.getLibFields().size());
         assertEquals(8, runner.getAppFields().size());
@@ -58,7 +58,7 @@ public class FieldReachabilityTest {
         CallGraphAnalysis runner =
                 new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
                         new EntryPointProcessor(false, false,
-                                false,false, entryMethods), false);
+                                false,entryMethods), false);
         runner.run();
         assertEquals(0, runner.getLibFields().size());
         assertEquals(8, runner.getAppFields().size());
@@ -86,7 +86,7 @@ public class FieldReachabilityTest {
         CallGraphAnalysis runner =
                 new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
                         new EntryPointProcessor(false, false,
-                                false,false, entryMethods), false);
+                                false,entryMethods), false);
         runner.run();
         assertEquals(0, runner.getLibFields().size());
         assertEquals(8, runner.getAppFields().size());
@@ -110,7 +110,7 @@ public class FieldReachabilityTest {
         CallGraphAnalysis runner =
                 new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
                         new EntryPointProcessor(false, false,
-                                false,false, entryMethods), false);
+                                false,entryMethods), false);
         runner.run();
         assertEquals(2, runner.getUsedAppFields().size());
         assertEquals(0, runner.getUsedLibFields().size());
@@ -143,7 +143,7 @@ public class FieldReachabilityTest {
         CallGraphAnalysis runner =
                 new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
                         new EntryPointProcessor(false, false,
-                                false,false, entryMethods), false);
+                                false,entryMethods), false);
         runner.run();
         assertEquals(1, runner.getUsedAppFields().size());
         assertEquals(0, runner.getUsedLibFields().size());
@@ -168,7 +168,7 @@ public class FieldReachabilityTest {
                 .getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile());
         MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(tamiflex_test_project_path,
                 new EntryPointProcessor(false, false, true,
-                        false, new HashSet<MethodData>()),
+                        new HashSet<MethodData>()),
                 Optional.of(tamiflex_jar), Optional.empty(), false, false, true);
         runner.setup();
         runner.run();
