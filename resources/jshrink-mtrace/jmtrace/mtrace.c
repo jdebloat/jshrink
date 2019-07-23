@@ -515,21 +515,21 @@ cbClassFileLoadHook(jvmtiEnv *jvmti, JNIEnv* env,
                     fatal_error("ERROR: Out of malloc memory\n");
                 }
             }
-	    /*char class_name[5];
-
-	    for(int i=0;i<4;i++){
-		class_name[i]=classname[i];
-	     }
-	    class_name[4]='\0';
-	    if(strcmp(class_name,"JAVA")==0 || strcmp(class_name,"SUN/")==0 || strcmp(class_name, "JDK/")==0)
-		return;*/
+	   		char class_name[5];
+			short class_edit_flag = 1;
+			for(int i=0;i<4;i++){
+			class_name[i]=classname[i];
+			 }
+			class_name[4]='\0';
+			if(strcmp(class_name,"java")==0 || strcmp(class_name,"sun/")==0 || strcmp(class_name, "jdk/")==0)
+				class_edit_flag = 0;
 
             *new_class_data_len = 0;
             *new_class_data     = NULL;
 
             /* The tracker class itself? */
             if ( interested((char*)classname, "", gdata->include, gdata->exclude)
-                  &&  strcmp(classname, STRING(MTRACE_class)) != 0 ) {
+                  &&  (strcmp(classname, STRING(MTRACE_class)) != 0) && (class_edit_flag)) {
                 jint           cnum;
                 int            system_class;
                 unsigned char *new_image;
