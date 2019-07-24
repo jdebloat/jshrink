@@ -9,7 +9,13 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -209,19 +215,47 @@ public class JMTraceTest {
 		assertTrue(new File(project_path+File.separator+"jmtrace.log").exists());
 	}
 
-/*
+
 	@Test
-	public void testLogAnalysis() {
-		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
-		String log = "src/test/resources/tamiflex/junit_refl.log";~/call-graph-analysis/reachability-analysis/jshrink-lib/src/test/resources$
-		tamiflex.analyze("junit", log);
-		assertEquals(1040, tamiflex.accessed_classes.get("junit").size());
-		assertEquals(626, tamiflex.accessed_fields.get("junit").size());
-		assertEquals(2975, tamiflex.used_methods.get("junit").size());
+	public void testDynamicCallLogAnalysis() throws URISyntaxException, IOException {
+		String log = "/home/jay/openjdktest/Li_Sui-benchmark/jmtrace.log";
+		String module = "dpbbench";
+        String expected_path = JMTraceTest.class.getClassLoader().getResource("LiSuiBenchmark").toURI().getPath()+File.separator+"BenchmarkOracle(ExceptedCallEdges).csv";
+        String unexpected_path = JMTraceTest.class.getClassLoader().getResource("LiSuiBenchmark").toURI().getPath()+File.separator+"BenchmarkOracle(UnexceptedCallEdges).csv";
 
-		assertTrue(tamiflex.accessed_classes.get("junit").contains("org.junit.runner.notification.RunListener$ThreadSafe"));
+		Set<String> expectedAppMethods = new HashSet<String>();
+        Set<String> unexpectedAppMethods = new HashSet<String>();
+        Set<String> accessedClassNames = new HashSet<String>();
+        Files.lines(new File(expected_path).toPath()).map(l -> l.split("->"))
+                .forEach(e -> {
+                    if(e.length == 2){
+                        expectedAppMethods.add(e[0]);
+                        expectedAppMethods.add(e[1]);
+                        accessedClassNames.add(e[0].split(": ")[0]);
+                        accessedClassNames.add(e[1].split(": ")[0]);
+                    }
+                });
+        Files.lines(new File(unexpected_path).toPath()).map(l -> l.split("->"))
+                .forEach(e -> {
+                    if(e.length == 2){
+                        unexpectedAppMethods.add(e[1]);
+                        accessedClassNames.add(e[1].split(": ")[0]);
+                    }
+                });
+
+        jmtrace.analyze(module, log);
+        Set<String> methods = jmtrace.used_methods.get(module).keySet();
+        Set<String> appMethods = methods.stream().filter(x->accessedClassNames.contains(x.split(": ")[0])).collect(Collectors.toSet());
+        assertTrue(appMethods.size()>0);
+        //assertTrue(h.disjunction(unexpectedAppMethods, appMethods).size() == unexpectedAppMethods.size());
+        //assertTrue(h.disjunction(expectedAppMethods, appMethods).size() == 0);
+
+        unexpectedAppMethods.retainAll(appMethods);
+        expectedAppMethods.removeAll(appMethods);
+        System.out.println(Arrays.toString(unexpectedAppMethods.toArray()));
+        System.out.println(Arrays.toString(expectedAppMethods.toArray()));
 	}
-
+/*
 	@Test
 	public void testLogAnalysis2() {
 		TamiFlexRunner tamiflex = new TamiFlexRunner(null, null, false);
