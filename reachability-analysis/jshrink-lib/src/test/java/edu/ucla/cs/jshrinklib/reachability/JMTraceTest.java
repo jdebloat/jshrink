@@ -252,8 +252,10 @@ public class JMTraceTest {
 
         unexpectedAppMethods.retainAll(appMethods);
         expectedAppMethods.removeAll(appMethods);
-        System.out.println(Arrays.toString(unexpectedAppMethods.toArray()));
-        System.out.println(Arrays.toString(expectedAppMethods.toArray()));
+		System.out.println("\nFalse Positives -");
+		unexpectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
+		System.out.println("\nFalse Negatives -");
+		expectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
 	}
 /*
 	@Test
