@@ -1,12 +1,15 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
-import soot.Scene;
-import soot.SootClass;
+import soot.*;
+import soot.JastAddJ.Modifiers;
 
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
-import soot.SootMethod;
+import soot.jimple.FieldRef;
+import soot.jimple.InvokeExpr;
+import soot.jimple.Stmt;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.util.EmptyChain;
 
@@ -260,6 +263,10 @@ public class ClassCollapserAnalysis {
             return false;
         }
 
+        if(!isSafeAccessAfterMerge(toClass, fromClass)){
+            return false;
+        }
+
         int numUsedChildren = 0;
         for (String child: childrenMap.get(to)) {
             if (usedAppClasses.contains(child)) {
@@ -296,6 +303,68 @@ public class ClassCollapserAnalysis {
         }
 
         return true;
+    }
+
+    private boolean isSafeAccessAfterMerge(SootClass to, SootClass from){
+        //If the classes to be merged are in the same package, then we have no problem.
+        if(to.getPackageName().equals(from.getPackageName())){
+            return true;
+        }
+
+        //Is the class to be merged package-private?
+        if(isPackagePrivate(from.getModifiers())){
+            return false;
+        }
+
+        //Are any of the fields package-private or are types that are package-private?
+        for(SootField sootField: from.getFields()){
+            if(isPackagePrivate(sootField.getModifiers())){
+                return false;
+            }
+
+            SootClass type = Scene.v().getSootClass(sootField.getType().toString());
+            if(isPackagePrivate(type.getModifiers())){
+                return false;
+            }
+        }
+
+        //Are any of the methods package-private?
+        for(SootMethod sootMethod : from.getMethods()){
+            if(isPackagePrivate(sootMethod.getModifiers())){
+                return false;
+            }
+
+            //Does any method contain reference to a package-private class, method, or field?
+            Body b = sootMethod.retrieveActiveBody();
+            for(Unit unit : b.getUnits()) {
+                Stmt stmt = (Stmt) unit;
+                if (stmt.containsInvokeExpr()) {
+                    InvokeExpr callExpr = stmt.getInvokeExpr();
+                    SootMethodRef smf = callExpr.getMethodRef();
+                    SootMethod invokvedMethod = Scene.v().getMethod(smf.getSignature());
+                    if(isPackagePrivate(invokvedMethod.getModifiers())){
+                        return false;
+                    }
+                    SootClass classOfInvokedMethod = invokvedMethod.getDeclaringClass();
+                    if(isPackagePrivate(classOfInvokedMethod.getModifiers())){
+                        return false;
+                    }
+                } else if(stmt.containsFieldRef()){
+                    FieldRef fieldRef = stmt.getFieldRef();
+                    SootField sootField = fieldRef.getField();
+                    if(isPackagePrivate(sootField.getModifiers())){
+                        return false;
+                    }
+                }
+            }
+
+        }
+
+        return true;
+    }
+
+    private boolean isPackagePrivate(int modifiers){
+        return !Modifier.isPrivate(modifiers) && !Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers);
     }
 
     private boolean isAnnoymousInner(String name) {

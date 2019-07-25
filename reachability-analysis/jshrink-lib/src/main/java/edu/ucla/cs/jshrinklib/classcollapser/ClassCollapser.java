@@ -157,7 +157,7 @@ public class ClassCollapser {
                 SootMethod m = sootMethods.get(i);
                 if(m.isNative() || m.isAbstract()) continue;
 
-                Body b = m.getActiveBody();
+                Body b = m.retrieveActiveBody();
                 for(Unit unit : b.getUnits()) {
                     Stmt stmt = (Stmt) unit;
                     if(stmt.containsInvokeExpr()) {
