@@ -1,6 +1,5 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-import com.sun.istack.internal.NotNull;
 import soot.Scene;
 
 import java.io.IOException;
