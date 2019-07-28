@@ -38,6 +38,7 @@ public class ApplicationCommandLineParser {
 	private final boolean skipMethodRemoval;
 	private final boolean removeFields;
 	private final File logDirectory;
+	private final boolean cache;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -180,6 +181,7 @@ public class ApplicationCommandLineParser {
 		this.runTests = commandLine.hasOption("T");
 		this.skipMethodRemoval = commandLine.hasOption("S");
 		this.removeFields = commandLine.hasOption("F");
+		this.cache = commandLine.hasOption("A");
 
 		if(this.removeFields && this.skipMethodRemoval){
 			throw new ParseException("Cannot Remove fields while skipping method removal.");
@@ -485,6 +487,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option cacheOption = Option.builder("A")
+			.desc("Use/create caches (warning: can be dangerous, use carefully)")
+			.longOpt("use-cache")
+			.hasArg(false)
+			.required(false)
+			.build();
+
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
@@ -511,6 +520,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(removeFieldsOption);
 		toReturn.addOption(logDirectoryOption);
 		toReturn.addOption(jmTraceOption);
+		toReturn.addOption(cacheOption);
 
 		return toReturn;
 	}
@@ -621,5 +631,9 @@ public class ApplicationCommandLineParser {
 
 	public File getLogDirectory(){
 		return this.logDirectory;
+	}
+
+	public boolean useCache(){
+		return this.cache;
 	}
 }

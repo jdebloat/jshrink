@@ -61,8 +61,8 @@ public class MethodInliner {
 				}
 
 				//Both the caller and callee classes must be within the current classpaths.
-				if (!ClassFileUtils.classInPath(callee.getDeclaringClass().getName(), classpaths)
-					|| !ClassFileUtils.classInPath(caller.getDeclaringClass().getName(), classpaths)) {
+				if (ClassFileUtils.classInPath(callee.getDeclaringClass().getName(), classpaths).isEmpty()
+					|| ClassFileUtils.classInPath(caller.getDeclaringClass().getName(), classpaths).isEmpty()) {
 					if(debug){
 						System.out.println("FAILED: Caller or Callee not within the current classpath");
 					}

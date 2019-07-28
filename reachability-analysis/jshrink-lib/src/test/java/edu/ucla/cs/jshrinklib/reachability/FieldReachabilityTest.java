@@ -169,7 +169,7 @@ public class FieldReachabilityTest {
         MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(tamiflex_test_project_path,
                 new EntryPointProcessor(false, false, true,
                         new HashSet<MethodData>()),
-                Optional.of(tamiflex_jar), Optional.empty(), false, false, true);
+                Optional.of(tamiflex_jar), Optional.empty(), false, false, true, true);
         runner.setup();
         runner.run();
         assertTrue(runner.getUsedAppFields().contains(new FieldData("f1", "A", true, "java.lang.String")));

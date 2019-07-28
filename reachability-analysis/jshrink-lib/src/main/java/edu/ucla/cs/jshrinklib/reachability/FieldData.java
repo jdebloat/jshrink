@@ -1,6 +1,8 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-public class FieldData {
+import java.io.Serializable;
+
+public class FieldData implements Serializable {
     private String name;
     private String className;
     private boolean isStatic;

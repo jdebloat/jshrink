@@ -10,12 +10,11 @@ import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
 import edu.ucla.cs.jshrinklib.reachability.*;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
+import org.apache.commons.io.FileUtils;
 import soot.*;
-import soot.jimple.toolkits.callgraph.CallGraph;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +25,7 @@ public class JShrink {
 	private Optional<File> jmtrace;
 	private boolean useSpark;
 	private boolean verbose;
+	private boolean useCache;
 	private Optional<IProjectAnalyser> projectAnalyser = Optional.empty();
 	private boolean projectAnalyserRun = false;
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
@@ -72,7 +72,7 @@ public class JShrink {
 	public static JShrink createInstance(File projectDir,
 	                                  EntryPointProcessor entryPointProcessor,
 	                                  Optional<File> tamiflex, Optional<File> jmtrace,
-	                                  boolean useSpark, boolean verbose, boolean executeTests) throws IOException{
+	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) throws IOException{
 		/*
 		Due to Soot using a singleton pattern, I use a singleton pattern here to ensure safety.
 		E.g., only one project can be worked on at once.
@@ -80,7 +80,7 @@ public class JShrink {
 		if(instance.isPresent()){
 			throw new IOException("Instance of JShrink already exists. Please use \"getInstance\".");
 		}
-		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, jmtrace, useSpark, verbose, executeTests));
+		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, jmtrace, useSpark, verbose, executeTests, useCache));
 		return instance.get();
 	}
 
@@ -98,7 +98,7 @@ public class JShrink {
 	public static JShrink resetInstance(File projectDir,
 	                                    EntryPointProcessor entryPointProcessor,
 	                                    Optional<File> tamiflex, Optional<File> jmtrace,
-	                                    boolean useSpark, boolean verbose, boolean executeTests) throws IOException{
+	                                    boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) throws IOException{
 		if(instance.isPresent()){
 			instance.get().reset();
 			instance.get().projectDir = projectDir;
@@ -107,6 +107,7 @@ public class JShrink {
 			instance.get().jmtrace = jmtrace;
 			instance.get().useSpark = useSpark;
 			instance.get().verbose = verbose;
+			instance.get().useCache = useCache;
 			instance.get().runTests = executeTests;
 			instance.get().alreadyCompiled = false;
 			instance.get().libSizeCompressed = -1;
@@ -119,7 +120,7 @@ public class JShrink {
 	}
 
 	private JShrink(File projectDir, EntryPointProcessor entryPointProcessor, Optional<File> tamiflex, Optional<File> jmtrace,
-	                boolean useSpark, boolean verbose, boolean executeTests){
+	                boolean useSpark, boolean verbose, boolean executeTests, boolean useCache){
 			this.projectDir = projectDir;
 			this.entryPointProcessor = entryPointProcessor;
 			this.tamiflex = tamiflex;
@@ -127,10 +128,7 @@ public class JShrink {
 			this.useSpark = useSpark;
 			this.verbose = verbose;
 			this.runTests = executeTests;
-	}
-
-	public Set<CallGraph> getCallGraphs(){
-		return this.getProjectAnalyserRun().getCallGraphs();
+			this.useCache = useCache;
 	}
 
 	public Set<MethodData> getAllEntryPoints() {
@@ -146,7 +144,8 @@ public class JShrink {
 		//Just supporting MavenSingleProjectAnalysis for now
 		this.projectAnalyser = Optional.of(
 			new MavenSingleProjectAnalyzer(this.projectDir.getAbsolutePath(),
-				this.entryPointProcessor, this.tamiflex, this.jmtrace, this.useSpark, this.verbose, this.runTests));
+				this.entryPointProcessor, this.tamiflex, this.jmtrace,
+				this.useSpark, this.verbose, this.runTests, this.useCache));
 
 		((MavenSingleProjectAnalyzer) this.projectAnalyser.get()).setCompileProject(!alreadyCompiled);
 
@@ -259,7 +258,8 @@ public class JShrink {
 		}
 
 		ClassCollapserAnalysis classCollapserAnalysis =
-			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(), this.getAllEntryPoints(), unmodifiableClasses.keySet());
+			new ClassCollapserAnalysis(allClasses, usedClasses, usedMethods, this.getSimplifiedCallGraph(),
+				this.getAllEntryPoints(), unmodifiableClasses.keySet());
 		classCollapserAnalysis.run();
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.run(classCollapserAnalysis, this.getTestClasses());
@@ -468,6 +468,7 @@ public class JShrink {
 			this.classesToRemove.clear();
             modifyClasses(this.classesToModify, classPaths);
 			ClassFileUtils.compressJars(decompressedJars);
+
 			this.classesToModify.clear();
 			updateSizes();
 			this.reset();
@@ -718,7 +719,8 @@ public class JShrink {
 //						// keep this field since JVM needs this field for serialization and validating serialized objects
 //						continue;
 //					}
-					if(field.getName().equals(unusedField.getName()) && field.getType().toString().equals(unusedField.getType())) {
+					if(field.getName().equals(unusedField.getName()) && field.getType().toString()
+						.equals(unusedField.getType())) {
 						sootField = field;
 						break;
 					}

@@ -69,10 +69,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private TestOutput testOutput;
 	private boolean compileProject = true;
 	private final boolean runTests;
+	private final boolean useCache;
 	
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
-	                                  boolean useSpark, boolean verbose, boolean executeTests) {
+	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) {
 		project_path = pathToMavenProject;
 		
 		libClasses = new HashSet<String>();
@@ -110,6 +111,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.useSpark = useSpark;
 		this.verbose = verbose;
 		this.runTests = executeTests;
+		this.useCache = useCache;
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
@@ -408,13 +410,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				List<File> localTestClassPaths =
 					(app_test_paths.containsKey(artifact_id) ? app_test_paths.get(artifact_id) : new ArrayList<File>());
 
-				CallGraphAnalysis runner = 
-						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
-								localTestClassPaths, entryPointProcessor, this.useSpark);
+				CallGraphAnalysisCacheWrapper runner =
+						new CallGraphAnalysisCacheWrapper(new File(project_path), artifact_id, localLibClassPaths,
+							localAppClassPaths, localTestClassPaths, entryPointProcessor,
+								this.useSpark, this.useCache, this.verbose);
 				runner.setup();
 				runner.run();
 
-				this.callgraphs.addAll(runner.getCallGraphs());
+				//this.callgraphs.addAll(runner.getCallGraphs());
 				
 				String cp_compile_only = classpaths_compile_only.get(artifact_id);
 				HashSet<String> compile_lib_paths = 
@@ -730,13 +733,18 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 				List<File> localTestClassPaths =
 						(app_test_paths.containsKey(module) ? app_test_paths.get(module) : new ArrayList<File>());
-				CallGraphAnalysis runner = 
-						new CallGraphAnalysis(localLibClassPaths, localAppClassPaths,
-								localTestClassPaths, null, useSpark);
-				runner.setup();
-				runner.run(entry_methods);
 
-				this.callgraphs.addAll(runner.getCallGraphs());
+				EntryPointProcessor customEntryPointProcessor =
+					new EntryPointProcessor(false, false, false,entry_methods);
+
+				CallGraphAnalysisCacheWrapper runner =
+						new CallGraphAnalysisCacheWrapper(new File(project_path), module, localLibClassPaths,
+							localAppClassPaths, localTestClassPaths, customEntryPointProcessor,
+								useSpark, this.useCache, this.verbose);
+				runner.setup();
+				runner.run();
+
+				//this.callgraphs.addAll(runner.getCallGraphs());
 				
 				// aggregate the analysis result of the submodule
 				for(String class_name : runner.getUsedLibClasses()) {
@@ -1014,10 +1022,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return this.entryPoints;
 	}
 
-	@Override
-	public Set<CallGraph> getCallGraphs(){
-		return this.callgraphs;
-	}
+	//@Override
+	//public Set<CallGraph> getCallGraphs(){
+	//	return this.callgraphs;
+	//}
 
 	@Override
 	public TestOutput getTestOutput(){
