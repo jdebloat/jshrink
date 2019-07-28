@@ -1,6 +1,8 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
+import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
+import edu.ucla.cs.jshrinklib.util.FilePathProcessor;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
 import soot.*;
@@ -10,6 +12,7 @@ import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import soot.jimple.FieldRef;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
+import soot.jimple.spark.ondemand.pautil.SootUtil;
 import soot.jimple.toolkits.invoke.InlinerSafetyManager;
 import soot.util.EmptyChain;
 
@@ -330,25 +333,35 @@ public class ClassCollapserAnalysis {
 
         //Are any of the methods package-private?
         for(SootMethod sootMethod : from.getMethods()){
+
             if(isPackagePrivate(sootMethod.getModifiers())){
                 return false;
             }
+
+			if(sootMethod.isAbstract() || sootMethod.isNative()){
+				continue;
+			}
 
             //Does any method contain reference to a package-private class, method, or field?
             Body b = sootMethod.retrieveActiveBody();
             for(Unit unit : b.getUnits()) {
                 Stmt stmt = (Stmt) unit;
                 if (stmt.containsInvokeExpr()) {
-                    InvokeExpr callExpr = stmt.getInvokeExpr();
-                    SootMethodRef smf = callExpr.getMethodRef();
-                    SootMethod invokvedMethod = Scene.v().getMethod(smf.getSignature());
-                    if(isPackagePrivate(invokvedMethod.getModifiers())){
-                        return false;
-                    }
-                    SootClass classOfInvokedMethod = invokvedMethod.getDeclaringClass();
-                    if(isPackagePrivate(classOfInvokedMethod.getModifiers())){
-                        return false;
-                    }
+					InvokeExpr callExpr = stmt.getInvokeExpr();
+					SootMethodRef smf = callExpr.getMethodRef();
+					SootClass sootClass = smf.getDeclaringClass();
+					SootMethod invokedMethod = smf.tryResolve();
+					if(invokedMethod == null){
+						//At this level we cannot always resolve virtual methods unfortunately.
+						//I don't know as of yet how this may affect this check.
+						continue;
+					}
+					if (isPackagePrivate(invokedMethod.getModifiers())) {
+						return false;
+					}
+					if (isPackagePrivate(sootClass.getModifiers())) {
+						return false;
+					}
                 } else if(stmt.containsFieldRef()){
                     FieldRef fieldRef = stmt.getFieldRef();
                     SootField sootField = fieldRef.getField();

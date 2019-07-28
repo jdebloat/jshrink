@@ -241,10 +241,19 @@ public class MethodInliner {
 
 
 				//I don't know why I have to do this again, but I get errors otherwise.
-				b = caller.retrieveActiveBody();
-				toInline = toInline(b, callee);
-				site = toInline.get(0).getKey();
+				try {
+					b = caller.retrieveActiveBody();
+					toInline = toInline(b, callee);
+					site = toInline.get(0).getKey();
+				}catch(IndexOutOfBoundsException e){
+					/*
+					Sometimes due to Soot parsing bytecode incorrectly, the "toInline" function returns an empty
+					ArrayList. In these rare cases I think it best just to skip the method inling for those methods.
+					It's a cheap fix but shouldn't have a big impact.
+					*/
+					continue;
 
+				}
 
 				//Inline the method
 				SiteInliner.inlineSite(callee, site, caller);

@@ -4,14 +4,15 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import edu.ucla.cs.jshrinklib.GitGetter;
+import fj.Hash;
+import fj.data.vector.V;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.*;
@@ -438,5 +439,57 @@ public class TamiFlexTest {
 			tamiflex_only = h.disjunction(tamiflex.used_methods.get(module).keySet(), jmt.used_methods.get(module).keySet());
 			System.out.println(Arrays.toString(tamiflex_only.toArray()));
 		}
+	}
+
+	@Test
+	public void testDynamicCallLogAnalysis() throws URISyntaxException, IOException {
+		String project_path = "/home/jay/openjdktest/Li_Sui-benchmark";
+		String tamiflex_jar_path = new File(TamiFlexTest.class.getClassLoader()
+				.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
+		String module = "benchmark";
+		String expected_path = TamiFlexTest.class.getClassLoader().getResource("LiSuiBenchmark").toURI().getPath()+File.separator+"BenchmarkOracle(ExceptedCallEdges).csv";
+		String unexpected_path = TamiFlexTest.class.getClassLoader().getResource("LiSuiBenchmark").toURI().getPath()+File.separator+"BenchmarkOracle(UnexceptedCallEdges).csv";
+
+		Set<String> expectedAppMethods = new HashSet<String>();
+		Set<String> unexpectedAppMethods = new HashSet<String>();
+		Set<String> accessedClassNames = new HashSet<String>();
+		Files.lines(new File(expected_path).toPath()).map(l -> l.split("->"))
+				.forEach(e -> {
+					if(e.length == 2){
+						expectedAppMethods.add(e[0]);
+						expectedAppMethods.add(e[1]);
+						accessedClassNames.add(e[0].split(": ")[0]);
+						accessedClassNames.add(e[1].split(": ")[0]);
+					}
+				});
+		Files.lines(new File(unexpected_path).toPath()).map(l -> l.split("->"))
+				.forEach(e -> {
+					if(e.length == 2){
+						unexpectedAppMethods.add(e[1]);
+						accessedClassNames.add(e[1].split(": ")[0]);
+					}
+				});
+		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
+		try {
+			tamiflex.run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		HashSet<String> methods = new HashSet<String>(tamiflex.used_methods.get(module).keySet());
+		Set<String> appMethods = methods.stream().filter(x->accessedClassNames.contains(x.split(": ")[0])).collect(Collectors.toSet());
+		assertTrue(appMethods.size()>0);
+		//assertTrue(h.disjunction(unexpectedAppMethods, appMethods).size() == unexpectedAppMethods.size());
+		//assertTrue(h.disjunction(expectedAppMethods, appMethods).size() == 0);
+
+		unexpectedAppMethods.retainAll(appMethods);
+		for(Set<String> callers: tamiflex.used_methods.get(module).values()){
+			methods.addAll(callers);
+		}
+		appMethods = methods.stream().filter(x->accessedClassNames.contains(x.split(": ")[0])).collect(Collectors.toSet());
+		expectedAppMethods.removeAll(appMethods);
+		System.out.println("\nFalse Positives -");
+		unexpectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
+		System.out.println("\nFalse Negatives -");
+		expectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
 	}
 }
