@@ -82,6 +82,11 @@ public class ClassCollapser {
 
         // update any references to collapsed classes
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
+
+        if(nameChangeList.keySet().contains("org.junit.tests.assertion.NestedException")) {
+            System.out.println("Caught you!");
+        }
+
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
             if (!nameToSootClass.containsKey(fromName)) {
@@ -93,6 +98,10 @@ public class ClassCollapser {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
             for (String className : allClasses) {
+                if(className.equals("org.junit.tests.assertion.AssertionTest") || className.equals("")) {
+                    System.out.println("Caught you!");
+                }
+
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
