@@ -61,10 +61,10 @@ cat ${WORK_LIST} |  while read entry; do
 
 	#A 10 hour timeout
 	if [[ "${entry_point}" == "PUBLIC" ]]; then
-		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --public-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
+		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --use-cache --maven-project ${item_dir} -T --public-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
 		PUBLIC_ENTRY=1 
 	elif [[ "${entry_point}" == "MAIN" ]]; then
-		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --main-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
+		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --use-cache --maven-project ${item_dir} -T --main-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
 		MAIN_ENTRY=1
 	else
 		echo "ERROR! Do not recognise the entry-point: \""${entry_point}"\""
