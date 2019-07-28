@@ -46,8 +46,10 @@ LIBNAME=jmtrace
 SOURCES=../agent_util_jshrink/agent_util.c ../java_crw_jshrink/java_crw_jshrink.c mtrace.c
 JAVA_SOURCES=Mtrace.java
 
+BUILD_DIR=../build
+
 # Name of jar file that needs to be created
-JARFILE=../build/jmtrace.jar
+JARFILE=$(BUILD_DIR)/jmtrace.jar
 
 # Linux GNU C Compiler
 # GNU Compiler options needed to build it
@@ -62,7 +64,7 @@ endif
 # Object files needed to create library
 OBJECTS=$(SOURCES:.c=.o)
 # Library name and options needed to build it
-LIBRARY=../build/lib$(LIBNAME).so
+LIBRARY=$(BUILD_DIR)/lib$(LIBNAME).so
 LDFLAGS=-Wl,-soname=$(LIBRARY) -static-libgcc
 # Libraries we are dependent on
 LIBRARIES=-L$(JDK)/jre/lib/$(LIBARCH) -lc
@@ -80,20 +82,23 @@ CFLAGS += -I$(JDK)/include -I$(JDK)/include/$(OSNAME)
 all: $(LIBRARY) $(JARFILE)
 
 # Build native library
-$(LIBRARY): $(OBJECTS)
+$(LIBRARY): $(OBJECTS) $(BUILD_DIR)
 	$(LINK_SHARED) $(OBJECTS) $(LIBRARIES)
 
 # Build jar file
-$(JARFILE): $(JAVA_SOURCES)
+$(JARFILE): $(JAVA_SOURCES) $(BUILD_DIR)
 	rm -f -r classes
 	mkdir -p classes
 	$(JDK)/bin/javac -d classes $(JAVA_SOURCES)
 	(cd classes; $(JDK)/bin/jar cf ../$@ *)
 
+$(BUILD_DIR):
+	mkdir ../build
+
 # Cleanup the built bits
 clean:
 	rm -f -r classes
-	rm -f $(LIBRARY) $(JARFILE) $(OBJECTS)
+	rm -f $(LIBRARY) $(JARFILE) $(OBJECTS) $(BUILD_DIR)
 
 # Simple tester
 test: all
