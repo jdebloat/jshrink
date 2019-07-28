@@ -59,7 +59,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods),true);
+				        false, entryMethods),true);
         runner.run();
         assertEquals(3, runner.getUsedAppClasses().size());
         assertEquals(5, runner.getUsedAppMethods().size());
@@ -84,7 +84,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods),false);
+				        false, entryMethods),false);
         runner.run();
         assertEquals(3, runner.getUsedAppClasses().size());
         assertEquals(5, runner.getUsedAppMethods().size());
@@ -121,7 +121,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods),true);
+				        false, entryMethods),true);
         runner.run();
         assertEquals(2, runner.getUsedAppClasses().size());
         assertEquals(3, runner.getUsedAppMethods().size());
@@ -146,7 +146,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods), false);
+				        false, entryMethods), false);
         runner.run();
         assertEquals(4, runner.getUsedAppClasses().size());
         assertEquals(6, runner.getUsedAppMethods().size());
@@ -190,7 +190,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods),true);
+				        false, entryMethods),true);
         runner.run();
         assertEquals(3, runner.getUsedAppClasses().size());
         assertEquals(6, runner.getUsedAppMethods().size());
@@ -215,7 +215,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods), false);
+				        false, entryMethods), false);
         runner.run();
         assertEquals(4, runner.getUsedAppClasses().size());
         assertEquals(8, runner.getUsedAppMethods().size());
@@ -258,7 +258,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods),true);
+				        false, entryMethods),true);
         runner.run();
         assertEquals(4, runner.getUsedAppClasses().size());
         assertEquals(7, runner.getUsedAppMethods().size());
@@ -283,7 +283,7 @@ public class CallGraphAnalysisSimpleTest {
         CallGraphAnalysis runner = 
         		new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			        new EntryPointProcessor(false, false,
-				        false,false, entryMethods), false);
+				        false, entryMethods), false);
         runner.run();
         assertEquals(4, runner.getUsedAppClasses().size());
         assertEquals(9, runner.getUsedAppMethods().size());
@@ -304,7 +304,7 @@ public class CallGraphAnalysisSimpleTest {
 			+ File.separator + "target" + File.separator + "test-classes").getFile()));
 		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 				new EntryPointProcessor(true, false, false,
-						false, new HashSet<MethodData>()), true);
+					new HashSet<MethodData>()), true);
 		runner.run();
 		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
 		Map<MethodData, Set<MethodData>> usedLibMethods = runner.getUsedLibMethods();
@@ -371,7 +371,7 @@ public class CallGraphAnalysisSimpleTest {
 			+ File.separator + "target" + File.separator + "classes").getFile()));
 		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			new EntryPointProcessor(true, false, false,
-				false, new HashSet<MethodData>()), false);
+				new HashSet<MethodData>()), false);
 		runner.run();
 
 		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
@@ -380,6 +380,7 @@ public class CallGraphAnalysisSimpleTest {
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedMethodReference"));
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "unusedMethodReference"));
 		assertTrue(contains(usedAppMethods.keySet(), "Main", "usedInCollectionMethodReference"));
+		assertTrue(contains(usedAppMethods.keySet(), "Main$InnerClass", "innerClassMethodReference" ));
 	}
 
 	@Test
@@ -393,7 +394,7 @@ public class CallGraphAnalysisSimpleTest {
 
 		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
 			new EntryPointProcessor(true, false, false,
-				false, new HashSet<MethodData>()), false);
+				new HashSet<MethodData>()), false);
 		runner.run();
 
 		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();

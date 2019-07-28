@@ -910,7 +910,7 @@ public class ApplicationTest {
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
 		entryPoints.add(failedTest);
-		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, false, entryPoints);
+		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, entryPoints);
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), Optional.empty(), false, false, true);
 		runner.setup();
 		runner.run();
@@ -992,7 +992,6 @@ public class ApplicationTest {
 	}
 
 	@Test
-	@Ignore
 	public void lambdaMethodTest_full() {
 		/*
 		This test fails do to Soot which cannot properly process convert SootClass to .java files which contain Lambda
@@ -1018,7 +1017,7 @@ public class ApplicationTest {
 		assertFalse(isPresent(methodsRemoved, "Main", "main"));
 		assertFalse(isPresent(methodsRemoved, "Main", "isNegativeNumber"));
 		assertTrue(isPresent(methodsRemoved, "Main", "methodNotUsed"));
-		assertEquals(0, methodsRemoved.size());
+		assertEquals(1, methodsRemoved.size());
 	}
 
 	@Test

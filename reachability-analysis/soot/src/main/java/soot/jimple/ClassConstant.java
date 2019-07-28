@@ -48,10 +48,6 @@ public class ClassConstant extends Constant {
     if (value.contains(".")) {
       throw new RuntimeException("ClassConstants must use class names separated by '/', not '.'!");
     }
-
-    if(value.startsWith("LL") && value.endsWith(";;")) {
-      value = value.substring(1, value.length() - 1);
-    }
     return new ClassConstant(value);
   }
 

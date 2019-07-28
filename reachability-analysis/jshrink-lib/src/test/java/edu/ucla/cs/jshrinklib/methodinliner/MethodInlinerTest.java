@@ -70,7 +70,7 @@ public class MethodInlinerTest {
 				+ File.separator + "libs" + File.separator + "standard-stuff-library.jar"));
 
 		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
-				false, new HashSet<MethodData>() );
+				new HashSet<MethodData>() );
 
 		CallGraphAnalysis callGraphAnalysis =
 				new CallGraphAnalysis(libJarPath, appClassPath, appTestPath, epp,false);
@@ -100,7 +100,7 @@ public class MethodInlinerTest {
 			+ File.separator + "target" + File.separator + "classes"));
 
 		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
-			false, new HashSet<MethodData>() );
+			new HashSet<MethodData>() );
 
 		CallGraphAnalysis callGraphAnalysis =
 			new CallGraphAnalysis(libJarPath, appClassPath, appTestPath, epp,true);
@@ -132,7 +132,7 @@ public class MethodInlinerTest {
 			+ File.separator + "target" + File.separator + "test-classes"));
 
 		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
-			false, new HashSet<MethodData>() );
+			new HashSet<MethodData>() );
 
 		CallGraphAnalysis callGraphAnalysis =
 			new CallGraphAnalysis(libJarPath, appClassPath, appTestPath, epp,false);
