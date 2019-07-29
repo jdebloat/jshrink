@@ -831,7 +831,6 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
 
@@ -877,7 +876,6 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
 
@@ -903,7 +901,6 @@ public class ApplicationTest {
 		arguments.append("--class-collapser ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--verbose ");
 		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
