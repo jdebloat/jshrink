@@ -60,7 +60,7 @@ public class TestUtils {
             streamOut.close();
 
         } catch(Exception e){
-            System.err.println("Exception thrown: " + e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
 
