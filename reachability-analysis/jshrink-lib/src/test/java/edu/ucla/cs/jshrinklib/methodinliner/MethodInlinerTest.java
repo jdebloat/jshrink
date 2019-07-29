@@ -64,8 +64,6 @@ public class MethodInlinerTest {
 
 		appClassPath.add(new File(backup.getAbsolutePath()
 				+ File.separator + "target" + File.separator + "classes"));
-		appTestPath.add(new File(backup.getAbsolutePath()
-				+ File.separator + "target" + File.separator + "test-classes"));
 		libJarPath.add(new File(backup.getAbsolutePath()
 				+ File.separator + "libs" + File.separator + "standard-stuff-library.jar"));
 
@@ -113,9 +111,9 @@ public class MethodInlinerTest {
 			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedLibMethods()));
 	}
 
-	public void setup_packageInlinerTest(){
+	public void setup_innerClassInlinerTest(){
 		ClassLoader classLoader = MethodInlinerTest.class.getClassLoader();
-		original = new File(classLoader.getResource("package-inliner-test").getFile());
+		original = new File(classLoader.getResource("inner-class-inliner-test").getFile());
 
 		try{
 			backup = File.createTempFile("backup", "");
@@ -128,8 +126,6 @@ public class MethodInlinerTest {
 
 		appClassPath.add(new File(backup.getAbsolutePath()
 			+ File.separator + "target" + File.separator + "classes"));
-		appTestPath.add(new File(backup.getAbsolutePath()
-			+ File.separator + "target" + File.separator + "test-classes"));
 
 		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
 			new HashSet<MethodData>() );
@@ -143,6 +139,36 @@ public class MethodInlinerTest {
 		this.callgraph = SootUtils.mergeCallGraphMaps(
 			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedAppMethods()),
 			SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedLibMethods()));
+	}
+
+	public void setup_illegalAccessProject(){
+		ClassLoader classLoader = MethodInlinerTest.class.getClassLoader();
+		original = new File(classLoader.getResource("illegal-access-project").getFile());
+
+		try{
+			backup = File.createTempFile("backup", "");
+			backup.delete();
+			FileUtils.copyDirectory(original,backup);
+		} catch(IOException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+
+		appClassPath.add(new File(backup.getAbsolutePath()
+				+ File.separator + "target" + File.separator + "classes"));
+
+		EntryPointProcessor epp = new EntryPointProcessor(true, false, false,
+				new HashSet<MethodData>() );
+
+		CallGraphAnalysis callGraphAnalysis =
+				new CallGraphAnalysis(libJarPath, appClassPath, appTestPath, epp,false);
+		callGraphAnalysis.setup();
+		callGraphAnalysis.run();
+
+		SootUtils.setup_trimming(libJarPath,appClassPath,appTestPath);
+		this.callgraph = SootUtils.mergeCallGraphMaps(
+				SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedAppMethods()),
+				SootUtils.convertMethodDataCallGraphToSootMethodCallGraph(callGraphAnalysis.getUsedLibMethods()));
 	}
 
 	@Test
@@ -160,12 +186,22 @@ public class MethodInlinerTest {
 			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
-			TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
+				TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
 		assertEquals(1,inlineData.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
 		assertTrue(inlineData.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
-			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
+				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+		assertTrue(inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).isPresent());
+		assertEquals(1, inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get().size());
+		assertTrue(inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get()
+				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
 			TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
@@ -194,12 +230,22 @@ public class MethodInlinerTest {
 			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
-			TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
+				TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
 		assertEquals(1,inlineData.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
 		assertTrue(inlineData.getInlineLocations()
-			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
-			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
+				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+		assertTrue(inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).isPresent());
+		assertEquals(1, inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get().size());
+		assertTrue(inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get()
+				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
 			TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
@@ -231,7 +277,17 @@ public class MethodInlinerTest {
 			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
 		assertTrue(inlineData.getInlineLocations()
 			.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
-			.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
+			.contains(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+		assertTrue(inlineData.getUltimateInlineLocations(
+						TestUtils.getMethodDataFromSignature(
+								"<StandardStuff: public static java.lang.String getStringStatic(int)>")).isPresent());
+		assertEquals(1, inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get().size());
+		assertTrue(inlineData.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get()
+				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		assertTrue(inlineData.getInlineLocations().containsKey(
 			TestUtils.getMethodDataFromSignature("<edu.ucla.cs.onr.test.LibraryClass: public int getNumber()>")));
@@ -249,11 +305,20 @@ public class MethodInlinerTest {
 	}
 
 	@Test
-	public void packageInlinerTest() throws IOException{
-		setup_packageInlinerTest();
+	public void innerClassInlinerTest() throws IOException{
+		setup_innerClassInlinerTest();
 		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
 		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
 		assertEquals(0, inlineData.getInlineLocations().size());
+		ClassFileUtils.compressJars(decompressedJars);
+	}
+
+	@Test
+	public void packageIllegalAccessProject() throws IOException{
+		setup_illegalAccessProject();
+		Set<File> decompressedJars = ClassFileUtils.extractJars(new ArrayList<File>(getClasspaths()));
+		InlineData inlineData = MethodInliner.inlineMethods(this.callgraph, getClasspaths(), new HashSet<String>());
+		assertEquals(1, inlineData.getInlineLocations().size());
 		ClassFileUtils.compressJars(decompressedJars);
 	}
 

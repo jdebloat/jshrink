@@ -1,13 +1,8 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-import com.sun.istack.internal.NotNull;
 import soot.Scene;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class MethodData implements Serializable {
 	private String name;

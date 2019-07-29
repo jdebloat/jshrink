@@ -155,6 +155,18 @@ public class MethodInliner {
 					continue;
 				}
 
+				/*
+				Check that inlining the method does not break any access controls (references to
+				private/package-private methods, etc.). If this check is ignored, IllegalAccessExceptions can be
+				thrown at runtime.
+				 */
+				if(!accessControlsOk(callee, caller.getDeclaringClass())){
+					if(debug){
+						System.out.println("Inlining the callee would violate Java access controls.");
+					}
+					continue;
+				}
+
 				Body b = caller.retrieveActiveBody();
 				List<Map.Entry<Stmt, Boolean>> toInline = toInline(b, callee);
 
@@ -383,5 +395,48 @@ public class MethodInliner {
 		return (inlineClassSizeAfter + containerClassSizeAfter)
 			-(inlineClassSizeBefore + containerClassSizeBefore) < 0;
 
+	}
+
+	private static boolean accessControlsOk(SootMethod sootMethod, SootClass sootClass){
+
+		//No access control problems if the methods exist in the same class.
+		if(sootMethod.getDeclaringClass().equals(sootClass)){
+			return true;
+		}
+
+		boolean inSamePackage = sootMethod.getDeclaringClass().getPackageName().equals(sootClass.getPackageName());
+
+		Body b = sootMethod.retrieveActiveBody();
+		for(Unit unit : b.getUnits()) {
+			Stmt stmt = (Stmt) unit;
+			if (stmt.containsInvokeExpr()) {
+				InvokeExpr callExpr = stmt.getInvokeExpr();
+				SootMethodRef smf = callExpr.getMethodRef();
+				SootMethod invokedMethod = smf.tryResolve();
+				if (invokedMethod == null) {
+					//At this level we cannot always resolve virtual methods unfortunately.
+					//I don't know as of yet how this may affect this check.
+					continue;
+				}
+
+				if(!inSamePackage && SootUtils.isPackagePrivate(invokedMethod)){
+					return false;
+				} else if(invokedMethod.isPrivate()){
+					return false;
+				} else if(invokedMethod.isProtected()){
+					return false;
+				}
+			} else if (stmt.containsFieldRef()) {
+				FieldRef fieldRef = stmt.getFieldRef();
+				SootField sootField = fieldRef.getField();
+				if(!inSamePackage && SootUtils.isPackagePrivate(sootField)){
+					return false;
+				} else if(sootField.isPrivate()){
+					return false;
+				}
+			}
+		}
+
+		return true;
 	}
 }

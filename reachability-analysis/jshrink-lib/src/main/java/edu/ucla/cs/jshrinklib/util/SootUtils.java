@@ -329,4 +329,12 @@ public class SootUtils {
 
 		return Optional.empty();
 	}
+
+	public static boolean isPackagePrivate(ClassMember classMember){
+		return !classMember.isPrivate() && !classMember.isProtected() && !classMember.isPublic();
+	}
+
+	public static boolean isPackagePrivate(SootClass sootClass){
+		return !sootClass.isPrivate() && !sootClass.isProtected() && !sootClass.isPublic();
+	}
 }
