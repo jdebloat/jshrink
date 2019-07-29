@@ -510,7 +510,7 @@ public class ApplicationTest {
 
 
 	@Ignore
-	@Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
+	@Test //Ignoring this test right now as it's failing (we think it's a bug in CHA call graph analysis)
 	public void mainTest_targetCustomEntryPoint() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
