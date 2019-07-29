@@ -260,7 +260,7 @@ public class MethodInliner {
 				}catch(IndexOutOfBoundsException e){
 					/*
 					Sometimes due to Soot parsing bytecode incorrectly, the "toInline" function returns an empty
-					ArrayList. In these rare cases I think it best just to skip the method inling for those methods.
+					ArrayList. In these rare cases I think it best just to skip the method inlining for those methods.
 					It's a cheap fix but shouldn't have a big impact.
 					*/
 					continue;
