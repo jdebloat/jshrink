@@ -1066,10 +1066,21 @@ public class ApplicationTest {
 				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: public void nestedClassMethod()>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-				TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
-		assertEquals(1, methodsInlined.getInlineLocations()
-				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")).size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>"))
+				TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
+		assertEquals(1,methodsInlined.getInlineLocations()
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
+		Assert.assertTrue(methodsInlined.getInlineLocations()
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
+				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+		Assert.assertTrue(methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).isPresent());
+		assertEquals(1, methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get().size());
+		Assert.assertTrue(methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get()
 				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
