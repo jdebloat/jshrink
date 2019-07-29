@@ -989,7 +989,6 @@ public class ApplicationTest {
 	}
 
 	@Test
-	@Ignore
 	public void lambdaMethodTest() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
