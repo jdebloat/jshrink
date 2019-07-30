@@ -353,6 +353,7 @@ public class Application {
 				}
 			}
 
+
 			removedClasses.addAll(jShrink.classesToRemove());
 			if(commandLineParser.isVerbose()){
 				System.out.println("Done inlining inlinable methods!");
@@ -486,6 +487,24 @@ public class Application {
 			}
 
 			toLogVerbose.append(ClassCollapser.log);
+		}
+
+		if(commandLineParser.inlineMethods() && inlineData != null){
+			for(Map.Entry<MethodData, Set<MethodData>> inlineLocation : inlineData.getInlineLocations().entrySet()){
+				for(MethodData inlinedTo : inlineLocation.getValue()) {
+					toLogVerbose.append("INLINED_METHOD," + inlineLocation.getKey().getSubSignature() + " to "
+							+ inlinedTo.getSignature() + System.lineSeparator());
+					Optional<Set<MethodData>> ultimateLocationSet
+							= inlineData.getUltimateInlineLocations(inlineLocation.getKey());
+					if(ultimateLocationSet.isPresent()) {
+						for (MethodData ultimateLocation : ultimateLocationSet.get()) {
+							toLogVerbose.append("INLINED_METHOD_ULTIMATE_LOCATION,"
+									+ inlineLocation.getKey().getSubSignature()
+									+ " to " + ultimateLocation.getSignature() + System.lineSeparator());
+						}
+					}
+				}
+			}
 		}
 
 
