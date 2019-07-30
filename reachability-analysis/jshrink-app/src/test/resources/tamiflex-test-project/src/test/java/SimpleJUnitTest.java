@@ -2,6 +2,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import static org.junit.Assert.*;
 
 public class SimpleJUnitTest {
 
@@ -20,5 +21,10 @@ public class SimpleJUnitTest {
 		Method method = aClass.getMethod("m3", null);
 		A a = new A("hello");
 		method.invoke(a, null);
+	}
+
+	@Test
+	public void testB() {
+		assertFalse(A.class.equals(B.class));
 	}
 }
