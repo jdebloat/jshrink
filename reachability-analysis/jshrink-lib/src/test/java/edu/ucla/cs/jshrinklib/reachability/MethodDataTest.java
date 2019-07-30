@@ -33,7 +33,7 @@ public class MethodDataTest {
 		boolean isStatic = true;
 		MethodData methodData = new MethodData(methodName, className, methodReturnType, args, isPublic, isStatic);
 
-		assertFalse(methodData.getAnnotation().isPresent());
+		assertTrue(methodData.getAnnotation().isEmpty());
 		assertEquals(methodName, methodData.getName());
 		assertEquals(className, methodData.getClassName());
 		assertEquals(methodReturnType, methodData.getReturnType());
@@ -77,8 +77,8 @@ public class MethodDataTest {
 		String annotation = "org.junit.Test";
 		methodData.setAnnotation(annotation);
 
-		assertTrue(methodData.getAnnotation().isPresent());
-		assertEquals(annotation, methodData.getAnnotation().get());
+		assertFalse(methodData.getAnnotation().isEmpty());
+		assertEquals(annotation, methodData.getAnnotation());
 	}
 
 

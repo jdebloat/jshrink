@@ -315,18 +315,18 @@ public class ClassCollapserAnalysis {
         }
 
         //Is the class to be merged package-private?
-        if(isPackagePrivate(from.getModifiers())){
+        if(SootUtils.isPackagePrivate(from)){
             return false;
         }
 
         //Are any of the fields package-private or are types that are package-private?
         for(SootField sootField: from.getFields()){
-            if(isPackagePrivate(sootField.getModifiers())){
+            if(SootUtils.isPackagePrivate(sootField)){
                 return false;
             }
 
             SootClass type = Scene.v().getSootClass(sootField.getType().toString());
-            if(isPackagePrivate(type.getModifiers())){
+            if(SootUtils.isPackagePrivate(type)){
                 return false;
             }
         }
@@ -334,7 +334,7 @@ public class ClassCollapserAnalysis {
         //Are any of the methods package-private?
         for(SootMethod sootMethod : from.getMethods()){
 
-            if(isPackagePrivate(sootMethod.getModifiers())){
+            if(SootUtils.isPackagePrivate(sootMethod)){
                 return false;
             }
 
@@ -356,16 +356,16 @@ public class ClassCollapserAnalysis {
 						//I don't know as of yet how this may affect this check.
 						continue;
 					}
-					if (isPackagePrivate(invokedMethod.getModifiers())) {
+					if (SootUtils.isPackagePrivate(invokedMethod)) {
 						return false;
 					}
-					if (isPackagePrivate(sootClass.getModifiers())) {
+					if (SootUtils.isPackagePrivate(sootClass)) {
 						return false;
 					}
                 } else if(stmt.containsFieldRef()){
                     FieldRef fieldRef = stmt.getFieldRef();
                     SootField sootField = fieldRef.getField();
-                    if(isPackagePrivate(sootField.getModifiers())){
+                    if(SootUtils.isPackagePrivate(sootField)){
                         return false;
                     }
                 }
@@ -376,9 +376,9 @@ public class ClassCollapserAnalysis {
         return true;
     }
 
-    private boolean isPackagePrivate(int modifiers){
-        return !Modifier.isPrivate(modifiers) && !Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers);
-    }
+  //  private boolean isPackagePrivate(int modifiers){
+  //      return !Modifier.isPrivate(modifiers) && !Modifier.isPublic(modifiers) && !Modifier.isProtected(modifiers);
+  //  }
 
     private boolean isAnnoymousInner(String name) {
         int realNameIndex = name.length() - 1;

@@ -85,9 +85,9 @@ public class EntryPointUtil {
 		Set<MethodData> testMethods = new HashSet<MethodData>();
 
 		for(MethodData methodData: methods){
-			if((methodData.getAnnotation().isPresent()
+			if((!methodData.getAnnotation().isEmpty()
 				//&& testAnnotations().contains(methodData.getAnnotation().get()))
-					&& methodData.getAnnotation().get().startsWith("org.junit"))
+					&& methodData.getAnnotation().startsWith("org.junit"))
 				|| methodData.isJUnit3Test()) {
 				testMethods.add(methodData);
 			}

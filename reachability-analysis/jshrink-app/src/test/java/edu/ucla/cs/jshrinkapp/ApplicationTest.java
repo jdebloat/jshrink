@@ -39,7 +39,7 @@ public class ApplicationTest {
 		File f = new File(classLoader.getResource(resources).getFile());
 
 		try {
-			File copy = File.createTempFile("test-project-", "");
+			File copy = File.createTempFile(resources + "_", "");
 			copy.delete();
 			copy.mkdir();
 
@@ -177,7 +177,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
-
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -235,7 +235,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--remove-classes ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
-
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -291,6 +291,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--remove-classes ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -348,6 +349,7 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--include-exception ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -401,6 +403,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--include-exception \"message_removed\" ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -460,6 +463,7 @@ public class ApplicationTest {
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--include-exception \"message_removed\" ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -506,7 +510,7 @@ public class ApplicationTest {
 
 
 	@Ignore
-	@Test //Ignoring this test right now as it's failing (we think it's a bug in Spark callgraph analysis)
+	@Test //Ignoring this test right now as it's failing (we think it's a bug in CHA call graph analysis)
 	public void mainTest_targetCustomEntryPoint() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -515,6 +519,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -565,6 +570,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -613,6 +619,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -661,6 +668,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		try {
 			Method method = ApplicationTest.class.getMethod("ignoreClassTest");
@@ -714,6 +722,7 @@ public class ApplicationTest {
 		arguments.append("--remove-classes ");
 		arguments.append("--remove-methods ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -758,6 +767,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry "); //Note: when targeting Maven, we always implicitly target test entry due to TamiFlex
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -802,6 +812,7 @@ public class ApplicationTest {
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -820,8 +831,8 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -839,6 +850,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -864,8 +876,8 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -889,7 +901,7 @@ public class ApplicationTest {
 		arguments.append("--class-collapser ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--verbose ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -905,13 +917,16 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void test_junit_test_failures() {
+	public void test_issue25() {
 		String junit_project_path = getJunitProjectDir().getAbsolutePath();
 		Set<MethodData> entryPoints = new HashSet<MethodData>();
-		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
+		MethodData failedTest = new MethodData("verifierRunsAfterTest",
+			"org.junit.rules.VerifierRuleTest", "void", new String[]{},
+			true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, entryPoints);
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.empty(), Optional.empty(), false, true, true);
+		MavenSingleProjectAnalyzer runner =
+				new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.empty(), Optional.empty(), false, true, true, true);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
@@ -930,7 +945,7 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--verbose ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -954,6 +969,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -968,13 +984,13 @@ public class ApplicationTest {
 	}
 
 	@Test
-	@Ignore
 	public void lambdaMethodTest() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + getLambdaAppProject() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1002,6 +1018,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getLambdaAppProject() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1027,8 +1044,8 @@ public class ApplicationTest {
 		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
 		arguments.append("--main-entry ");
 		arguments.append("--inline ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1043,10 +1060,21 @@ public class ApplicationTest {
 				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff$NestedClass: public void nestedClassMethod()>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
-				TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
-		assertEquals(1, methodsInlined.getInlineLocations()
-				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")).size());
-		Assert.assertTrue(methodsInlined.getInlineLocations().get(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>"))
+				TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")));
+		assertEquals(1,methodsInlined.getInlineLocations()
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>")).size());
+		Assert.assertTrue(methodsInlined.getInlineLocations()
+				.get(TestUtils.getMethodDataFromSignature("<StandardStuff: public static java.lang.String getStringStatic(int)>"))
+				.contains(TestUtils.getMethodDataFromSignature("<StandardStuff: public java.lang.String getString()>")));
+		Assert.assertTrue(methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).isPresent());
+		assertEquals(1, methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get().size());
+		Assert.assertTrue(methodsInlined.getUltimateInlineLocations(
+				TestUtils.getMethodDataFromSignature(
+						"<StandardStuff: public static java.lang.String getStringStatic(int)>")).get()
 				.contains(TestUtils.getMethodDataFromSignature("<Main: public static void main(java.lang.String[])>")));
 
 		Assert.assertTrue(methodsInlined.getInlineLocations().containsKey(
@@ -1068,9 +1096,9 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
 		arguments.append("--inline ");
-		arguments.append("--verbose ");
 		arguments.append("-T ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1115,9 +1143,9 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
 		arguments.append("-T ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1145,8 +1173,8 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
 		arguments.append("-T ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1172,8 +1200,8 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--class-collapser ");
-		arguments.append("--verbose ");
 		arguments.append("-T ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1200,6 +1228,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--class-collapser ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1269,6 +1298,7 @@ public class ApplicationTest {
 		arguments.append("--remove-fields ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1304,6 +1334,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1336,6 +1367,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1362,6 +1394,7 @@ public class ApplicationTest {
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1384,8 +1417,8 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1409,8 +1442,8 @@ public class ApplicationTest {
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
-		arguments.append("--verbose ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
 

@@ -2,19 +2,16 @@ package edu.ucla.cs.jshrinklib.reachability;
 
 import soot.Scene;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.Serializable;
 
-public class MethodData {
+public class MethodData implements Serializable {
 	private String name;
 	private String className;
 	private String[] args;
 	private boolean isPublicMethod;
 	private String returnType;
 	private boolean isStaticMethod;
-	private Optional<String> annotation;
+	private String annotation;
 
 	/* Handle test cases written in JUnit 3*/
 	private boolean isJUnit3Test = false;
@@ -47,12 +44,12 @@ public class MethodData {
 		this.isPublicMethod = isPublic;
 		this.returnType = methodReturnType;
 		this.isStaticMethod = isStatic;
-		this.annotation = Optional.empty();
+		this.annotation = "";
 	}
 
 	//I don't like this, but I can't construct MethodData with knowledge of whether it's annotated or not
 	/*package*/ void setAnnotation(String annotation){
-		this.annotation = Optional.of(annotation);
+		this.annotation = annotation;
 	}
 
 	public String getName(){
@@ -95,7 +92,7 @@ public class MethodData {
 		return this.isStaticMethod;
 	}
 
-	public Optional<String> getAnnotation(){
+	public String getAnnotation(){
 		return this.annotation;
 	}
 

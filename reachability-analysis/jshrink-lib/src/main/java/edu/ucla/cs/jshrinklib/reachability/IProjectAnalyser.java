@@ -35,7 +35,6 @@ public interface IProjectAnalyser {
     public List<File> getLibClasspaths();
     public List<File> getTestClasspaths();
     public Set<MethodData> getEntryPoints();
-    public Set<CallGraph> getCallGraphs();
     public TestOutput getTestOutput();
     public Set<FieldData> getLibFields();
     public Set<FieldData> getLibFieldsCompileOnly();
