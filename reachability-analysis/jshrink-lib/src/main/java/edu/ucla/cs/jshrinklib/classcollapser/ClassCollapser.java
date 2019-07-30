@@ -83,10 +83,6 @@ public class ClassCollapser {
         // update any references to collapsed classes
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
 
-        if(nameChangeList.keySet().contains("org.junit.tests.assertion.NestedException")) {
-            System.out.println("Caught you!");
-        }
-
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
             if (!nameToSootClass.containsKey(fromName)) {
@@ -98,10 +94,6 @@ public class ClassCollapser {
             SootClass from = nameToSootClass.get(fromName);
             SootClass to = nameToSootClass.get(toName);
             for (String className : allClasses) {
-                if(className.equals("org.junit.tests.assertion.AssertionTest") || className.equals("")) {
-                    System.out.println("Caught you!");
-                }
-
                 if(className.equals(fromName)) {
                     // no need to handle the collapsed class, since this class will be removed at the end
                     continue;
@@ -270,6 +262,22 @@ public class ClassCollapser {
                 }
             }
         }
+
+        HashSet<String> innerClassesToUpdateTogether = new HashSet<String>();
+        for(String className : classesToRewrite) {
+            // Make sure when we update an outer class, we also rewrite the bytecode of all its inner classes using Soot
+            // Otherwise we will introduce bytecode inconsistencies
+            // See GitHub issue#77 https://github.com/tianyi-zhang/call-graph-analysis/issues/77
+            for(String className2 : testClasses) {
+                if (className2.startsWith(className + "$")) {
+                    if(!classesToRemove.contains(className2) && !classesToRewrite.contains(className2)) {
+                        log.append("This inner class, " + className2 + " should also be updated by Soot together with its outerclass.\n");
+                        innerClassesToUpdateTogether.add(className2);
+                    }
+                }
+            }
+        }
+        classesToRewrite.addAll(innerClassesToUpdateTogether);
     }
 
     /**
