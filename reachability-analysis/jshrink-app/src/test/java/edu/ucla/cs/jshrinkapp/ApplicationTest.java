@@ -911,7 +911,7 @@ public class ApplicationTest {
 		MethodData failedTest = new MethodData("verifierRunsAfterTest", "org.junit.rules.VerifierRuleTest", "void", new String[]{}, true, false);
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, entryPoints);
-		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.of(getTamiFlexJar()), Optional.empty(), false, false, true);
+		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.empty(), Optional.empty(), false, true, true);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
