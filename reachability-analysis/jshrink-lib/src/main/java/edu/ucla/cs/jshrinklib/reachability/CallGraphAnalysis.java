@@ -1,10 +1,13 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.util.ASMUtils;
+import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.EntryPointUtil;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.Scene;
@@ -15,19 +18,16 @@ import soot.jimple.spark.SparkTransformer;
 import soot.jimple.toolkits.callgraph.CHATransformer;
 import soot.jimple.toolkits.callgraph.CallGraph;
 
-public class CallGraphAnalysis implements IProjectAnalyser {
+public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 
-	private final List<File> libJarPath;
-	private final List<File> appClassPath;
-	private final List<File> appTestPath;
+	private List<File> libJarPath;
+	private List<File> appClassPath;
+	private List<File> appTestPath;
 	private final Set<MethodData> entryMethods;
 	private final Set<String> libClasses;
-	private final HashMap<String, String> classToLib;
 	private final Set<MethodData> libMethods;
 	private final Set<FieldData> libFields;
 	private final Map<MethodData, Set<FieldData>> libFieldReferences;
-	private final HashMap<MethodData, String> methodToLib;
-	private final HashMap<FieldData, String> fieldToLib;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<FieldData> appFields;
@@ -43,7 +43,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	private final Map<MethodData, Set<MethodData>> usedTestMethods;
 	private final Set<String> usedTestClasses;
 	private final EntryPointProcessor entryPointProcessor;
-	private Set<CallGraph> callgraphs = new HashSet<CallGraph>();
 	private final boolean useSpark;
 	private final Map<MethodData, Set<MethodData>> virtualMethodCalls;
 
@@ -58,12 +57,9 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		this.entryMethods = new HashSet<MethodData>();
 
 		libClasses = new HashSet<String>();
-		classToLib = new HashMap<String, String>();
 		libMethods = new HashSet<MethodData>();
 		libFields = new HashSet<FieldData>();
 		libFieldReferences = new HashMap<MethodData, Set<FieldData>>();
-		methodToLib = new HashMap<MethodData, String>();
-		fieldToLib = new HashMap<FieldData, String>();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		appFields = new HashSet<FieldData>();
@@ -98,6 +94,18 @@ public class CallGraphAnalysis implements IProjectAnalyser {
         this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,testMethods));
 		// 3. construct the call graph and compute the reachable classes and methods
 		this.runCallGraphAnalysis();
+	}
+
+	/*package*/ void setLibJarPath(List<File> libJarPath){
+		this.libJarPath = libJarPath;
+	}
+
+	/*package*/ void setAppClassPath(List<File> appClassPath){
+		this.appClassPath = appClassPath;
+	}
+
+	/*package*/ void setAppTestPath(List<File> appTestPath){
+		this.appTestPath = appTestPath;
 	}
 	
 	
@@ -134,17 +142,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
 			this.libFields.addAll(fields_in_this_lib);
-
-			String lib_path = lib.getAbsolutePath();
-			for(String class_name : classes_in_this_lib) {
-				classToLib.put(class_name, lib_path);
-			}
-			for(MethodData md : methods_in_this_lib) {
-				methodToLib.put(md, lib_path);
-			}
-			for(FieldData fd : fields_in_this_lib) {
-				fieldToLib.put(fd, lib_path);
-			}
 		}
 
 		for (File appPath : appClassPath) {
@@ -171,14 +168,8 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 		} else {
 			CHATransformer.v().transform();
 		}
-		
-//		System.out.println("call graph analysis starts.");
-//		System.out.println(entryPoints.size() + " entry points.");
-		CallGraph cg = Scene.v().getCallGraph();
-//		System.out.println("call graph analysis done.");
 
-		this.callgraphs = new HashSet<CallGraph>();
-		this.callgraphs.add(cg);
+		CallGraph cg = Scene.v().getCallGraph();
 
 		Map<MethodData,Set<MethodData>> usedMethods = new HashMap<MethodData,Set<MethodData>>();
 		Set<String> usedClasses = new HashSet<String>();
@@ -346,10 +337,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	public Set<String> getLibClasses() {
 		return Collections.unmodifiableSet(this.libClasses);
 	}
-	
-	public String getLibPathOfClass(String libClass) {
-		return this.classToLib.get(libClass);
-	}
 
 	@Override
 	public Set<MethodData> getLibMethods() {
@@ -360,13 +347,20 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	public Set<FieldData> getLibFields() {
 		return Collections.unmodifiableSet(this.libFields);
 	}
-	
+
+	//TODO: I don't like having these three mehtods here. Not really relevant to the call graph.
 	public String getLibPathOfMethod(MethodData methodData) {
-		return this.methodToLib.get(methodData);
+		return ClassFileUtils.classInPath(methodData.getClassName(),
+			this.libJarPath).get(0).getAbsolutePath();
 	}
 
 	public String getLibPathOfField(FieldData fieldData) {
-		return this.fieldToLib.get(fieldData);
+		return ClassFileUtils.classInPath(fieldData.getClassName(),
+			this.libJarPath).get(0).getAbsolutePath();
+	}
+
+	public String getLibPathOfClass(String libClass) {
+		return ClassFileUtils.classInPath(libClass, this.libJarPath).get(0).getAbsolutePath();
 	}
 
 	@Override
@@ -466,11 +460,6 @@ public class CallGraphAnalysis implements IProjectAnalyser {
 	@Override
 	public Set<FieldData> getLibFieldsCompileOnly() {
 		return this.getLibFields();
-	}
-
-	@Override
-	public Set<CallGraph> getCallGraphs(){
-		return this.callgraphs;
 	}
 
 	@Override

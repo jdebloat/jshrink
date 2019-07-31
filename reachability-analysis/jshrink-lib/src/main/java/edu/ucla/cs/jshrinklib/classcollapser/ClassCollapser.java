@@ -82,6 +82,7 @@ public class ClassCollapser {
 
         // update any references to collapsed classes
         Map<String, String> nameChangeList = classCollapserAnalysis.getNameChangeList();
+
         for(String fromName: nameChangeList.keySet()) {
             String toName = nameChangeList.get(fromName);
             if (!nameToSootClass.containsKey(fromName)) {
@@ -157,7 +158,7 @@ public class ClassCollapser {
                 SootMethod m = sootMethods.get(i);
                 if(m.isNative() || m.isAbstract()) continue;
 
-                Body b = m.getActiveBody();
+                Body b = m.retrieveActiveBody();
                 for(Unit unit : b.getUnits()) {
                     Stmt stmt = (Stmt) unit;
                     if(stmt.containsInvokeExpr()) {
@@ -261,6 +262,22 @@ public class ClassCollapser {
                 }
             }
         }
+
+        HashSet<String> innerClassesToUpdateTogether = new HashSet<String>();
+        for(String className : classesToRewrite) {
+            // Make sure when we update an outer class, we also rewrite the bytecode of all its inner classes using Soot
+            // Otherwise we will introduce bytecode inconsistencies
+            // See GitHub issue#77 https://github.com/tianyi-zhang/call-graph-analysis/issues/77
+            for(String className2 : testClasses) {
+                if (className2.startsWith(className + "$")) {
+                    if(!classesToRemove.contains(className2) && !classesToRewrite.contains(className2)) {
+                        log.append("This inner class, " + className2 + " should also be updated by Soot together with its outerclass.\n");
+                        innerClassesToUpdateTogether.add(className2);
+                    }
+                }
+            }
+        }
+        classesToRewrite.addAll(innerClassesToUpdateTogether);
     }
 
     /**

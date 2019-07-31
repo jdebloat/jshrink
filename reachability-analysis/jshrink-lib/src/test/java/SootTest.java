@@ -2,8 +2,12 @@ import edu.ucla.cs.jshrinklib.TestUtils;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import org.junit.Test;
 import soot.*;
+import soot.jimple.ClassConstant;
+import soot.jimple.InvokeExpr;
+import soot.jimple.InvokeStmt;
 
 import java.io.*;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -97,11 +101,20 @@ public class SootTest {
     @Test
     public void testSimpleSootClass() {
         ClassLoader classLoader = SootTest.class.getClassLoader();
-        String classPath = new File(classLoader.getResource("soot-error" + File.separator + "B.class").getFile()).getParentFile().getAbsolutePath();
-        SootClass sootClass = TestUtils.getSootClass(classPath, "B");
+        String classPath = new File(classLoader.getResource("soot-error" + File.separator + "A.class").getFile()).getParentFile().getAbsolutePath();
+        SootClass sootClass = TestUtils.getSootClass(classPath, "A");
         for(SootMethod method : sootClass.getMethods()) {
             Body b = method.retrieveActiveBody();
             for(Unit u : b.getUnits()) {
+                if (u instanceof InvokeStmt) {
+                    InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
+                    List<Value> args = expr.getArgs();
+                    for(Value arg : args) {
+                        if(arg instanceof ClassConstant) {
+                            System.out.println(((ClassConstant) arg).getValue());
+                        }
+                    }
+                }
                 System.out.println(u);
             }
         }

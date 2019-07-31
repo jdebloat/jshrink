@@ -55,7 +55,7 @@ public class JShrinkTest {
 		useSpark = true;
 		try {
 			jShrink = JShrink.createInstance(simpleTestProjectDir, entryPointProcessor, tamiflex,jmtrace,
-				useSpark, false, true);
+				useSpark, false, true, false);
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -66,7 +66,7 @@ public class JShrinkTest {
 		try {
 			resetSimpleTestProjectDir();
 			this.jShrink = JShrink.resetInstance(this.simpleTestProjectDir,
-				this.entryPointProcessor, this.tamiflex, this.jmtrace, this.useSpark, false, true);
+				this.entryPointProcessor, this.tamiflex, this.jmtrace, this.useSpark, false, true, false);
 		}catch(IOException e){
 			e.printStackTrace();
 			System.exit(1);
@@ -258,12 +258,6 @@ public class JShrinkTest {
 	public void getUsedLibClassesTest(){
 		assertTrue(this.jShrink.getUsedLibClasses().contains("edu.ucla.cs.onr.test.LibraryClass"));
 		assertEquals(1, this.jShrink.getUsedLibClasses().size());
-	}
-
-	@Test
-	public void getCallGraphsTest(){
-		//TODO: This could be more detailed
-		assertEquals(1, this.jShrink.getCallGraphs().size());
 	}
 
 	@Test

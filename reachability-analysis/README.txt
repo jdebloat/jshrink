@@ -16,4 +16,6 @@ mvn compile -pl jshrink-lib -am
 Notes:
 - If you want to open this project in an IDE, please ensure that you
 copy "jshrink-lib/src/main/resources/poa.properties" to 
-"<your home directory>/.tamiflex/poa.properties".  
+"<your home directory>/.tamiflex/poa.properties". 
+- To save time during testing, please run "../deploy_caches.sh". This
+will deploy the caches to the project.

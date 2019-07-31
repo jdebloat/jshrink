@@ -55,17 +55,18 @@ public class ClassFileUtils {
 		return files;
 	}
 
-	public static boolean classInPath(String qualifiedClassName, Collection<File> paths){
+	public static List<File> classInPath(String qualifiedClassName, Collection<File> paths){
 		String classFile = qualifiedClassName.replaceAll("\\.", File.separator) + ".class";
 
+		List<File> toReturn = new ArrayList<File>();
 		for(File path : paths){
 			if(path.isDirectory()){
 				if((new File(path.getAbsolutePath()
 					+ File.separator + classFile).exists())){
-					return true;
+					toReturn.add(path);
 				}
 			} else if(path.getAbsolutePath().endsWith(classFile)){
-				return true;
+				toReturn.add(path);
 			} else { //... check to see if it's a jar file
 				JarFile jarFile = null;
 				try{
@@ -80,13 +81,13 @@ public class ClassFileUtils {
 					final JarEntry entry = entries.nextElement();
 					String entryName = entry.getName();
 					if(entryName.equals(classFile)){
-						return true;
+						toReturn.add(path);
 					}
 				}
 			}
 		}
 
-		return false;
+		return toReturn;
 	}
 
 	public static void decompressJar(File jarFile) throws IOException{

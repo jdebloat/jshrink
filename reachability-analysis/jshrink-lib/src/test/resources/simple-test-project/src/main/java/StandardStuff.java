@@ -5,9 +5,9 @@ import java.util.Comparator;
 import java.util.List;
 
 public class StandardStuff {
-	private static final String HELLO_WORLD_STRING = "Hello world";
-	private static final String GOODBYE_STRING="Goodbye";
-	private final int integer;
+	static final String HELLO_WORLD_STRING = "Hello world";
+	static final String GOODBYE_STRING="Goodbye";
+	final int integer;
 
 	public String f1 = "field A";
 	public static String f2 = "static field B";
