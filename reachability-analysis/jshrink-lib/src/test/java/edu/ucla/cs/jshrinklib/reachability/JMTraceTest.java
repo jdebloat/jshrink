@@ -229,9 +229,9 @@ public class JMTraceTest {
         Files.lines(new File(expected_path).toPath()).map(l -> l.split("->"))
                 .forEach(e -> {
                     if(e.length == 2){
-                        expectedAppMethods.add(e[0]);
+                        //expectedAppMethods.add(e[0]);
                         expectedAppMethods.add(e[1]);
-                        accessedClassNames.add(e[0].split(": ")[0]);
+                        //accessedClassNames.add(e[0].split(": ")[0]);
                         accessedClassNames.add(e[1].split(": ")[0]);
                     }
                 });
@@ -249,12 +249,21 @@ public class JMTraceTest {
         assertTrue(appMethods.size()>0);
         //assertTrue(h.disjunction(unexpectedAppMethods, appMethods).size() == unexpectedAppMethods.size());
         //assertTrue(h.disjunction(expectedAppMethods, appMethods).size() == 0);
+		Set truePositives = new HashSet<String>(appMethods);
+		Set falsePositives = new HashSet<String>(appMethods);
+		truePositives.retainAll(expectedAppMethods);
+		falsePositives.retainAll(unexpectedAppMethods);
+		int total_expected = expectedAppMethods.size();
 
-        unexpectedAppMethods.retainAll(appMethods);
-        expectedAppMethods.removeAll(appMethods);
-		System.out.println("\nFalse Positives -");
+        System.out.println("True Positives - "+truePositives.size()+"/"+total_expected);
+		System.out.println("\nFalse Positives - "+falsePositives.size()+"/"+unexpectedAppMethods.size());
+
+		unexpectedAppMethods.retainAll(appMethods);
+		expectedAppMethods.removeAll(appMethods);
+
 		unexpectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
-		System.out.println("\nFalse Negatives -");
+
+		System.out.println("\nFalse Negatives - "+expectedAppMethods.size()+"/"+total_expected);
 		expectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
 	}
 /*
