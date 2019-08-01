@@ -87,6 +87,10 @@ public class ApplicationTest {
 		return getOptionalFile(junitProject, "junit4");
 	}
 
+	private File getAnnotationProjectDir() {
+	    return getOptionalFile(junitProject, "annotations");
+    }
+
 	private File getLogDirectory() {
 		if (logDirectory.isPresent()) {
 			return this.getLogDirectory();
@@ -446,6 +450,31 @@ public class ApplicationTest {
 		assertEquals(0, classRemoved.size());
 
 		assertTrue(jarIntact());
+	}
+
+	@Test
+	public void testAnnotations(){
+		/*
+		 This test is to ensure annotations are not removed during method removal. Our current policy is to leave
+		 annotations alone.
+		 */
+
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project " + getAnnotationProjectDir().getAbsolutePath() + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
+		arguments.append("--use-cache ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertEquals(1, methodsRemoved.size());
+		assertTrue(isPresent(methodsRemoved, "Application", "unusedMethod"));
+		assertTrue(classesRemoved.isEmpty());
 	}
 
 	@Test
