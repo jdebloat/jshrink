@@ -61,6 +61,10 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
+	private File getJMTrace(){
+		return new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile());
+	}
+
 	private static File getSimpleTestProjectDir() {
 		return getOptionalFile(simpleTestProject, "simple-test-project");
 	}
@@ -155,18 +159,23 @@ public class ApplicationTest {
 		return false;
 	}
 
+
 	/*
 	@Test
 	public void test(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
-		arguments.append("--maven-project /home/bobbyrbruce/Desktop/nifty ");
+		arguments.append("--maven-project /home/bobbyrbruce/Desktop/java-apns ");
 		arguments.append("--main-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--test-entry ");
+		arguments.append("--inline ");
+		arguments.append("-T ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 		arguments.append("--verbose ");
-		arguments.append("--use-spark ");
-
 
 		Application.main(arguments.toString().split("\\s+"));
 	}
