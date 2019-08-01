@@ -1088,11 +1088,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return this.entryPoints;
 	}
 
-	//@Override
-	//public Set<CallGraph> getCallGraphs(){
-	//	return this.callgraphs;
-	//}
-
 	@Override
 	public TestOutput getTestOutput(){
 		return this.testOutput;
