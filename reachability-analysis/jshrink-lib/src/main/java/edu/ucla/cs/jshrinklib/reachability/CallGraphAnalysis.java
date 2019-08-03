@@ -88,7 +88,7 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 	@Override
 	public void run() {
         // 1. use ASM to find all classes and methods && //1.a Build class type dependency graph
-        this.findAllClassesAndMethodsAndFields();
+        this.findAllClassesAndReferencesAndMethodsAndFields();
         // 2. get entry points
         this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,testMethods));
 		// 3. construct the call graph and compute the reachable classes and methods
@@ -132,7 +132,7 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 		this.runCallGraphAnalysis();
 	}
 
-	private void findAllClassesAndMethodsAndFields() {
+	private void findAllClassesAndReferencesAndMethodsAndFields() {
 		for (File lib : this.libJarPath) {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
@@ -153,6 +153,27 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 			// no need to collect field data for test cases
 			DependencyGraphUtils.readClassWithDependencies(testPath, testClasses, testMethods,null,
 					null, virtualMethodCalls, classDependencyGraph);
+		}
+	}
+
+	private void findAllClassesAndMethodsAndFields() {
+		for (File lib : this.libJarPath) {
+			HashSet<String> classes_in_this_lib = new HashSet<String>();
+			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
+			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
+			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib, libFieldReferences, virtualMethodCalls);
+			this.libClasses.addAll(classes_in_this_lib);
+			this.libMethods.addAll(methods_in_this_lib);
+			this.libFields.addAll(fields_in_this_lib);
+		}
+
+		for (File appPath : appClassPath) {
+			ASMUtils.readClass(appPath, appClasses, appMethods, appFields, appFieldReferences, virtualMethodCalls);
+		}
+
+		for (File testPath : this.appTestPath){
+			// no need to collect field data for test cases
+			ASMUtils.readClass(testPath, testClasses, testMethods,null, null, virtualMethodCalls);
 		}
 	}
 

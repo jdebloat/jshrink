@@ -55,7 +55,12 @@ public class DependencyGraphUtilsTest {
 		assertEquals(102, allVirtualCalls.size());
 	}
 	@Test
-	public void testDependencyGraph() {
+	public void testClassDependencies() {
+
+	}
+
+	@Test
+	public void testMultiClassGraphWithJars(){
 
 	}
 }

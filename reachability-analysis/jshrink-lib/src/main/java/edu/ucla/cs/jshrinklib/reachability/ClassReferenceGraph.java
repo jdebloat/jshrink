@@ -10,6 +10,7 @@ public class ClassReferenceGraph {
 
     public void addClass(String className, String classPath){
         Set<String> references, refererrs;
+        className = className.replaceAll("/",".");
         try{
             references = ConstantPoolScanner.getClassReferences(classPath);
             references.remove(className);
@@ -20,8 +21,9 @@ public class ClassReferenceGraph {
             }
         }
         catch (Exception e) {
-            System.err.println("An an exception was thrown when getting references for Class "+className+" at "+classPath);
+            System.err.println("An an exception was thrown while getting references for Class "+className+" at "+classPath);
             e.printStackTrace();
+            //System.exit(1);
         }
     }
 
@@ -42,5 +44,9 @@ public class ClassReferenceGraph {
 
     public Set<String> getReferredBy(String className){
         return graph.get(className);
+    }
+
+    public Set<String> getNodes(){
+        return graph.keySet();
     }
 }
