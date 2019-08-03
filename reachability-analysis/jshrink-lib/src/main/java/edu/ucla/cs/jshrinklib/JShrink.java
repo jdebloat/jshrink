@@ -280,6 +280,7 @@ public class JShrink {
 			// we can further remove all unused classes
 			Set<String> unusedClasses = new HashSet<String>(allClasses);
 			unusedClasses.removeAll(usedClasses);
+
 			for(String classToRemove : unusedClasses) {
 				SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
 				this.classesToModify.remove(sootClass);
@@ -677,6 +678,8 @@ public class JShrink {
 	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
 			try{
+				//TODO: Check for class reference
+				//this.getProjectAnalyser()
 				ClassFileUtils.removeClass(sootClass, classPaths);
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");

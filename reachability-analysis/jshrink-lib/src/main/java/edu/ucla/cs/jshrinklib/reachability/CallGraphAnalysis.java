@@ -6,10 +6,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.*;
 
-import edu.ucla.cs.jshrinklib.util.ASMUtils;
-import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
-import edu.ucla.cs.jshrinklib.util.EntryPointUtil;
-import edu.ucla.cs.jshrinklib.util.SootUtils;
+import edu.ucla.cs.jshrinklib.util.*;
 import soot.Scene;
 import soot.SootClass;
 import soot.SootField;
@@ -28,6 +25,7 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 	private final Set<MethodData> libMethods;
 	private final Set<FieldData> libFields;
 	private final Map<MethodData, Set<FieldData>> libFieldReferences;
+	private final ClassReferenceGraph classDependencyGraph;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
 	private final Set<FieldData> appFields;
@@ -60,6 +58,7 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 		libMethods = new HashSet<MethodData>();
 		libFields = new HashSet<FieldData>();
 		libFieldReferences = new HashMap<MethodData, Set<FieldData>>();
+		classDependencyGraph = new ClassReferenceGraph();
 		appClasses = new HashSet<String>();
 		appMethods = new HashSet<MethodData>();
 		appFields = new HashSet<FieldData>();
@@ -88,7 +87,7 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 
 	@Override
 	public void run() {
-        // 1. use ASM to find all classes and methods
+        // 1. use ASM to find all classes and methods && //1.a Build class type dependency graph
         this.findAllClassesAndMethodsAndFields();
         // 2. get entry points
         this.entryMethods.addAll(this.entryPointProcessor.getEntryPoints(appMethods,testMethods));
@@ -138,19 +137,22 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 			HashSet<String> classes_in_this_lib = new HashSet<String>();
 			HashSet<MethodData> methods_in_this_lib = new HashSet<MethodData>();
 			HashSet<FieldData> fields_in_this_lib = new HashSet<FieldData>();
-			ASMUtils.readClass(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib, libFieldReferences, virtualMethodCalls);
+			DependencyGraphUtils.readClassWithDependencies(lib, classes_in_this_lib, methods_in_this_lib, fields_in_this_lib,
+					libFieldReferences, virtualMethodCalls, classDependencyGraph);
 			this.libClasses.addAll(classes_in_this_lib);
 			this.libMethods.addAll(methods_in_this_lib);
 			this.libFields.addAll(fields_in_this_lib);
 		}
 
 		for (File appPath : appClassPath) {
-			ASMUtils.readClass(appPath, appClasses, appMethods, appFields, appFieldReferences, virtualMethodCalls);
+			DependencyGraphUtils.readClassWithDependencies(appPath, appClasses, appMethods, appFields,
+					appFieldReferences, virtualMethodCalls, classDependencyGraph);
 		}
 
 		for (File testPath : this.appTestPath){
 			// no need to collect field data for test cases
-			ASMUtils.readClass(testPath, testClasses, testMethods,null, null, virtualMethodCalls);
+			DependencyGraphUtils.readClassWithDependencies(testPath, testClasses, testMethods,null,
+					null, virtualMethodCalls, classDependencyGraph);
 		}
 	}
 
