@@ -52,6 +52,7 @@ public class ConstantPoolScanner {
         }
         catch(java.lang.AssertionError e){
             System.err.println("Could not process line "+line);
+            cpr.type = "Unknown";
             return cpr;
         }
         int comment_start = line.indexOf("//");

@@ -76,7 +76,9 @@ public class DependencyGraphUtils {
                         ClassReader cr = new ClassReader(fis);
                         cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldReferences, virtualMethodCalls), ClassReader.SKIP_DEBUG);
                         fis.close();
-                        dependencyGraph.addClass(cr.getClassName(), f.getAbsolutePath());
+                        if(dependencyGraph != null){
+                            dependencyGraph.addClass(cr.getClassName(), f.getAbsolutePath());
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
