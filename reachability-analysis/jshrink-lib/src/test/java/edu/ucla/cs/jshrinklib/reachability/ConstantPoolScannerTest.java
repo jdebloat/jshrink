@@ -53,8 +53,7 @@ public class ConstantPoolScannerTest {
 		references.add("Jama.QRDecomposition");
 		references.add("Jama.CholeskyDecomposition");
 		references.add("Jama.EigenvalueDecomposition");
-		references.add("\"[[D\"");
-		references.add("\"[D\"");
+		//references.add("D");
 		references.add("Jama.util.Maths");
 
 		assert(references.size() == outputStream.size());
@@ -71,22 +70,22 @@ public class ConstantPoolScannerTest {
 		}).collect(toList());
 		ArrayList<String> cp = new ArrayList<>();
 		cp.add("#1:Methodref:#20.#56:Main.compare:(Ljava.lang.Integer;Ljava.lang.Integer;)I");
-		cp.add("#2:Methodref:#21.#57:java.lang.Object.\"<init>\":()V");
+		cp.add("#2:Methodref:#21.#57:java.lang.Object.<init>:()V");
 		cp.add("#3:String:#58:Lorem ipsum dolor sit amet, prima adipisci et est, mel et purto duis ludus. Vix mollis ancillae te. Eu pro purto soleat consetetur. Vix eripuit reprehendunt id. Audire vidisse aperiri eu sed, incorrupte scripserit signiferumque ad est, omnes platonem ex sea. His libris invenire eu. Falli tractatos qui ea, officiis recusabo convenire ea eos, pri hinc oratio delenit an.Omnesque conceptam appellantur ei vel, an quo possim audiam. Consulatu vituperatoribus nam ea, eos an paulo copiosae. Paulo dolor ei his, eam eu minim partem, saepe putent concludaturque vis ex. Nibh consulatu interpretaris pri id, ut urbanitas delicatissimi mei. Te vim aperiam principes assueverit, ea purto imperdiet dissentiunt eos, ex autem mucius iuvaret quo.In his nibh partiendo ocurreret. Probatus corrumpit molestiae ei ius. In qui dictas doctus atomorum, illum vocent cotidieque no sit, ne mei discere facilis lucilius. Mei efficiendi reformidans theophrastus ea, no vis erat novum laoreet, atqui euripidis mea cu. Ex omnes omnesque cum.An eam prima dicta eligendi, dictas option repudiandae no nam. Nisl vero ei duo. Pericula posidonium eu pri, et ius tale constituam. Rebum veritus in ius. Ut mei dicit repudiandae, vim an primis propriae efficiendi, et quas debitis laboramus eam. Cum elitr principes ei.Prima nulla eligendi ex eum, saperet debitis ullamcorper et cum, ut ius autem denique expetendis. Nobis adversarium an qui, nec no melius iuvaret. Eum mundi tantas eu, novum aperiam pri ei. Eam reprimique neglegentur delicatissimi eu, molestie iudicabit ius ne, ullum dolore animal ei cum. Dolorum nusquam eleifend et pri, in errem mentitum sed.");
 		cp.add("#4:Class:#59:StandardStuff");
-		cp.add("#5:Methodref:#4.#57:StandardStuff.\"<init>\":()V");
+		cp.add("#5:Methodref:#4.#57:StandardStuff.<init>:()V");
 		cp.add("#6:Methodref:#4.#60:StandardStuff.getString:()Ljava.lang.String;");
 		cp.add("#7:Fieldref:#4.#61:StandardStuff.f1:Ljava.lang.String;");
 		cp.add("#8:Fieldref:#4.#62:StandardStuff.f2:Ljava.lang.String;");
 		cp.add("#9:Class:#63:edu.ucla.cs.onr.test.LibraryClass");
-		cp.add("#10:Methodref:#9.#57:edu.ucla.cs.onr.test.LibraryClass.\"<init>\":()V");
+		cp.add("#10:Methodref:#9.#57:edu.ucla.cs.onr.test.LibraryClass.<init>:()V");
 		cp.add("#11:Methodref:#9.#64:edu.ucla.cs.onr.test.LibraryClass.getNumber:()I");
 		cp.add("#12:Class:#65:java.util.ArrayList");
-		cp.add("#13:Methodref:#12.#57:java.util.ArrayList.\"<init>\":()V");
+		cp.add("#13:Methodref:#12.#57:java.util.ArrayList.<init>:()V");
 		cp.add("#14:Methodref:#66.#67:java.lang.Integer.valueOf:(I)Ljava.lang.Integer;");
 		cp.add("#15:InterfaceMethodref:#68.#69:java.util.List.add:(Ljava.lang.Object;)Z");
 		cp.add("#16:Class:#70:Main$1");
-		cp.add("#17:Methodref:#16.#57:Main$1.\"<init>\":()V");
+		cp.add("#17:Methodref:#16.#57:Main$1.<init>:()V");
 		cp.add("#18:Methodref:#71.#72:java.util.Collections.sort:(Ljava.util.List;Ljava.util.Comparator;)V");
 		cp.add("#19:Methodref:#66.#73:java.lang.Integer.intValue:()I");
 		cp.add("#20:Class:#74:Main");
@@ -126,7 +125,7 @@ public class ConstantPoolScannerTest {
 		cp.add("#54:Utf8:SourceFile");
 		cp.add("#55:Utf8:Main.java");
 		cp.add("#56:NameAndType:#46:#47:compare:(Ljava.lang.Integer;Ljava.lang.Integer;)I");
-		cp.add("#57:NameAndType:#23:#24:\"<init>\":()V");
+		cp.add("#57:NameAndType:#23:#24:<init>:()V");
 		cp.add("#58:Utf8:Lorem ipsum dolor sit amet, prima adipisci et est, mel et purto duis ludus. Vix mollis ancillae te. Eu pro purto soleat consetetur. Vix eripuit reprehendunt id. Audire vidisse aperiri eu sed, incorrupte scripserit signiferumque ad est, omnes platonem ex sea. His libris invenire eu. Falli tractatos qui ea, officiis recusabo convenire ea eos, pri hinc oratio delenit an.Omnesque conceptam appellantur ei vel, an quo possim audiam. Consulatu vituperatoribus nam ea, eos an paulo copiosae. Paulo dolor ei his, eam eu minim partem, saepe putent concludaturque vis ex. Nibh consulatu interpretaris pri id, ut urbanitas delicatissimi mei. Te vim aperiam principes assueverit, ea purto imperdiet dissentiunt eos, ex autem mucius iuvaret quo.In his nibh partiendo ocurreret. Probatus corrumpit molestiae ei ius. In qui dictas doctus atomorum, illum vocent cotidieque no sit, ne mei discere facilis lucilius. Mei efficiendi reformidans theophrastus ea, no vis erat novum laoreet, atqui euripidis mea cu. Ex omnes omnesque cum.An eam prima dicta eligendi, dictas option repudiandae no nam. Nisl vero ei duo. Pericula posidonium eu pri, et ius tale constituam. Rebum veritus in ius. Ut mei dicit repudiandae, vim an primis propriae efficiendi, et quas debitis laboramus eam. Cum elitr principes ei.Prima nulla eligendi ex eum, saperet debitis ullamcorper et cum, ut ius autem denique expetendis. Nobis adversarium an qui, nec no melius iuvaret. Eum mundi tantas eu, novum aperiam pri ei. Eam reprimique neglegentur delicatissimi eu, molestie iudicabit ius ne, ullum dolore animal ei cum. Dolorum nusquam eleifend et pri, in errem mentitum sed.");
 		cp.add("#59:Utf8:StandardStuff");
 		cp.add("#60:NameAndType:#76:#77:getString:()Ljava.lang.String;");

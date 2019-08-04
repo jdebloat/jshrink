@@ -68,7 +68,7 @@ public class ConstantPoolScanner {
 
         cpr.refs = line.substring(type_start+type_end, comment_start).trim();
         if(comment_start!=line.length()) {
-            cpr.comment = line.substring(comment_start+2, line.length()).trim();
+            cpr.comment = line.substring(comment_start+2, line.length()).trim().replaceAll("\"","");
         }
         else{
             cpr.comment = "";
@@ -83,9 +83,20 @@ public class ConstantPoolScanner {
     private static Set<String> getClassReferencesFromPool(ArrayList<ConstantPoolReference> constantPool){
         Set<String> references = new HashSet<String>();
         for(ConstantPoolReference cpr: constantPool){
-            if(cpr.type.equals("Class") && !cpr.comment.startsWith("java") && !cpr.comment.startsWith("sun")){
-                references.add(cpr.comment.replaceAll("/","."));
+            if(cpr.type.equals("Class")){
+                int s = 0, e=cpr.comment.length();
+                while(cpr.comment.charAt(s)=='['){
+                    s++;
+                }
+                if(cpr.comment.charAt(s)=='L' && cpr.comment.charAt(e)==';')
+                    e--;
+                String className = cpr.comment.substring(s,e);
+                if(className.length()==1 || className.startsWith("java") || className.startsWith("sun")){
+                    continue;
+                }
+                references.add(className.replaceAll("/","."));
             }
+
         }
         return references;
     }
