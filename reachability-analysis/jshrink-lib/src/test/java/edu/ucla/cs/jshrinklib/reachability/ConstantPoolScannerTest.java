@@ -5,16 +5,13 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static junit.framework.TestCase.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 public class ConstantPoolScannerTest {
 
@@ -46,7 +43,26 @@ public class ConstantPoolScannerTest {
 		assertTrue(references.containsAll(outputStream));
 	}
 	@Test
-	public void testgetConstantPool() throws IOException, InterruptedException{
+	public void testClassReferenceOutput2() throws IOException, InterruptedException{
+		Set<String> outputStream = ConstantPoolScanner.getClassReferences(ConstantPoolScannerTest.class.getClassLoader().getResource("Jama-1.0.3"
+				+ File.separator + "Jama" + File.separator + "Matrix.class").getPath());
+		Set<String> references = new HashSet<>();
+		references.add("Jama.Matrix");
+		references.add("Jama.SingularValueDecomposition");
+		references.add("Jama.LUDecomposition");
+		references.add("Jama.QRDecomposition");
+		references.add("Jama.CholeskyDecomposition");
+		references.add("Jama.EigenvalueDecomposition");
+		references.add("\"[[D\"");
+		references.add("\"[D\"");
+		references.add("Jama.util.Maths");
+
+		assert(references.size() == outputStream.size());
+		assertTrue(outputStream.containsAll(references));
+		assertTrue(references.containsAll(outputStream));
+	}
+	@Test
+	public void testgetConstantPoolOutput() throws IOException, InterruptedException{
 		List<String> outputStream = ConstantPoolScanner.getConstantPool(clazz).stream().map(x->x.toString()).map(x->{
 			if(x.endsWith(":"))
 				return x.substring(0,x.length()-1);
