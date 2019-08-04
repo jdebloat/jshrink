@@ -458,7 +458,7 @@ public class JShrink {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
-			JShrink.removeClasses(this.classesToRemove, classPaths);
+			this.removeClasses(this.classesToRemove, classPaths);
 			/*
 			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
 			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
@@ -675,11 +675,9 @@ public class JShrink {
 		return classNameOnly;
 	}
 
-	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
 			try{
-				//TODO: Check for class reference
-				//this.getProjectAnalyser()
 				ClassFileUtils.removeClass(sootClass, classPaths);
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");
