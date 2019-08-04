@@ -6,6 +6,10 @@ import java.util.*;
 public class ConstantPoolScanner {
     static class ConstantPoolReference{
         String ref_id, type, refs, comment;
+        @Override
+        public String toString(){
+            return (this.ref_id+":"+this.type+":"+this.refs+":"+this.comment).replaceAll("/",".");
+        }
     }
     private static ArrayList<ConstantPoolReference> javapRunner(File clazz) throws IOException, InterruptedException {
         ArrayList<ConstantPoolReference> outputStream = new ArrayList<ConstantPoolReference>();
@@ -50,7 +54,7 @@ public class ConstantPoolScanner {
     private static ConstantPoolReference javapParse(String line){
         ConstantPoolReference cpr = new ConstantPoolReference();
         int type_start = line.indexOf("= ") +2;
-        cpr.ref_id = line.substring(0,type_start -3);
+        cpr.ref_id = line.substring(0,type_start -3).trim();
         cpr.type = line.substring(type_start, line.length());
         int type_end = cpr.type.indexOf(" ");
         if(type_end <= 0){
@@ -64,7 +68,7 @@ public class ConstantPoolScanner {
 
         cpr.refs = line.substring(type_start+type_end, comment_start).trim();
         if(comment_start!=line.length()) {
-            cpr.comment = line.substring(comment_start, line.length());
+            cpr.comment = line.substring(comment_start+2, line.length()).trim();
         }
         else{
             cpr.comment = "";
@@ -72,7 +76,7 @@ public class ConstantPoolScanner {
         return cpr;//(ref_id, type, refs, comment);
 
     }
-    private static ArrayList<ConstantPoolReference> getConstantPool(File classFile) throws IOException, InterruptedException{
+    public static ArrayList<ConstantPoolReference> getConstantPool(File classFile) throws IOException, InterruptedException{
         //TODO: May replace with better method to obtain constant pool
         return javapRunner(classFile);
     }
