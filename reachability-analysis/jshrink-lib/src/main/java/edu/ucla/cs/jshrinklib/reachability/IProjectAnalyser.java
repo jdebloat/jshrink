@@ -42,4 +42,5 @@ public interface IProjectAnalyser {
     public Set<FieldData> getUsedLibFields();
     public Set<FieldData> getUsedLibFieldsCompileOnly();
     public Set<FieldData> getUsedAppFields();
+    public ClassReferenceGraph getClassDependencyGraph();
 }

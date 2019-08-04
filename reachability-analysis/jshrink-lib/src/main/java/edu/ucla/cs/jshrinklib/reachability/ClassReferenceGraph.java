@@ -42,7 +42,7 @@ public class ClassReferenceGraph {
         return references;
     }
 
-    public Set<String> getReferredBy(String className){
+    public Set<String> getReferencedBy(String className){
         return graph.get(className);
     }
 

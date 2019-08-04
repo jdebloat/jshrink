@@ -24,7 +24,7 @@ public class ClassReferenceGraphTest {
         dependencyGraph.addClass(class_name, class_path);
         dependencyGraph.getNodes();
         dependencyGraph.getReferences(class_name);
-        dependencyGraph.getReferredBy(class_name);
+        dependencyGraph.getReferencedBy(class_name);
     }
 
     @Test

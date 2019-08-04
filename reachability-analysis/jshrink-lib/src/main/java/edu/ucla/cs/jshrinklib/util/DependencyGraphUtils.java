@@ -33,7 +33,7 @@ public class DependencyGraphUtils {
                     ClassReader cr = new ClassReader(jarFile.getInputStream(entry));
                     cr.accept(new ASMClassVisitor(Opcodes.ASM5, classes, methods, fields, fieldReferences, virtualMethodCalls), ClassReader.SKIP_DEBUG);
                     if(dependencyGraph != null){
-                        Path temp = Files.createTempFile("dependency_graph_", ".class" );
+                        Path temp = Files.createTempFile("dg_"+cr.getClassName(), ".class" );
                         Files.copy(jarFile.getInputStream(entry), temp, StandardCopyOption.REPLACE_EXISTING);
                         /*OutputStream outStream = new FileOutputStream(targetFile);
                         InputStream initialStream = jarFile.getInputStream(entry);

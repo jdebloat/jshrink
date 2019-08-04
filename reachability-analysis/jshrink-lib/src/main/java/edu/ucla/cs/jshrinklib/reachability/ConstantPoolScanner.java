@@ -28,7 +28,13 @@ public class ConstantPoolScanner {
 
         while((line=br.readLine()) != null && !line.equals("Constant pool:")) {}
         while((line=br.readLine()) != null && !line.equals("{")) {
-            outputStream.add(javapParse(line));
+            try{
+                outputStream.add(javapParse(line));
+            }
+            catch(Exception e){
+                System.err.println("Could not parse line "+line+ " for class "+clazz.getAbsolutePath());
+                e.printStackTrace();
+            }
         }
 
         br.close();
@@ -47,23 +53,20 @@ public class ConstantPoolScanner {
         cpr.ref_id = line.substring(0,type_start -3);
         cpr.type = line.substring(type_start, line.length());
         int type_end = cpr.type.indexOf(" ");
-        try{
-            assert(type_end > 0);
-        }
-        catch(java.lang.AssertionError e){
-            System.err.println("Could not process line "+line);
-            cpr.type = "Unknown";
+        if(type_end <= 0){
             return cpr;
         }
+        cpr.type = cpr.type.substring(0, type_end);
+
         int comment_start = line.indexOf("//");
         if (comment_start <= 0)
             comment_start = line.length();
-        cpr.type = cpr.type.substring(0, type_end);
+
         cpr.refs = line.substring(type_start+type_end, comment_start).trim();
-        try {
-            cpr.comment = line.split("// ")[1];
+        if(comment_start!=line.length()) {
+            cpr.comment = line.substring(comment_start, line.length());
         }
-        catch(ArrayIndexOutOfBoundsException e){
+        else{
             cpr.comment = "";
         }
         return cpr;//(ref_id, type, refs, comment);

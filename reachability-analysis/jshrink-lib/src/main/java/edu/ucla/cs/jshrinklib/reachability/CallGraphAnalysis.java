@@ -436,6 +436,11 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 	}
 
 	@Override
+	public ClassReferenceGraph getClassDependencyGraph() {
+		return this.classDependencyGraph;
+	}
+
+	@Override
 	public List<File> getAppClasspaths() {
 		return Collections.unmodifiableList(this.appClassPath);
 	}
