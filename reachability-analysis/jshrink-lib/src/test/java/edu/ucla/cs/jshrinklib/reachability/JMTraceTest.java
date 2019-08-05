@@ -229,9 +229,9 @@ public class JMTraceTest {
         Files.lines(new File(expected_path).toPath()).map(l -> l.split("->"))
                 .forEach(e -> {
                     if(e.length == 2){
-                        expectedAppMethods.add(e[0]);
+                        //expectedAppMethods.add(e[0]);
                         expectedAppMethods.add(e[1]);
-                        accessedClassNames.add(e[0].split(": ")[0]);
+                        //accessedClassNames.add(e[0].split(": ")[0]);
                         accessedClassNames.add(e[1].split(": ")[0]);
                     }
                 });
@@ -249,12 +249,21 @@ public class JMTraceTest {
         assertTrue(appMethods.size()>0);
         //assertTrue(h.disjunction(unexpectedAppMethods, appMethods).size() == unexpectedAppMethods.size());
         //assertTrue(h.disjunction(expectedAppMethods, appMethods).size() == 0);
+		Set truePositives = new HashSet<String>(appMethods);
+		Set falsePositives = new HashSet<String>(appMethods);
+		truePositives.retainAll(expectedAppMethods);
+		falsePositives.retainAll(unexpectedAppMethods);
+		int total_expected = expectedAppMethods.size();
 
-        unexpectedAppMethods.retainAll(appMethods);
-        expectedAppMethods.removeAll(appMethods);
-		System.out.println("\nFalse Positives -");
+        System.out.println("True Positives - "+truePositives.size()+"/"+total_expected);
+		System.out.println("\nFalse Positives - "+falsePositives.size()+"/"+unexpectedAppMethods.size());
+
+		unexpectedAppMethods.retainAll(appMethods);
+		expectedAppMethods.removeAll(appMethods);
+
 		unexpectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
-		System.out.println("\nFalse Negatives -");
+
+		System.out.println("\nFalse Negatives - "+expectedAppMethods.size()+"/"+total_expected);
 		expectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
 	}
 /*
@@ -367,49 +376,5 @@ public class JMTraceTest {
 			e.printStackTrace();
 		}
 	}
-	
-	/**
-	 * Note that injecting TamiFlex causes test failures in this project. 
-	 */
-/*
-	@Test
-	public void testTamiFlexOnMavenProjectWithMultiSubmodules2() {
-		// the cglib project has five modules
-		// four of them have java class files and only two of them 
-		// have test classes
-		String project_path = this.gitGetter.addGitHubProject("cglib","cglib",
-				"5942bcd657f35a699f05fadfdf720a5c6a3af2b5").getAbsolutePath();
-		String tamiflex_jar_path = new File(JMTraceTest.class.getClassLoader()
-			.getResource("tamiflex" + File.separator + "poa-2.0.3.jar").getFile()).getAbsolutePath();
-		TamiFlexRunner tamiflex = new TamiFlexRunner(tamiflex_jar_path, project_path, true);
-		try {
-			tamiflex.run();
-			// only one module is tested successfully
-			assertEquals(1, tamiflex.accessed_classes.size());
-			assertEquals(1, tamiflex.accessed_fields.size());
-			assertEquals(1, tamiflex.used_methods.size());
-			HashSet<String> all_accessed_classes = new HashSet<String>();
-			for(String module : tamiflex.accessed_classes.keySet()) {
-				all_accessed_classes.addAll(tamiflex.accessed_classes.get(module));
-			}
-			assertEquals(62, all_accessed_classes.size());
-			HashSet<String> all_accessed_fields = new HashSet<String>();
-			for(String module : tamiflex.accessed_fields.keySet()) {
-				all_accessed_fields.addAll(tamiflex.accessed_fields.get(module));
-			}
-			// flaky
-			assertEquals(36, all_accessed_fields.size());
-			HashSet<String> all_used_methods = new HashSet<String>();
-			for(String module : tamiflex.used_methods.keySet()) {
-				all_used_methods.addAll(tamiflex.used_methods.get(module).keySet());
-			}
-			// flaky
-			assertEquals(391, all_used_methods.size());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
- */
 }
 
