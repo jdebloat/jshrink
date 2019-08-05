@@ -30,6 +30,7 @@ public class JShrink {
 	private boolean projectAnalyserRun = false;
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
+	private ClassReferenceGraph classDependencyGraph = null;
 	private long libSizeCompressed = -1;
 	private long libSizeDecompressed = -1;
 	private long appSizeCompressed = -1;
@@ -129,6 +130,7 @@ public class JShrink {
 			this.verbose = verbose;
 			this.runTests = executeTests;
 			this.useCache = useCache;
+			classDependencyGraph = new ClassReferenceGraph();
 	}
 
 	public Set<MethodData> getAllEntryPoints() {
@@ -457,7 +459,7 @@ public class JShrink {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
-			JShrink.removeClasses(this.classesToRemove, classPaths);
+			this.removeClasses(this.classesToRemove, classPaths);
 			/*
 			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
 			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
@@ -674,10 +676,38 @@ public class JShrink {
 		return classNameOnly;
 	}
 
-	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
+			Set<String> referencedBy = null;
 			try{
-				ClassFileUtils.removeClass(sootClass, classPaths);
+				if(referencedBy.size()>0)
+				{
+					this.classesToRemove.remove(sootClass);
+					if(unmodifiableClasses.containsKey(sootClass.getName())) {
+						// do not remove things in an unmodifiable class since the class cannot be updated anyway
+						continue;
+					}
+					for(SootMethod sm: sootClass.getMethods()){
+						try{
+							sootClass.removeMethod(sm);
+						}
+						catch(RuntimeException e){
+							System.err.println("Could not remove method "+sm.getSubSignature()+" in Class "+sootClass.getName());
+						}
+					}
+
+					for(SootField sf: sootClass.getFields()){
+						try{
+							sootClass.removeField(sf);
+						}
+						catch(RuntimeException e){
+							System.err.println("Could not remove field "+sf.getName()+" in Class "+sootClass.getName());
+						}
+					}
+					ClassFileUtils.writeClass(sootClass, classPaths);
+				}
+				else
+					ClassFileUtils.removeClass(sootClass, classPaths);
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");
 				e.printStackTrace();
