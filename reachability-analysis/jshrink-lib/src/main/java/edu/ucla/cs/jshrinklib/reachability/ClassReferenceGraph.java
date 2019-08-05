@@ -1,24 +1,31 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
+import java.io.Serializable;
 import java.util.*;
 
-public class ClassReferenceGraph {
+public class ClassReferenceGraph implements Serializable {
     private HashMap<String, Set<String>> graph=null;
     public ClassReferenceGraph(){
         graph = new HashMap<>();
     }
+    private Set<String> getConstantPoolReferences(String classPath) throws Exception{
+        return ConstantPoolScanner.getClassReferences(classPath);
+    }
+
+    public void addClass(String className, Set<String> references){
+        Set<String> refererrs;
+        className = className.replaceAll("/",".");
+        references.remove(className);
+        for(String ref: references){
+            refererrs = graph.getOrDefault(ref, new HashSet<String>());
+            refererrs.add(className);
+            graph.put(ref, refererrs);
+        }
+    }
 
     public void addClass(String className, String classPath){
-        Set<String> references, refererrs;
-        className = className.replaceAll("/",".");
         try{
-            references = ConstantPoolScanner.getClassReferences(classPath);
-            references.remove(className);
-            for(String ref: references){
-                refererrs = graph.getOrDefault(ref, new HashSet<String>());
-                refererrs.add(className);
-                graph.put(ref, refererrs);
-            }
+            addClass(className, this.getConstantPoolReferences(classPath));
         }
         catch (Exception e) {
             System.err.println("An an exception was thrown while getting references for Class "+className+" at "+classPath);

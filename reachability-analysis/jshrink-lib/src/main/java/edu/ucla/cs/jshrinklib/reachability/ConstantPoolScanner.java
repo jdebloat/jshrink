@@ -85,11 +85,10 @@ public class ConstantPoolScanner {
         for(ConstantPoolReference cpr: constantPool){
             if(cpr.type.equals("Class")){
                 int s = 0, e=cpr.comment.length();
-                while(cpr.comment.charAt(s)=='['){
+                while(cpr.comment.charAt(s)=='[' && s<e){
                     s++;
                 }
-                if(cpr.comment.charAt(s)=='L' && cpr.comment.charAt(e)==';')
-                    e--;
+                if(cpr.comment.charAt(s)=='L' && cpr.comment.charAt(e-1)==';') {s++; e--;}
                 String className = cpr.comment.substring(s,e);
                 if(className.length()==1 || className.startsWith("java") || className.startsWith("sun")){
                     continue;

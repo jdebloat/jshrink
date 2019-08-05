@@ -1,6 +1,7 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -41,6 +42,11 @@ public class ConstantPoolScannerTest {
 		assert(references.size() == outputStream.size());
 		assertTrue(outputStream.containsAll(references));
 		assertTrue(references.containsAll(outputStream));
+	}
+	@Test @Ignore
+	public void generictestClassReference() throws IOException, InterruptedException{
+		Set<String> outputStream = ConstantPoolScanner.getClassReferences("/tmp/junit4_4104879256806578401/target/classes/org/junit/runners/MethodSorters.class");
+		System.out.println("".join("\n",outputStream));
 	}
 	@Test
 	public void testClassReferenceOutput2() throws IOException, InterruptedException{

@@ -1117,7 +1117,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	@Override
 	public ClassReferenceGraph getClassDependencyGraph() {
-		return this.getClassDependencyGraph();
+		return this.classDependencyGraph;
 	}
 
 
