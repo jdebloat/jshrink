@@ -40,7 +40,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<MethodData> libMethods;
 	private final Set<MethodData> libMethodsCompileOnly;
 	private final Set<FieldData> libFields;
-	private ClassReferenceGraph classDependencyGraph;
 	private final Set<FieldData> libFieldsCompileOnly;
 	private final Set<String> appClasses;
 	private final Set<MethodData> appMethods;
@@ -427,7 +426,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				HashSet<String> compile_lib_paths = 
 						new HashSet<String>(Arrays.asList(cp_compile_only.split(File.pathSeparator)));
 				// aggregate the analysis result of the submodule
-				classDependencyGraph = runner.getClassDependencyGraph();
 				for(String libClass : runner.getLibClasses()) {
 					this.libClasses.add(libClass);
 					String lib_path = runner.getLibPathOfClass(libClass);
@@ -1114,11 +1112,4 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	public Set<String> getUsedTestClasses(){
 		return stripAnnotationClasses(this.usedTestClasses);
 	}
-
-	@Override
-	public ClassReferenceGraph getClassDependencyGraph() {
-		return this.classDependencyGraph;
-	}
-
-
 }

@@ -23,6 +23,6 @@ dpbbench.reflection.invocation.Basic: void source()->dpbbench.reflection.invocat
 dpbbench.reflection.invocation.ReturnTypeOverloading: void source()->dpbbench.reflection.invocation.ReturnTypeOverloadingHelper: java.util.Collection target()
 dpbbench.invokedynamic.LambdaConsumer: void source()->dpbbench.invokedynamic.LambdaConsumer: void target(java.lang.String)
 dpbbench.reflection.instantiation.Interprocedural2: void source()->dpbbench.reflection.instantiation.Interprocedural2$Target2: void <init>(dpbbench.reflection.instantiation.Interprocedural2)
-dpbbench.reflectionAmbiguous.ReturnTypeOverloading: void source()->dpbbench.reflectionAmbiguous.ReturnTypeOverloadingHelper: java.util.List target()
+dpbbench.reflectionAmbiguous.ReturnTypeOverloading: void source()->dpbbench.reflectionAmbiguous.ReturnTypeOverloadingHelper: java.util.Set target()
 dpbbench.invokedynamic.client.DynamoClient: void source()->dpbbench.invokedynamic.target.DynamoTarget: void target()
 dpbbench.invokedynamic.LambdaFunction: void source()->dpbbench.invokedynamic.LambdaFunction: java.lang.String target(java.lang.Integer)

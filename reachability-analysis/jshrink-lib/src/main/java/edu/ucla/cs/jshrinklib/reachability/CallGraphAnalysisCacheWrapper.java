@@ -313,9 +313,4 @@ public class CallGraphAnalysisCacheWrapper implements IProjectAnalyser {
 	public String getLibPathOfField(FieldData fieldData) {
 		return cga.getLibPathOfField(fieldData);
 	}
-
-	@Override
-	public ClassReferenceGraph getClassDependencyGraph() {
-		return cga.getClassDependencyGraph();
-	}
 }

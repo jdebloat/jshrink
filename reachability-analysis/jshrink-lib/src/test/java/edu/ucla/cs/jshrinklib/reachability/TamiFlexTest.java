@@ -456,9 +456,9 @@ public class TamiFlexTest {
 		Files.lines(new File(expected_path).toPath()).map(l -> l.split("->"))
 				.forEach(e -> {
 					if(e.length == 2){
-						//expectedAppMethods.add(e[0]);
+						expectedAppMethods.add(e[0]);
 						expectedAppMethods.add(e[1]);
-						//accessedClassNames.add(e[0].split(": ")[0]);
+						accessedClassNames.add(e[0].split(": ")[0]);
 						accessedClassNames.add(e[1].split(": ")[0]);
 					}
 				});
@@ -481,27 +481,15 @@ public class TamiFlexTest {
 		//assertTrue(h.disjunction(unexpectedAppMethods, appMethods).size() == unexpectedAppMethods.size());
 		//assertTrue(h.disjunction(expectedAppMethods, appMethods).size() == 0);
 
-		//unexpectedAppMethods.retainAll(appMethods);
-		/*for(Set<String> callers: tamiflex.used_methods.get(module).values()){
+		unexpectedAppMethods.retainAll(appMethods);
+		for(Set<String> callers: tamiflex.used_methods.get(module).values()){
 			methods.addAll(callers);
 		}
-		appMethods = methods.stream().filter(x->accessedClassNames.contains(x.split(": ")[0])).collect(Collectors.toSet());*/
-		Set truePositives = new HashSet<String>(appMethods);
-		Set falsePositives = new HashSet<String>(appMethods);
-		truePositives.retainAll(expectedAppMethods);
-		falsePositives.retainAll(unexpectedAppMethods);
-		int total_expected = expectedAppMethods.size();
-		int total_unexpected = unexpectedAppMethods.size();
-
-		System.out.println("True Positives - "+truePositives.size()+"/"+total_expected);
-		System.out.println("\nFalse Positives - "+falsePositives.size()+"/"+total_unexpected);
-
-		unexpectedAppMethods.retainAll(appMethods);
+		appMethods = methods.stream().filter(x->accessedClassNames.contains(x.split(": ")[0])).collect(Collectors.toSet());
 		expectedAppMethods.removeAll(appMethods);
-
+		System.out.println("\nFalse Positives -");
 		unexpectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
-
-		System.out.println("\nFalse Negatives - "+expectedAppMethods.size()+"/"+total_expected);
+		System.out.println("\nFalse Negatives -");
 		expectedAppMethods.stream().sorted().forEach(x->System.out.println(x));
 	}
 }
