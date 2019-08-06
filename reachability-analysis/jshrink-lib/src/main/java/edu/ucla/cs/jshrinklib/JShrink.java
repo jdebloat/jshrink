@@ -567,6 +567,7 @@ public class JShrink {
 				continue;
 			}
 			classesToRewrite.add(sootClass);
+			this.classDependencyGraph.addClass(sootClass);
 		}
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
@@ -577,6 +578,17 @@ public class JShrink {
 				continue;
 			}
 			classesToRewrite.add(sootClass);
+		}
+
+		for(String className: this.getProjectAnalyserRun().getLibClasses()){
+			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
+				assert(exceptionMessage.isPresent());
+				unmodifiableClasses.put(className, exceptionMessage.get());
+				continue;
+			}
+			this.classDependencyGraph.addClass(sootClass);
 		}
 		// We need to update class name references in test classes in class collapsing
 		// So we need to make sure they are modifiable.
@@ -589,6 +601,7 @@ public class JShrink {
 				assert(exceptionMessage.isPresent());
 				unmodifiableClasses.put(className, exceptionMessage.get());
 			}
+			this.classDependencyGraph.addClass(sootClass);
 			// no need to rewrite since we do not measure the size of test code
 //			classesToRewrite.add(sootClass);
 		}
@@ -678,16 +691,17 @@ public class JShrink {
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
-			Set<String> referencedBy = null;
+			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			try{
-				if(referencedBy.size()>0)
+				if(referencedBy!=null && referencedBy.size()>0)
 				{
 					this.classesToRemove.remove(sootClass);
 					if(unmodifiableClasses.containsKey(sootClass.getName())) {
 						// do not remove things in an unmodifiable class since the class cannot be updated anyway
 						continue;
 					}
-					for(SootMethod sm: sootClass.getMethods()){
+					List<SootMethod> sm_list = new ArrayList<>(sootClass.getMethods());
+					for(SootMethod sm: sm_list){
 						try{
 							sootClass.removeMethod(sm);
 						}
@@ -695,13 +709,12 @@ public class JShrink {
 							System.err.println("Could not remove method "+sm.getSubSignature()+" in Class "+sootClass.getName());
 						}
 					}
-
-					for(SootField sf: sootClass.getFields()){
+					for(Object sf: sootClass.getFields().toArray().clone()){
 						try{
-							sootClass.removeField(sf);
+							sootClass.removeField((SootField)sf);
 						}
 						catch(RuntimeException e){
-							System.err.println("Could not remove field "+sf.getName()+" in Class "+sootClass.getName());
+							System.err.println("Could not remove field "+((SootField)sf).getName()+" in Class "+sootClass.getName());
 						}
 					}
 					ClassFileUtils.writeClass(sootClass, classPaths);

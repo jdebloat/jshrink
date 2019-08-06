@@ -1,5 +1,9 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
+import com.sun.org.apache.xml.internal.security.Init;
+import soot.*;
+import soot.javaToJimple.InitialResolver;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,7 +18,19 @@ public class ClassReferenceGraph implements Serializable {
     private Set<String> getConstantPoolReferences(String classPath) throws Exception{
         return ConstantPoolScanner.getClassReferences(classPath);
     }
-
+    private Set<String> getSootReferences(SootClass sc){
+        Set<String> toReturn = new HashSet<>();
+        String name;
+        for(soot.Type st: SootResolver.v().getReferenceSignatures(sc)){
+            if(st instanceof RefType){
+                name = ((RefType) st).getClassName();
+                if(name.startsWith("java") || name.startsWith("sun"))
+                    continue;
+                toReturn.add(name);
+            }
+        }
+        return toReturn;
+    }
     public void addClass(String className, Set<String> references){
         Set<String> refererrs;
         className = className.replaceAll("/",".");
@@ -43,6 +59,20 @@ public class ClassReferenceGraph implements Serializable {
             this.addClass(clazz, classNamePathMap.get(clazz));
         }
     }
+
+    public void addClass(SootClass sc){
+        try{
+            addClass(sc.getName(), this.getSootReferences(sc));
+        }
+        catch (Exception e) {
+            System.err.println("An an exception was thrown while getting references for Class "+sc.getName());
+            e.printStackTrace();
+            //System.exit(1);
+        }
+    }
+
+
+
     public Set<String> getReferences(String className){
         Set<String> references = new HashSet<String>();
         for(Map.Entry<String, Set<String>> e:graph.entrySet()){
