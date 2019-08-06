@@ -581,7 +581,7 @@ public class JShrink {
 			classesToRewrite.add(sootClass);
 		}
 
-		for(String className: this.getProjectAnalyserRun().getLibClasses()){
+		/*for(String className: this.getProjectAnalyserRun().getLibClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
 				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
@@ -590,7 +590,7 @@ public class JShrink {
 				continue;
 			}
 			this.classDependencyGraph.addClass(sootClass);
-		}
+		}*/
 		// We need to update class name references in test classes in class collapsing
 		// So we need to make sure they are modifiable.
 		// I saw a case in the disunity project where a test class has lambda expressions which
