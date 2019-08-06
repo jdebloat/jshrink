@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class JShrink {
 	private File projectDir;
@@ -690,10 +691,11 @@ public class JShrink {
 	}
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			//not including classes marked for deletion
-			referencedBy.removeAll(classesToRemove);
+			referencedBy.removeAll(classesToBeRemoved);
 			try{
 				if(referencedBy.size()>0)
 				{
