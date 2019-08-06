@@ -1,6 +1,5 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
-import com.sun.org.apache.xml.internal.security.Init;
 import soot.*;
 import soot.javaToJimple.InitialResolver;
 
