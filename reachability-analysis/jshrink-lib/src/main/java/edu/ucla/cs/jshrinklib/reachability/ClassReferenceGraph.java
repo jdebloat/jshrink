@@ -83,7 +83,7 @@ public class ClassReferenceGraph implements Serializable {
     }
 
     public Set<String> getReferencedBy(String className){
-        return graph.get(className);
+        return graph.getOrDefault(className, new HashSet<String>());
     }
 
     public Set<String> getNodes(){

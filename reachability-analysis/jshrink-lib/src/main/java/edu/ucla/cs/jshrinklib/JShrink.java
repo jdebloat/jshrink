@@ -692,10 +692,11 @@ public class JShrink {
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
+			//not including classes marked for deletion
+			referencedBy.removeAll(classesToRemove);
 			try{
-				if(referencedBy!=null && referencedBy.size()>0)
+				if(referencedBy.size()>0)
 				{
-					this.classesToRemove.remove(sootClass);
 					if(unmodifiableClasses.containsKey(sootClass.getName())) {
 						// do not remove things in an unmodifiable class since the class cannot be updated anyway
 						continue;
