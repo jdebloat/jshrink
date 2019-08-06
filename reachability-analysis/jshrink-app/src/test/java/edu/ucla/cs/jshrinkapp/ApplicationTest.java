@@ -984,6 +984,7 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1452,7 +1453,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getSimpleTestProjectDir() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
-		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--jmtrace "+ getJMTrace().getAbsolutePath() +" ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
@@ -1477,7 +1478,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--jmtrace "+ getJMTrace().getAbsolutePath() +" ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
