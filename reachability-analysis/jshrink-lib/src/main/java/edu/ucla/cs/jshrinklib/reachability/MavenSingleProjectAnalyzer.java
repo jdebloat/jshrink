@@ -1,6 +1,8 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
@@ -495,13 +497,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		// (optional) use tamiflex to dynamically identify reflection calls
 		if(tamiFlexJar.isPresent() || jmtrace.isPresent()) {
 			//TamiFlexRunner
+			Instant start = Instant.now();
 			TamiFlexRunner tamiflex;
+			StringBuilder dynamicLog = new StringBuilder();
 
 			if(tamiFlexJar.isPresent()){
 				tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),	project_path, false);
+				dynamicLog.append("Tamiflex");
 			}
 			else{
 				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+				dynamicLog.append("JMTrace");
 			}
 
 			try {
@@ -513,7 +519,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(jmtrace.isPresent() && tamiFlexJar.isPresent()){
 				JMTraceRunner jmtrunner = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
 				try {
+
 					jmtrunner.run(tamiflex);
+					dynamicLog.append(" + JMTrace");
 
 					//resetting results to merged results
 					tamiflex = (TamiFlexRunner) jmtrunner;
@@ -522,6 +530,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					e.printStackTrace();
 				}
 			}
+
 			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
 				Set<String> usedClassesInModule = tamiflex.accessed_classes.get(module);
@@ -784,6 +793,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				if(this.verbose){
 					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
 				}
+			}
+
+			Instant end = Instant.now();
+			dynamicLog.append(" Execution time - "+Duration.between(start, end).getSeconds()+" secs");
+			if(this.verbose){
+				System.out.println("Dynamic Analysis completed");
+				System.out.println(dynamicLog.toString());
 			}
 		}
 		
