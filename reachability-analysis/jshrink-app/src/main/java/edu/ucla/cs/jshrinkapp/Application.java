@@ -123,6 +123,8 @@ public class Application {
 		long analysisStartTime = System.nanoTime();
 		jShrink.makeSootPass();
 		long analysisEndTime = System.nanoTime();
+		String dynamicAnalysisTime = jShrink.getDynamicAnalysisTime();
+
 		unmodifiableClass.putAll(jShrink.getUnmodifiableClasses());
 
 		if(commandLineParser.isVerbose()){
@@ -510,7 +512,7 @@ public class Application {
 
 		long endTime = System.nanoTime();
 		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
-		toLog.append("dynamic_analysis_time,"+jShrink.getDynamicAnalysisTime());
+		toLog.append("dynamic_analysis_time,"+dynamicAnalysisTime+System.lineSeparator());
 		toLog.append("analysis_time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((analysisEndTime - analysisStartTime)) + System.lineSeparator());
 		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputBefore.getTestOutputText()) : Optional.empty(),

@@ -699,28 +699,12 @@ public class JShrink {
 			try{
 				if(referencedBy.size()>0)
 				{
-					if(unmodifiableClasses.containsKey(sootClass.getName())) {
+					if(unmodifiableClasses.containsKey(sootClass.getName()) || sootClass.isAbstract()) {
 						// do not remove things in an unmodifiable class since the class cannot be updated anyway
 						continue;
 					}
-					List<SootMethod> sm_list = new ArrayList<>(sootClass.getMethods());
-					for(SootMethod sm: sm_list){
-						try{
-							sootClass.removeMethod(sm);
-						}
-						catch(RuntimeException e){
-							System.err.println("Could not remove method "+sm.getSubSignature()+" in Class "+sootClass.getName());
-						}
-					}
-					for(Object sf: sootClass.getFields().toArray().clone()){
-						try{
-							sootClass.removeField((SootField)sf);
-						}
-						catch(RuntimeException e){
-							System.err.println("Could not remove field "+((SootField)sf).getName()+" in Class "+sootClass.getName());
-						}
-					}
-					ClassFileUtils.writeClass(sootClass, classPaths);
+					//sootClass = new SootClass(sootClass.getName(), sootClass.getModifiers());
+					//ClassFileUtils.writeClass(sootClass, classPaths);
 				}
 				else
 					ClassFileUtils.removeClass(sootClass, classPaths);
@@ -782,6 +766,6 @@ public class JShrink {
 		return removedFields;
 	}
 	public String getDynamicAnalysisTime(){
-		return ((MavenSingleProjectAnalyzer)getProjectAnalyserRun()).getDynamicAnalysisTime();
+		return ((MavenSingleProjectAnalyzer)getProjectAnalyser()).getDynamicAnalysisTime();
 	}
 }
