@@ -728,7 +728,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					}
 				}
 			}
-			
+			Instant end = Instant.now();
+			dynamicLog.append(" Execution time - "+Duration.between(start, end).getSeconds()+" secs");
+			if(this.verbose){
+				System.out.println("Dynamic Analysis completed");
+				System.out.println(dynamicLog.toString());
+			}
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
 			for(String module : new_entry_points.keySet()) {
@@ -793,13 +798,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				if(this.verbose){
 					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
 				}
-			}
-
-			Instant end = Instant.now();
-			dynamicLog.append(" Execution time - "+Duration.between(start, end).getSeconds()+" secs");
-			if(this.verbose){
-				System.out.println("Dynamic Analysis completed");
-				System.out.println(dynamicLog.toString());
 			}
 		}
 		
