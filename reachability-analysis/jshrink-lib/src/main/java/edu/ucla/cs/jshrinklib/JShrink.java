@@ -715,11 +715,14 @@ public class JShrink {
 					for(SootMethod toRemove : methodsToRemove){
 						sootClass.removeMethod(toRemove);
 					}
-					//sootClass = new SootClass(sootClass.getName(), sootClass.getModifiers());
-					//ClassFileUtils.writeClass(sootClass, classPaths);
-				}
-				else
+
+					methodsToRemove.clear();
+					fieldsToRemove.clear();
+					
+					ClassFileUtils.writeClass(sootClass, classPaths);
+				}else{
 					ClassFileUtils.removeClass(sootClass, classPaths);
+				}
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");
 				e.printStackTrace();
