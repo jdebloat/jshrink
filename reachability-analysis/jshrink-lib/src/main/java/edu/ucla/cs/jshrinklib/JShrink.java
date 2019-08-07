@@ -568,7 +568,6 @@ public class JShrink {
 				continue;
 			}
 			classesToRewrite.add(sootClass);
-			this.classDependencyGraph.addClass(sootClass);
 		}
 		for(String className : this.getProjectAnalyserRun().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
@@ -602,7 +601,6 @@ public class JShrink {
 				assert(exceptionMessage.isPresent());
 				unmodifiableClasses.put(className, exceptionMessage.get());
 			}
-			this.classDependencyGraph.addClass(sootClass);
 			// no need to rewrite since we do not measure the size of test code
 //			classesToRewrite.add(sootClass);
 		}
@@ -692,6 +690,18 @@ public class JShrink {
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
+		for(String className : this.getProjectAnalyser().getAppClasses()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass);
+		}
+		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass);
+		}
+		for(String className : this.getProjectAnalyser().getTestClasses()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass);
+		}
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			//not including classes marked for deletion
