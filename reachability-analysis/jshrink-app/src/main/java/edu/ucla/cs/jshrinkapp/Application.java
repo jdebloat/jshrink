@@ -120,9 +120,9 @@ public class Application {
 			System.out.println("Done creating jShrink instance!");
 			System.out.println("Making \"soot pass\"...");
 		}
-
+		long analysisStartTime = System.nanoTime();
 		jShrink.makeSootPass();
-
+		long analysisEndTime = System.nanoTime();
 		unmodifiableClass.putAll(jShrink.getUnmodifiableClasses());
 
 		if(commandLineParser.isVerbose()){
@@ -510,7 +510,7 @@ public class Application {
 
 		long endTime = System.nanoTime();
 		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
-
+		toLog.append("analysis_time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((analysisEndTime - analysisStartTime)) + System.lineSeparator());
 		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputBefore.getTestOutputText()) : Optional.empty(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputAfter.getTestOutputText()) : Optional.empty(),
