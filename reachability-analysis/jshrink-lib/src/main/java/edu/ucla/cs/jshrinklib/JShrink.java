@@ -703,6 +703,18 @@ public class JShrink {
 						// do not remove things in an unmodifiable class since the class cannot be updated anyway
 						continue;
 					}
+
+					Set<SootField> fieldsToRemove = new HashSet<SootField>(sootClass.getFields());
+					for(SootField toRemove : fieldsToRemove){
+						toRemove.setDeclared(true);
+						toRemove.setDeclaringClass(sootClass);
+						sootClass.removeField(toRemove);
+					}
+
+					Set<SootMethod> methodsToRemove = new HashSet<SootMethod>(sootClass.getMethods());
+					for(SootMethod toRemove : methodsToRemove){
+						sootClass.removeMethod(toRemove);
+					}
 					//sootClass = new SootClass(sootClass.getName(), sootClass.getModifiers());
 					//ClassFileUtils.writeClass(sootClass, classPaths);
 				}
