@@ -581,7 +581,7 @@ public class JShrink {
 			classesToRewrite.add(sootClass);
 		}
 
-		for(String className: this.getProjectAnalyserRun().getLibClasses()){
+		/*for(String className: this.getProjectAnalyserRun().getLibClasses()){
 			SootClass sootClass = Scene.v().loadClassAndSupport(className);
 			if(!SootUtils.modifiableSootClass(sootClass)){
 				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
@@ -590,7 +590,7 @@ public class JShrink {
 				continue;
 			}
 			this.classDependencyGraph.addClass(sootClass);
-		}
+		}*/
 		// We need to update class name references in test classes in class collapsing
 		// So we need to make sure they are modifiable.
 		// I saw a case in the disunity project where a test class has lambda expressions which
@@ -699,31 +699,30 @@ public class JShrink {
 			try{
 				if(referencedBy.size()>0)
 				{
-					if(unmodifiableClasses.containsKey(sootClass.getName())) {
+					if(unmodifiableClasses.containsKey(sootClass.getName()) || sootClass.isAbstract()) {
 						// do not remove things in an unmodifiable class since the class cannot be updated anyway
 						continue;
 					}
-					List<SootMethod> sm_list = new ArrayList<>(sootClass.getMethods());
-					for(SootMethod sm: sm_list){
-						try{
-							sootClass.removeMethod(sm);
-						}
-						catch(RuntimeException e){
-							System.err.println("Could not remove method "+sm.getSubSignature()+" in Class "+sootClass.getName());
-						}
+
+					Set<SootField> fieldsToRemove = new HashSet<SootField>(sootClass.getFields());
+					for(SootField toRemove : fieldsToRemove){
+						toRemove.setDeclared(true);
+						toRemove.setDeclaringClass(sootClass);
+						sootClass.removeField(toRemove);
 					}
-					for(Object sf: sootClass.getFields().toArray().clone()){
-						try{
-							sootClass.removeField((SootField)sf);
-						}
-						catch(RuntimeException e){
-							System.err.println("Could not remove field "+((SootField)sf).getName()+" in Class "+sootClass.getName());
-						}
+
+					Set<SootMethod> methodsToRemove = new HashSet<SootMethod>(sootClass.getMethods());
+					for(SootMethod toRemove : methodsToRemove){
+						sootClass.removeMethod(toRemove);
 					}
+
+					methodsToRemove.clear();
+					fieldsToRemove.clear();
+					
 					ClassFileUtils.writeClass(sootClass, classPaths);
-				}
-				else
+				}else{
 					ClassFileUtils.removeClass(sootClass, classPaths);
+				}
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");
 				e.printStackTrace();
@@ -780,5 +779,8 @@ public class JShrink {
 		}
 
 		return removedFields;
+	}
+	public String getDynamicAnalysisTime(){
+		return ((MavenSingleProjectAnalyzer)getProjectAnalyser()).getDynamicAnalysisTime();
 	}
 }

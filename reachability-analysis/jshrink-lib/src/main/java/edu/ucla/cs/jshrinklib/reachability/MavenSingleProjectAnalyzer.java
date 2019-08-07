@@ -1,6 +1,8 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import java.io.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
@@ -73,7 +75,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private boolean compileProject = true;
 	private final boolean runTests;
 	private final boolean useCache;
-	
+	private String dynamicAnalysisTime;
+
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
 	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) {
@@ -495,13 +498,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		// (optional) use tamiflex to dynamically identify reflection calls
 		if(tamiFlexJar.isPresent() || jmtrace.isPresent()) {
 			//TamiFlexRunner
+			Instant start = Instant.now();
 			TamiFlexRunner tamiflex;
+			StringBuilder dynamicLog = new StringBuilder();
 
 			if(tamiFlexJar.isPresent()){
 				tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),	project_path, false);
+				dynamicLog.append("Tamiflex");
 			}
 			else{
 				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
+				dynamicLog.append("JMTrace");
 			}
 
 			try {
@@ -513,7 +520,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 			if(jmtrace.isPresent() && tamiFlexJar.isPresent()){
 				JMTraceRunner jmtrunner = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
 				try {
+
 					jmtrunner.run(tamiflex);
+					dynamicLog.append(" + JMTrace");
 
 					//resetting results to merged results
 					tamiflex = (TamiFlexRunner) jmtrunner;
@@ -522,6 +531,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					e.printStackTrace();
 				}
 			}
+
 			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
 				Set<String> usedClassesInModule = tamiflex.accessed_classes.get(module);
@@ -719,7 +729,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					}
 				}
 			}
-			
+			dynamicLog.append(" Execution time - "+Duration.between(start, Instant.now()).getSeconds()+" secs");
+			if(this.verbose){
+				System.out.println("Dynamic Analysis completed");
+				System.out.println(dynamicLog.toString());
+			}
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
 			for(String module : new_entry_points.keySet()) {
@@ -785,6 +799,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
 				}
 			}
+			dynamicAnalysisTime = Duration.between(start, Instant.now()).getSeconds()+"";
 		}
 		
 		if(count > 1) {
@@ -1111,5 +1126,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<String> getUsedTestClasses(){
 		return stripAnnotationClasses(this.usedTestClasses);
+	}
+
+	public String getDynamicAnalysisTime(){
+		if(dynamicAnalysisTime == null)
+			return "null";
+		return dynamicAnalysisTime;
 	}
 }
