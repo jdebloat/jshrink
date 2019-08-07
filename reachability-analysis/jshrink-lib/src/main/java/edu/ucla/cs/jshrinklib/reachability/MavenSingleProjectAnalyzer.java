@@ -75,7 +75,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private boolean compileProject = true;
 	private final boolean runTests;
 	private final boolean useCache;
-	
+	private String dynamicAnalysisTime;
+
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
 	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) {
@@ -728,8 +729,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					}
 				}
 			}
-			Instant end = Instant.now();
-			dynamicLog.append(" Execution time - "+Duration.between(start, end).getSeconds()+" secs");
+			dynamicLog.append(" Execution time - "+Duration.between(start, Instant.now()).getSeconds()+" secs");
 			if(this.verbose){
 				System.out.println("Dynamic Analysis completed");
 				System.out.println(dynamicLog.toString());
@@ -799,6 +799,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
 				}
 			}
+			dynamicAnalysisTime = Duration.between(start, Instant.now()).getSeconds()+"";
 		}
 		
 		if(count > 1) {
@@ -1125,5 +1126,11 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	@Override
 	public Set<String> getUsedTestClasses(){
 		return stripAnnotationClasses(this.usedTestClasses);
+	}
+
+	public String getDynamicAnalysisTime(){
+		if(dynamicAnalysisTime == null)
+			return "null";
+		return dynamicAnalysisTime;
 	}
 }
