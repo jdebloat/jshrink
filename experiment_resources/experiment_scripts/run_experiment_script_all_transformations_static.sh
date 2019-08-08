@@ -1,17 +1,17 @@
 #!/bin/bash
 
 PWD=`pwd`
-WORK_LIST="${PWD}/work_list_entry_points.csv"
+WORK_LIST="${PWD}/work_list.dat"
 PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
-JSHRINK_MTRACE="${PWD}/jshrink-mtrace"                                  
-JMTRACE="${JSHRINK_MTRACE}/jmtrace"                                     
+JSHRINK_MTRACE="${PWD}/jshrink-mtrace"
+JMTRACE="${JSHRINK_MTRACE}/jmtrace"
 MTRACE_BUILD="${JSHRINK_MTRACE}/build"
-TIMEOUT=36000 #10 hours
-OUTPUT_LOG_DIR="${PWD}/method_removal_with_tamiflex_specialized_entry_points_output_log"
+TIMEOUT=54000 #15 hours
+OUTPUT_LOG_DIR="${PWD}/all_transformations_with_tamiflex_output_log"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -35,17 +35,15 @@ if [ ! -f "${DEBLOAT_APP}" ]; then
 	exit 1
 fi
 
-{                                                                       
-        #Make jtrace                                                    
-        cd "${JMTRACE}"                                                 
-        make clean                                                      
-        ./makeit.sh                                                     
-        cd ${PWD}                                                       
-}&>/dev/null 
+{
+	#Make jtrace
+	cd "${JMTRACE}"
+	make clean
+	./makeit.sh
+	cd ${PWD}
+}&>/dev/null
 
-cat ${WORK_LIST} |  while read entry; do
-	item=$(echo $entry | cut -d, -f1)
-	entry_point=$(echo $entry | cut -d, -f2)
+cat ${WORK_LIST} |  while read item; do
 	item_dir="${PROJECT_DIR}/${item}"
 	cd "${item_dir}"
 
@@ -56,20 +54,8 @@ cat ${WORK_LIST} |  while read entry; do
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	PUBLIC_ENTRY=0
-	MAIN_ENTRY=0
-
 	#A 10 hour timeout
-	if [[ "${entry_point}" == "PUBLIC" ]]; then
-		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --use-cache --maven-project ${item_dir} -T --public-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
-		PUBLIC_ENTRY=1 
-	elif [[ "${entry_point}" == "MAIN" ]]; then
-		timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --use-cache --maven-project ${item_dir} -T --main-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file}
-		MAIN_ENTRY=1
-	else
-		echo "ERROR! Do not recognise the entry-point: \""${entry_point}"\""
-		exit_status=1
-	fi
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --use-cache --public-entry --main-entry --test-entry --prune-app --class-collapser --inline --remove-fields --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -93,22 +79,22 @@ cat ${WORK_LIST} |  while read entry; do
 		time_elapsed=$(cat "${ITEM_LOG_DIR}/log.dat" | awk -F, '($1=="time_elapsed"){print $2}')		
 
 		#The current settings
-		using_public_entry="${PUBLIC_ENTRY}"
-		using_main_entry="${MAIN_ENTRY}"
-		using_test_entry="0"
+		using_public_entry="1"
+		using_main_entry="1"
+		using_test_entry="1"
 		custom_entry=""
 		is_app_prune="1"
 		tamiflex="1"
 		remove_methods="1"
-		method_inliner="0"
-		class_collapser="0"
-		parameter_removal="0"
+		method_inliner="1"
+		class_collapser="1"
+		parameter_removal="1"
 
 		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after},${time_elapsed} >>${SIZE_FILE}
 	elif [[ ${exit_status} == 124 ]];then
 		echo "TIMEOUT!"
-		echo "Output the following: "
-		cat ${temp_file}
+		echo "Output the following: "                           
+                cat ${temp_file}
 		echo ""
 		rm -rf ${ITEM_LOG_DIR}
 	else

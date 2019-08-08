@@ -51,7 +51,7 @@ confluentinc_kafka-rest,1
 consulo_consulo,0
 cucumber_cucumber-jvm,0
 dangdangdotcom_dubbox,0
-datastax_java-driver,0
+datastax_java-driver,1
 datumbox_datumbox-framework,1
 davidmoten_rxjava-extras,0
 decaywood_XueQiuSuperSpider,0
@@ -60,7 +60,7 @@ deeplearning4j_nd4j,1
 devnied_EMV-NFC-Paycard-Enrollment,0
 dianping_cat,0
 dieforfree_qart4j,0
-docker-java_docker-java,0
+docker-java_docker-java,1
 droolsjbpm_drools,1
 dropwizard_dropwizard,1
 dropwizard_metrics,0
@@ -70,7 +70,7 @@ eclipse_che,1
 eclipse_paho.mqtt.java,1
 edvin_tornadofx,1
 eirslett_frontend-maven-plugin,0
-facebook_nifty,0
+facebook_nifty,1
 facebook_presto,1
 floragunncom_search-guard,0
 frohoff_ysoserial,0
@@ -81,7 +81,7 @@ google_binnavi,1
 GoogleCloudPlatform_DataflowJavaSDK,1
 google_flatbuffers,1
 google_google-api-java-client,1
-google_google-http-java-client,0
+google_google-http-java-client,1
 google_google-java-format,0
 google_gson,0
 google_guava,0
@@ -91,7 +91,7 @@ google_truth,0
 GovernmentCommunicationsHeadquarters_Gaffer,1
 graphhopper_graphhopper,0
 Graylog2_graylog2-server,0
-greenrobot_essentials,0
+greenrobot_essentials,1
 guoguibing_librec,1
 h2oai_h2o-2,0
 hankcs_HanLP,0
@@ -110,7 +110,7 @@ JakeWharton_RxRelay,0
 JakeWharton_RxReplayingShare,0
 jamesdbloom_mockserver,0
 javamelody_javamelody,0
-jayway_awaitility,0
+jayway_awaitility,1
 jayway_rest-assured,0
 JCTools_JCTools,0
 JeffLi1993_java-core-learning-example,1
@@ -149,7 +149,7 @@ NanoHttpd_nanohttpd,0
 naver_pinpoint,1
 Netflix_curator,0
 Netflix_exhibitor,0
-Netflix_feign,0
+Netflix_feign,1
 netty_netty,1
 ninjaframework_ninja,0
 NLPchina_ansj_seg,1
@@ -189,7 +189,7 @@ scouter-project_scouter,0
 scribejava_scribejava,1
 searchbox-io_Jest,0
 SeldonIO_seldon-server,1
-serge-rider_dbeaver,0
+serge-rider_dbeaver,1
 shopizer-ecommerce_shopizer,0
 skavanagh_KeyBox,1
 sockeqwe_fragmentargs,0

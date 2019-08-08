@@ -53,3 +53,6 @@ of this script (and my manual alterations) can be found in
 With the info in "project_status.csv", I removed projects from
 "work_list.dat" which timed-out or exited with a known issue (all
 exits that were not timeouts are known). 
+
+
+compiled_and_working_repos_github_stars.csv --- as of 2019-08-08.
