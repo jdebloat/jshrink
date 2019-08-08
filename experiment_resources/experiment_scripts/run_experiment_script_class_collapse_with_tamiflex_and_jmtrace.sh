@@ -10,7 +10,7 @@ TAMIFLEX="${PWD}/poa-2.0.3.jar"
 JSHRINK_MTRACE="${PWD}/jshrink-mtrace"                                  
 JMTRACE="${JSHRINK_MTRACE}/jmtrace"                                     
 MTRACE_BUILD="${JSHRINK_MTRACE}/build"
-TIMEOUT=36000 #10 hours   
+TIMEOUT=54000 #15 hours 
 OUTPUT_LOG_DIR="${PWD}/class_collapser_with_tamiflex_output_log"
 
 if [ ! -f "${JAVA}" ]; then
