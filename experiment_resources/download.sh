@@ -3,7 +3,7 @@
 ROOT_DIRECTORY="$(pwd)"
 
 # the list of GitHub repositories built by maven
-project_list="${ROOT_DIRECTORY}/work_list.dat"
+project_list=$1 #"${ROOT_DIRECTORY}/work_list.dat"
 
 cache_csv="${ROOT_DIRECTORY}/jshrink_caches.csv"
 
