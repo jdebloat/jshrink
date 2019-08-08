@@ -10,10 +10,14 @@ import org.junit.After;
 import org.junit.Test;
 import soot.*;
 import soot.jimple.InvokeStmt;
+import soot.jimple.JasminClass;
+import soot.util.JasminOutputStream;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -638,23 +642,30 @@ public class ClassCollapserTest {
 	}
 
 	@Test
-	public void changeClassNameTest_catchblock() throws IOException{
+	public void changeClassNameTest_catchblock() throws IOException, InterruptedException {
 		String overridePath
 				= new File(ClassCollapser.class.getClassLoader()
 				.getResource("classcollapser" + File.separator
 						+ "catchblock" + File.separator + "target").getFile()).getAbsolutePath();
+
+		SootClass main = TestUtils.getSootClass(overridePath+ File.separator+"test-classes", "AssertTest2");
 		SootClass A = TestUtils.getSootClass(overridePath+ File.separator+"classes","AssertionFailedError1");
 		SootClass B = TestUtils.getSootClass(overridePath+ File.separator+"classes","ComparisonFailure1");
-		SootClass main = TestUtils.getSootClass(overridePath+ File.separator+"test-classes", "AssertTest");
 
 		ClassCollapser classCollapser = new ClassCollapser();
 		classCollapser.changeClassNamesInClass(main, B, A);
-		for (SootMethod m: main.getMethods()) {
-			Body body = m.retrieveActiveBody();
-			for (Local l: body.getLocals()) {
-				assertNotEquals("ComparisonFailure1", l.getType().toString());
-			}
-		}
-		ClassFileUtils.writeClass(main, new File(overridePath+ File.separator+"test-classes"+File.separator+"AssertTest.class"));
+
+		JasminClass jasminClass = new soot.jimple.JasminClass(main);
+		Path tmp = Files.createTempFile("classcollapsertestfile",".jimple");
+
+		OutputStream streamOut = new FileOutputStream(tmp.toFile());
+		PrintWriter writerOut = new PrintWriter(new OutputStreamWriter(streamOut));
+
+		jasminClass.print(writerOut);
+		writerOut.flush();
+		streamOut.close();
+		Thread.sleep(1);
+		assertTrue(Files.lines(tmp).filter(x->x.contains(B.getName())).collect(Collectors.toList()).size()==0);
+		//ClassFileUtils.writeClass(main, tmp.toFile());
 	}
 }

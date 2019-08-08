@@ -25,4 +25,5 @@ public class AssertionFailedError1 extends AssertionError {
     private static String defaultString(String message) {
         return message == null ? "" : message;
     }
+    public String getMessage(){ return "";}
 }

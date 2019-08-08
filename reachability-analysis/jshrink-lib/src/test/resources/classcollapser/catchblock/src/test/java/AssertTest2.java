@@ -1,12 +1,18 @@
 import org.junit.Test;
 
-public class AssertTest{
+import java.io.IOException;
+
+public class AssertTest2{
     @Test
     public void testAssertNullNotEqualsString() {
         try {
             Assert1.assertEquals(null, "foo");
             Assert1.fail();
         } catch (ComparisonFailure1 e) {
+            e.getMessage();
+        }
+        catch(Exception e){
+
         }
     }
     @Test
@@ -14,8 +20,13 @@ public class AssertTest{
         try {
             Assert1.assertEquals("foo", null);
             Assert1.fail();
-        } catch (ComparisonFailure1 e) {
+        }
+        catch(RuntimeException e){
+            e.printStackTrace();
+        }
+        catch (ComparisonFailure1 e) {
             e.getMessage(); // why no assertion?
         }
+
     }
 }
