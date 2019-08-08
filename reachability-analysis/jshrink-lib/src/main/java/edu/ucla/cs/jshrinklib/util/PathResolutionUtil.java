@@ -41,7 +41,7 @@ public class PathResolutionUtil {
 			} else {
 				String fName = f.getName();
 				if(fName.endsWith(".class")) {
-					PathResolutionUtil.classPathMap.put(prefix.substring(prefix.indexOf("/")+1)+"."+
+					PathResolutionUtil.classPathMap.put(prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+"."+
 							dirPath.getName()+"."+fName.substring(0,fName.length()-6),f.getAbsolutePath());
 				}
 			}
