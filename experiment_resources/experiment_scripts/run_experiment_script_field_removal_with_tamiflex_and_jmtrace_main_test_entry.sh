@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PWD=`pwd`
-WORK_LIST="${PWD}/work_list.dat"
+WORK_LIST="${PWD}/work_list_test_main_entry.dat"
 PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
