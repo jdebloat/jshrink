@@ -18,8 +18,7 @@ public class PathResolutionUtil {
 				readClassFromDirectory(dir, "");
 			}
 			else {
-				throw new IOException("Cannot read classes from '" + dir.getAbsolutePath() +
-						"'. It is neither a directory or a jar.");
+				throw new IOException("Cannot read classes from '" + dir.getAbsolutePath() + "'. It is not a directory.");
 			}
 		}catch(IOException e){
 			e.printStackTrace();
@@ -28,7 +27,7 @@ public class PathResolutionUtil {
 	}
 
 	public static void readClassFromDirectory(File dirPath, String prefix) {
-		if(prefix.startsWith("."))
+		if(prefix.startsWith("/"))
 			prefix = prefix.substring(1);
 		if(!dirPath.exists()) {
 			// fix NPE due to non-existent file
@@ -38,11 +37,11 @@ public class PathResolutionUtil {
 
 		for(File f : dirPath.listFiles()) {
 			if(f.isDirectory()) {
-				readClassFromDirectory(f, prefix+"."+dirPath.getName());
+				readClassFromDirectory(f, prefix+"/"+dirPath.getName());
 			} else {
 				String fName = f.getName();
 				if(fName.endsWith(".class")) {
-					PathResolutionUtil.classPathMap.put(prefix.substring(prefix.indexOf(".")+1)+"."+
+					PathResolutionUtil.classPathMap.put(prefix.substring(prefix.indexOf("/")+1)+"."+
 							dirPath.getName()+"."+fName.substring(0,fName.length()-6),f.getAbsolutePath());
 				}
 			}
