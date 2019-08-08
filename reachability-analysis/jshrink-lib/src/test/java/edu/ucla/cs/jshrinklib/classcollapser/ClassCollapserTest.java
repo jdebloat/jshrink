@@ -636,4 +636,25 @@ public class ClassCollapserTest {
 
 		assertEquals(2, classCollapserData.getClassesToRewrite().size());
 	}
+
+	@Test
+	public void changeClassNameTest_catchblock() throws IOException{
+		String overridePath
+				= new File(ClassCollapser.class.getClassLoader()
+				.getResource("classcollapser" + File.separator
+						+ "catchblock" + File.separator + "target").getFile()).getAbsolutePath();
+		SootClass A = TestUtils.getSootClass(overridePath+ File.separator+"classes","AssertionFailedError1");
+		SootClass B = TestUtils.getSootClass(overridePath+ File.separator+"classes","ComparisonFailure1");
+		SootClass main = TestUtils.getSootClass(overridePath+ File.separator+"test-classes", "AssertTest");
+
+		ClassCollapser classCollapser = new ClassCollapser();
+		classCollapser.changeClassNamesInClass(main, B, A);
+		for (SootMethod m: main.getMethods()) {
+			Body body = m.retrieveActiveBody();
+			for (Local l: body.getLocals()) {
+				assertNotEquals("ComparisonFailure1", l.getType().toString());
+			}
+		}
+		ClassFileUtils.writeClass(main, new File(overridePath+ File.separator+"test-classes"+File.separator+"AssertTest.class"));
+	}
 }
