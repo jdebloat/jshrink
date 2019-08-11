@@ -45,8 +45,8 @@ JakeWharton_RxRelay,DONE
 JakeWharton_RxReplayingShare,DONE
 jamesdbloom_mockserver,TIMEOUT
 javamelody_javamelody,ISSUE_#22
-jayway_awaitility,ISSUE_#36
-JCTools_JCTools,DONE
+jayway_rest-assured,TIMEOUT
+JCTools_JCTools,ISSUE_#22
 jhy_jsoup,ISSUE_#36
 JodaOrg_joda-time,ISSUE_#36
 johncarl81_parceler,ISSUE_#36
