@@ -47,8 +47,6 @@ public class PathResolutionUtil {
 	public static void readClassFromDirectory(File dirPath, String prefix) {
 		if(prefix.startsWith("/"))
 			prefix = prefix.substring(1);
-		if(prefix.equals("classes") || prefix.equals("test-classes"))
-			prefix = "";
 		if(!dirPath.exists()) {
 			// fix NPE due to non-existent file
 			System.err.println(dirPath.getAbsolutePath() + " does not exist.");
@@ -66,6 +64,8 @@ public class PathResolutionUtil {
 					if(path_start>-1){
 						class_package = prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+".";
 					}
+					if(class_package.equals("classes") || class_package.equals("test-classes"))
+						class_package = "";
 					class_package += dirPath.getName()+".";
 					PathResolutionUtil.classPathMap.put(class_package+fName.substring(0,fName.length()-6),f.getAbsolutePath());
 				}
