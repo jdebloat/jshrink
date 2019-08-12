@@ -97,7 +97,7 @@ public class ApplicationTest {
 
 	private File getLogDirectory() {
 		if (logDirectory.isPresent()) {
-			return this.getLogDirectory();
+			return logDirectory.get();
 		}
 
 		try {
@@ -134,6 +134,11 @@ public class ApplicationTest {
 
 	private File getDynamicDispatchingProject() {
 		return getOptionalFile(dynamicDispatchingProject, "dynamic-dispatching-test-project");
+	}
+
+	private File getIssue74And81Project() {
+		return getOptionalFile(overridenFieldClassCollapserProject, "classcollapser"
+				+ File.separator + "issue74and81");
 	}
 
 	@After
@@ -931,8 +936,9 @@ public class ApplicationTest {
 	@Test
 	public void junit_test_class_collapser() {
 		StringBuilder arguments = new StringBuilder();
+		String projectFilePath = getJunitProjectDir().getAbsolutePath();
 		arguments.append("--prune-app ");
-		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--maven-project \"" + projectFilePath + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
@@ -941,6 +947,7 @@ public class ApplicationTest {
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
+//		arguments.append("--verbose ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -969,6 +976,31 @@ public class ApplicationTest {
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));
+	}
+
+	@Test
+	public void test_issue74_and_issue84() {
+		StringBuilder arguments = new StringBuilder();
+		String projectFilePath = getIssue74And81Project().getAbsolutePath();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + projectFilePath + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--run-tests ");
+		arguments.append("--use-cache ");
+//		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		assertEquals(0, classCollapseResult.getRemovedMethods().size());
+		assertEquals(0, classCollapseResult.getClassesToRemove().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
 	}
 
 	@Test
