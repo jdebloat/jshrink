@@ -41,8 +41,13 @@ public class PathResolutionUtil {
 			} else {
 				String fName = f.getName();
 				if(fName.endsWith(".class")) {
-					PathResolutionUtil.classPathMap.put(prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+"."+
-							dirPath.getName()+"."+fName.substring(0,fName.length()-6),f.getAbsolutePath());
+					String class_package = "";
+					int path_start = prefix.indexOf("/");
+					if(path_start>-1){
+						class_package = prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+".";
+					}
+					class_package += dirPath.getName()+".";
+					PathResolutionUtil.classPathMap.put(class_package+fName.substring(0,fName.length()-6),f.getAbsolutePath());
 				}
 			}
 		}
