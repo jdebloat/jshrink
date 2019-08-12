@@ -64,9 +64,12 @@ public class PathResolutionUtil {
 					if(path_start>-1){
 						class_package = prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+".";
 					}
-					if(class_package.equals("classes") || class_package.equals("test-classes"))
+
+					if(dirPath.getName().equals("classes") || dirPath.getName().equals("test-classes")){
 						class_package = "";
-					class_package += dirPath.getName()+".";
+					}
+					else
+						class_package += dirPath.getName()+".";
 					PathResolutionUtil.classPathMap.put(class_package+fName.substring(0,fName.length()-6),f.getAbsolutePath());
 				}
 			}
