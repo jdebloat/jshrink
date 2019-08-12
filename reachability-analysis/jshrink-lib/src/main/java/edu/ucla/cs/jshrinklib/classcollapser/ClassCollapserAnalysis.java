@@ -267,7 +267,7 @@ public class ClassCollapserAnalysis {
             return false;
         }
 
-        if(toClass.isInterface() && !fromClass.isInterface()) {
+        if(toClass.isInterface()){// && !fromClass.isInterface()) {
             // do not merge a class to an interface
             return false;
         }

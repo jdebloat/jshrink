@@ -3,7 +3,9 @@
 ROOT_DIRECTORY="$(pwd)"
 
 # the list of GitHub repositories built by maven
-project_list="${ROOT_DIRECTORY}/work_list.dat"
+project_list=$1 #"${ROOT_DIRECTORY}/work_list.dat"
+
+cache_csv="${ROOT_DIRECTORY}/jshrink_caches.csv"
 
 # the destination path to the downloaded projects
 dest_dir="${ROOT_DIRECTORY}/sample-projects"
@@ -43,7 +45,20 @@ do
 	git checkout `git rev-list -n 1 --before="2018-10-15 12:00" ${current_branch}` >/dev/null 2>&1
 	cd ${ROOT_DIRECTORY}
 
-done < $project_list
+done < ${project_list}
+
+tar xzf "jshrink_caches.tar.gz"
+while read line
+do
+	if [ -d "$(dirname $(dirname $(echo ${line} | cut -d, -f2)))" ]; then
+		mkdir -p "$(dirname $(echo ${line} | cut -d, -f2))"
+		from=$(echo ${line} | cut -d, -f1)
+		to=$(echo ${line} | cut -d, -f2)
+		target_dir=$(dirname $(dirname ${to}))
+		cp "${from}" "${to}"
+	fi
+done < ${cache_csv}
+rm -rf "jshrink_caches"
 
 # "dieforfree_qart4j" has a unique "pom.xml" file that results in the apache-commons-imaging library being
 # fetched whenever maven is run. This caused problems when running experiments. I therefore modify the

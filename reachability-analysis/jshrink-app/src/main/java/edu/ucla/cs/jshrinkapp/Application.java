@@ -120,8 +120,10 @@ public class Application {
 			System.out.println("Done creating jShrink instance!");
 			System.out.println("Making \"soot pass\"...");
 		}
-
+		long analysisStartTime = System.nanoTime();
 		jShrink.makeSootPass();
+		long analysisEndTime = System.nanoTime();
+		String dynamicAnalysisTime = jShrink.getDynamicAnalysisTime();
 
 		unmodifiableClass.putAll(jShrink.getUnmodifiableClasses());
 
@@ -353,6 +355,7 @@ public class Application {
 				}
 			}
 
+
 			removedClasses.addAll(jShrink.classesToRemove());
 			if(commandLineParser.isVerbose()){
 				System.out.println("Done inlining inlinable methods!");
@@ -488,10 +491,29 @@ public class Application {
 			toLogVerbose.append(ClassCollapser.log);
 		}
 
+		if(commandLineParser.inlineMethods() && inlineData != null){
+			for(Map.Entry<MethodData, Set<MethodData>> inlineLocation : inlineData.getInlineLocations().entrySet()){
+				for(MethodData inlinedTo : inlineLocation.getValue()) {
+					toLogVerbose.append("INLINED_METHOD," + inlineLocation.getKey().getSubSignature() + " to "
+							+ inlinedTo.getSignature() + System.lineSeparator());
+					Optional<Set<MethodData>> ultimateLocationSet
+							= inlineData.getUltimateInlineLocations(inlineLocation.getKey());
+					if(ultimateLocationSet.isPresent()) {
+						for (MethodData ultimateLocation : ultimateLocationSet.get()) {
+							toLogVerbose.append("INLINED_METHOD_ULTIMATE_LOCATION,"
+									+ inlineLocation.getKey().getSubSignature()
+									+ " to " + ultimateLocation.getSignature() + System.lineSeparator());
+						}
+					}
+				}
+			}
+		}
+
 
 		long endTime = System.nanoTime();
 		toLog.append("time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((endTime - startTime)) + System.lineSeparator());
-
+		toLog.append("dynamic_analysis_time,"+dynamicAnalysisTime+System.lineSeparator());
+		toLog.append("analysis_time_elapsed," + TimeUnit.NANOSECONDS.toSeconds((analysisEndTime - analysisStartTime)) + System.lineSeparator());
 		outputToLogDirectory(commandLineParser.getLogDirectory(), toLog.toString(), toLogVerbose.toString(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputBefore.getTestOutputText()) : Optional.empty(),
 			commandLineParser.isRunTests() ? Optional.of(testOutputAfter.getTestOutputText()) : Optional.empty(),

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PWD=`pwd`
-WORK_LIST="${PWD}/work_list.dat"
+WORK_LIST="${PWD}/work_list_test_main_entry.dat"
 PROJECT_DIR="${PWD}/sample-projects"
 DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
 SIZE_FILE="${PWD}/size_data.csv"
@@ -10,8 +10,8 @@ TAMIFLEX="${PWD}/poa-2.0.3.jar"
 JSHRINK_MTRACE="${PWD}/jshrink-mtrace"                                  
 JMTRACE="${JSHRINK_MTRACE}/jmtrace"                                     
 MTRACE_BUILD="${JSHRINK_MTRACE}/build"
-TIMEOUT=36000 #10 hours
-OUTPUT_LOG_DIR="${PWD}/method_removal_with_tamiflex_output_log"
+TIMEOUT=54000 #15 hours 
+OUTPUT_LOG_DIR="${PWD}/field_removal_with_tamiflex_output_log"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -55,7 +55,7 @@ cat ${WORK_LIST} |  while read item; do
 	temp_file=$(mktemp /tmp/XXXX)
 
 	#A 10 hour timeout
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP}  --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --use-cache --maven-project ${item_dir} -T --public-entry --main-entry --test-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --use-cache --main-entry --test-entry --prune-app --remove-methods --log-directory "${ITEM_LOG_DIR}"  --remove-fields --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -88,7 +88,7 @@ cat ${WORK_LIST} |  while read item; do
 		remove_methods="1"
 		method_inliner="0"
 		class_collapser="0"
-		parameter_removal="0"
+		parameter_removal="1"
 
 		echo ${item},${using_public_entry},${using_main_entry},${using_test_entry},${custom_entry},${is_app_prune},${tamiflex},${remove_methods},${method_inliner},${class_collapser},${parameter_removal},${app_size_before},${lib_size_before},${app_size_after},${lib_size_after},${app_num_methods_before},${lib_num_methods_before},${app_num_methods_after},${lib_num_methods_after},${test_run_before},${test_errors_before},${test_failures_before},${test_skipped_before},${test_run_after},${test_errors_after},${test_failures_after},${test_skipped_after},${time_elapsed} >>${SIZE_FILE}
 	elif [[ ${exit_status} == 124 ]];then

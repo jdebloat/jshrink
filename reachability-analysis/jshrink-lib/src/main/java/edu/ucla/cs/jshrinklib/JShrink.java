@@ -9,14 +9,18 @@ import edu.ucla.cs.jshrinklib.methodinliner.MethodInliner;
 import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
 import edu.ucla.cs.jshrinklib.reachability.*;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
+import edu.ucla.cs.jshrinklib.util.PathResolutionUtil;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.apache.commons.io.FileUtils;
 import soot.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class JShrink {
 	private File projectDir;
@@ -30,6 +34,7 @@ public class JShrink {
 	private boolean projectAnalyserRun = false;
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
 	private Set<SootClass> classesToRemove = new HashSet<SootClass>();
+	private ClassReferenceGraph classDependencyGraph = null;
 	private long libSizeCompressed = -1;
 	private long libSizeDecompressed = -1;
 	private long appSizeCompressed = -1;
@@ -129,6 +134,7 @@ public class JShrink {
 			this.verbose = verbose;
 			this.runTests = executeTests;
 			this.useCache = useCache;
+			classDependencyGraph = new ClassReferenceGraph();
 	}
 
 	public Set<MethodData> getAllEntryPoints() {
@@ -457,7 +463,11 @@ public class JShrink {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
-			JShrink.removeClasses(this.classesToRemove, classPaths);
+
+			modifyClasses(this.classesToModify, classPaths);
+			this.classesToModify.clear();
+
+			this.removeClasses(this.classesToRemove, classPaths);
 			/*
 			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
 			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
@@ -466,10 +476,10 @@ public class JShrink {
 			 */
 			TimeUnit.SECONDS.sleep(1);
 			this.classesToRemove.clear();
-            modifyClasses(this.classesToModify, classPaths);
+            //modifyClasses(this.classesToModify, classPaths);
 			ClassFileUtils.compressJars(decompressedJars);
 
-			this.classesToModify.clear();
+			//this.classesToModify.clear();
 			updateSizes();
 			this.reset();
 		}catch(IOException | InterruptedException e){
@@ -576,6 +586,17 @@ public class JShrink {
 			}
 			classesToRewrite.add(sootClass);
 		}
+
+		/*for(String className: this.getProjectAnalyserRun().getLibClasses()){
+			SootClass sootClass = Scene.v().loadClassAndSupport(className);
+			if(!SootUtils.modifiableSootClass(sootClass)){
+				Optional<String> exceptionMessage = SootUtils.getUnmodifiableClassException(sootClass);
+				assert(exceptionMessage.isPresent());
+				unmodifiableClasses.put(className, exceptionMessage.get());
+				continue;
+			}
+			this.classDependencyGraph.addClass(sootClass);
+		}*/
 		// We need to update class name references in test classes in class collapsing
 		// So we need to make sure they are modifiable.
 		// I saw a case in the disunity project where a test class has lambda expressions which
@@ -674,10 +695,55 @@ public class JShrink {
 		return classNameOnly;
 	}
 
-	private static void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		Instant start = Instant.now();
+		PathResolutionUtil.buildMap(classPaths);
+		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
+		for(String className : this.getProjectAnalyser().getAppClasses()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+		}
+		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+		}
+		for(String className : this.getProjectAnalyser().getTestClasses()){
+			SootClass sootClass = Scene.v().getSootClass(className);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+		}
+		if(this.verbose)
+			System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
 		for(SootClass sootClass : classesToRemove){
+			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
+			//not including classes marked for deletion
+			referencedBy.removeAll(classesToBeRemoved);
 			try{
-				ClassFileUtils.removeClass(sootClass, classPaths);
+				if(referencedBy.size()>0)
+				{
+					if(unmodifiableClasses.containsKey(sootClass.getName()) || sootClass.isAbstract()) {
+						// do not remove things in an unmodifiable class since the class cannot be updated anyway
+						continue;
+					}
+
+					Set<SootField> fieldsToRemove = new HashSet<SootField>(sootClass.getFields());
+					for(SootField toRemove : fieldsToRemove){
+						toRemove.setDeclared(true);
+						toRemove.setDeclaringClass(sootClass);
+						sootClass.removeField(toRemove);
+					}
+
+					Set<SootMethod> methodsToRemove = new HashSet<SootMethod>(sootClass.getMethods());
+					for(SootMethod toRemove : methodsToRemove){
+						sootClass.removeMethod(toRemove);
+					}
+
+					methodsToRemove.clear();
+					fieldsToRemove.clear();
+					
+					ClassFileUtils.writeClass(sootClass, classPaths);
+				}else{
+					ClassFileUtils.removeClass(sootClass, classPaths);
+				}
 			} catch (IOException e){
 				System.err.println("An exception was thrown when attempting to delete a class:");
 				e.printStackTrace();
@@ -734,5 +800,8 @@ public class JShrink {
 		}
 
 		return removedFields;
+	}
+	public String getDynamicAnalysisTime(){
+		return ((MavenSingleProjectAnalyzer)getProjectAnalyser()).getDynamicAnalysisTime();
 	}
 }

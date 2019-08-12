@@ -412,6 +412,60 @@ public class CallGraphAnalysisSimpleTest {
 		assertFalse(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceB", "interfaceBMethod"));
 	}
 
+	@Test
+	public void testStaticInterfaceMethods(){
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		List<File> libJarPath = new ArrayList<File>();
+		List<File> appClassPath = new ArrayList<File>();
+		List<File> appTestPath = new ArrayList<File>();
+		appClassPath.add(new File(classLoader.getResource("static-interface-methods" + File.separator + "target"
+				+ File.separator + "classes").getFile()));
+
+		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+				new EntryPointProcessor(true, false, false,
+						new HashSet<MethodData>()), false);
+		runner.run();
+
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.Application",
+				"main"));
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceA",
+				"interfaceAStatic"));
+		assertTrue(contains(usedAppMethods.keySet(), "edu.ucla.cs.interfacemethods.InterfaceB",
+				"interfaceBStatic"));
+	}
+
+	@Test
+	public void testAnonInnerClasses(){
+		ClassLoader classLoader = CallGraphAnalysisSimpleTest.class.getClassLoader();
+		List<File> libJarPath = new ArrayList<File>();
+		List<File> appClassPath = new ArrayList<File>();
+		List<File> appTestPath = new ArrayList<File>();
+		appClassPath.add(new File(classLoader.getResource("anon-inner-classes" + File.separator + "target"
+				+ File.separator + "classes").getFile()));
+
+		CallGraphAnalysis runner = new CallGraphAnalysis(libJarPath, appClassPath, appTestPath,
+				new EntryPointProcessor(true, false, false,
+						new HashSet<MethodData>()), false);
+		runner.run();
+
+		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
+
+		assertEquals(5, usedAppMethods.size());
+
+		assertTrue(contains(usedAppMethods.keySet(), "Application",
+				"main"));
+		assertTrue(contains(usedAppMethods.keySet(), "Example",
+				"<init>"));
+		assertTrue(contains(usedAppMethods.keySet(), "Example",
+				"method"));
+		assertTrue(contains(usedAppMethods.keySet(), "Application$1",
+				"<init>"));
+		assertTrue(contains(usedAppMethods.keySet(), "Application$1",
+				"method"));
+	}
+
 	private static Optional<Set<MethodData>> get(Map<MethodData,Set<MethodData>> map,
 	                                             String className, String methodName){
 		MethodData methodData = null;

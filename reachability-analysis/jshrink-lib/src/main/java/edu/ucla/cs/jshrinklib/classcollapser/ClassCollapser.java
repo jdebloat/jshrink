@@ -830,6 +830,11 @@ public class ClassCollapser {
                     }
                 }
             }
+            for (Trap t: m.retrieveActiveBody().getTraps()){
+                if(t.getException() != null && t.getException().getName().equals(changeFrom.getName())){
+                    t.setException(changeTo);
+                }
+            }
         }
         return changed;
     }

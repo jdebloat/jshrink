@@ -19,11 +19,9 @@ citerus_dddsample-core
 code4craft_webmagic
 consulo_consulo
 cucumber_cucumber-jvm
-datastax_java-driver
 davidmoten_rxjava-extras
 devnied_EMV-NFC-Paycard-Enrollment
 dieforfree_qart4j
-docker-java_docker-java
 dropwizard_metrics
 druid-io_druid
 dubboclub_dubbokeeper
@@ -31,7 +29,6 @@ eirslett_frontend-maven-plugin
 facebook_nifty
 frohoff_ysoserial
 goldmansachs_gs-collections
-google_google-http-java-client
 google_google-java-format
 google_gson
 google_guava
@@ -39,7 +36,6 @@ google_guice
 google_jimfs
 google_truth
 Graylog2_graylog2-server
-greenrobot_essentials
 h2oai_h2o-2
 igniterealtime_Openfire
 immutables_immutables
@@ -50,7 +46,6 @@ JakeWharton_RxRelay
 JakeWharton_RxReplayingShare
 jamesdbloom_mockserver
 javamelody_javamelody
-jayway_awaitility
 jayway_rest-assured
 JCTools_JCTools
 jhy_jsoup
@@ -71,7 +66,6 @@ mrniko_netty-socketio
 NanoHttpd_nanohttpd
 Netflix_curator
 Netflix_exhibitor
-Netflix_feign
 ninjaframework_ninja
 notnoop_java-apns
 openhab_openhab
@@ -90,7 +84,6 @@ sannies_mp4parser
 SAP_openui5
 sarxos_webcam-capture
 searchbox-io_Jest
-serge-rider_dbeaver
 shopizer-ecommerce_shopizer
 sockeqwe_fragmentargs
 sohutv_cachecloud

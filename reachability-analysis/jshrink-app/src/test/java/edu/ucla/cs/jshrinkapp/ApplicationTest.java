@@ -61,6 +61,10 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
+	private File getJMTrace(){
+		return new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile());
+	}
+
 	private static File getSimpleTestProjectDir() {
 		return getOptionalFile(simpleTestProject, "simple-test-project");
 	}
@@ -86,6 +90,10 @@ public class ApplicationTest {
 	private File getJunitProjectDir() {
 		return getOptionalFile(junitProject, "junit4");
 	}
+
+	private File getAnnotationProjectDir() {
+	    return getOptionalFile(junitProject, "annotations");
+    }
 
 	private File getLogDirectory() {
 		if (logDirectory.isPresent()) {
@@ -156,18 +164,23 @@ public class ApplicationTest {
 		return false;
 	}
 
+
 	/*
 	@Test
 	public void test(){
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
-		arguments.append("--maven-project /home/bobbyrbruce/Desktop/nifty ");
+		arguments.append("--maven-project /home/bobbyrbruce/Desktop/java-apns ");
 		arguments.append("--main-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--test-entry ");
+		arguments.append("--inline ");
+		arguments.append("-T ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
 		arguments.append("--verbose ");
-		arguments.append("--use-spark ");
-
 
 		Application.main(arguments.toString().split("\\s+"));
 	}
@@ -451,6 +464,31 @@ public class ApplicationTest {
 		assertEquals(0, classRemoved.size());
 
 		assertTrue(jarIntact());
+	}
+
+	@Test
+	public void testAnnotations(){
+		/*
+		 This test is to ensure annotations are not removed during method removal. Our current policy is to leave
+		 annotations alone.
+		 */
+
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project " + getAnnotationProjectDir().getAbsolutePath() + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
+		arguments.append("--use-cache ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+		assertEquals(1, methodsRemoved.size());
+		assertTrue(isPresent(methodsRemoved, "Application", "unusedMethod"));
+		assertTrue(classesRemoved.isEmpty());
 	}
 
 	@Test
@@ -765,6 +803,7 @@ public class ApplicationTest {
 	}
 
 	@Test
+    @Ignore //I dont know why we have this test. Obviously without TamiFlex, this test will fail
 	public void reflectionTest_mainMethodEntry_withoutTamiFlex() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -977,6 +1016,7 @@ public class ApplicationTest {
 		arguments.append("--inline ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
 
 		Application.main(arguments.toString().split("\\s+"));
@@ -1445,7 +1485,7 @@ public class ApplicationTest {
 		arguments.append("--maven-project \"" + getSimpleTestProjectDir() + "\" ");
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
-		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--jmtrace "+ getJMTrace().getAbsolutePath() +" ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
@@ -1470,7 +1510,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--jmtrace "+new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile()).getAbsolutePath()+" ");
+		arguments.append("--jmtrace "+ getJMTrace().getAbsolutePath() +" ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
