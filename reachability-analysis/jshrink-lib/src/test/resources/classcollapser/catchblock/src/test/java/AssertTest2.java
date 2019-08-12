@@ -1,6 +1,9 @@
+import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 
 public class AssertTest2{
     @Test
@@ -15,6 +18,11 @@ public class AssertTest2{
 
         }
     }
+    @Test(expected = ComparisonFailure.class)
+    public void stringsNotEqual() {
+        assertEquals("abc", "def");
+    }
+
     @Test
     public void testAssertStringNotEqualsNull() {
         try {

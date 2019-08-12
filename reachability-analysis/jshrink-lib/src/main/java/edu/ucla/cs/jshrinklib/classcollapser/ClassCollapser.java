@@ -835,6 +835,61 @@ public class ClassCollapser {
                     t.setException(changeTo);
                 }
             }
+            List<Tag> tags  = m.getTags();
+            for(int i = 0; i < tags.size(); i++) {
+                Tag tag = tags.get(i);
+                if(tag instanceof VisibilityAnnotationTag) {
+                    ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
+                    for(AnnotationTag annotation : annotations) {
+                        Collection<AnnotationElem> values = annotation.getElems();
+                        List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
+                        for(AnnotationElem annotationElem: values) {
+                            if(annotationElem instanceof AnnotationClassElem) {
+                                String desc = ((AnnotationClassElem) annotationElem).getDesc();
+                                if(desc.startsWith("L") && desc.endsWith(";")) {
+                                    String typeName = desc.substring(1, desc.length() - 1);
+                                    typeName = typeName.replaceAll(Pattern.quote("/"), ".");
+                                    if(typeName.equals(changeFrom.getName())) {
+                                        AnnotationClassElem classElem = new AnnotationClassElem(
+                                                "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                annotationElem.getKind(), annotationElem.getName());
+                                        newValues.add(classElem);
+                                        changed = true;
+                                        continue;
+                                    }
+                                }
+                                newValues.add(annotationElem);
+                            }
+                            else if (annotationElem instanceof AnnotationArrayElem) {
+                                AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
+                                ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
+                                for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
+                                    if(annotationElem2 instanceof AnnotationClassElem) {
+                                        String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
+                                        if(desc2.startsWith("L") && desc2.endsWith(";")) {
+                                            String typeName2 = desc2.substring(1, desc2.length() - 1);
+                                            typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
+                                            if(typeName2.equals(changeFrom.getName())) {
+                                                AnnotationClassElem classElem2 = new AnnotationClassElem(
+                                                        "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                        annotationElem2.getKind(), annotationElem2.getName());
+                                                newValues2.add(classElem2);
+                                                changed = true;
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    newValues2.add(annotationElem2);
+                                }
+                                AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
+                                newValues.add(newArrayElem);
+                            }
+                        }
+                        annotation.setElems(newValues);
+                    }
+                }
+            }
+
         }
         return changed;
     }
