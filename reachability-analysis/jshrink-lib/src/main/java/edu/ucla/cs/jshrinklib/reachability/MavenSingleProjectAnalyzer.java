@@ -74,13 +74,14 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private boolean compileProject = true;
 	private final boolean runTests;
 	private final boolean useCache;
-	private String dynamicAnalysisTime;
+	private final StringBuilder log;
 
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
 	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) {
 		project_path = pathToMavenProject;
-		
+
+		log = new StringBuilder();
 		libClasses = new HashSet<String>();
 		libClassesCompileOnly = new HashSet<String>();
 		libMethods = new HashSet<MethodData>();
@@ -394,6 +395,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		MavenUtils.getModules(root_dir, modules);
 
 		int count = 0;
+		long callgraphTimeSeconds = 0;
 		for(String artifact_id : modules.keySet()) {
 			// Note that not all submodules are built
 			if(classpaths.containsKey(artifact_id)) {
@@ -414,12 +416,16 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				List<File> localTestClassPaths =
 					(app_test_paths.containsKey(artifact_id) ? app_test_paths.get(artifact_id) : new ArrayList<File>());
 
+				Instant callgraphStart = Instant.now();
+
 				CallGraphAnalysisCacheWrapper runner =
 						new CallGraphAnalysisCacheWrapper(new File(project_path), artifact_id, localLibClassPaths,
 							localAppClassPaths, localTestClassPaths, entryPointProcessor,
 								this.useSpark, this.useCache, this.verbose);
 				runner.setup();
 				runner.run();
+
+				callgraphTimeSeconds += Duration.between(callgraphStart, Instant.now()).getSeconds();
 
 				//this.callgraphs.addAll(runner.getCallGraphs());
 				
@@ -492,21 +498,24 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				}
 			}
 		}
-		
+
+		log.append("static_analysis_time," + Long.toString(callgraphTimeSeconds) + System.lineSeparator());
+
+		if(this.verbose){
+			System.out.println("Running Dynamic analysis...");
+		}
 		// (optional) use tamiflex to dynamically identify reflection calls
+		long dynamicTimeTotal = 0;
 		if(tamiFlexJar.isPresent() || jmtrace.isPresent()) {
 			//TamiFlexRunner
 			Instant start = Instant.now();
 			TamiFlexRunner tamiflex;
-			StringBuilder dynamicLog = new StringBuilder();
 
 			if(tamiFlexJar.isPresent()){
 				tamiflex = new TamiFlexRunner(tamiFlexJar.get().getAbsolutePath(),	project_path, false);
-				dynamicLog.append("Tamiflex");
 			}
 			else{
 				tamiflex = new JMTraceRunner(jmtrace.get().getAbsolutePath(), project_path);
-				dynamicLog.append("JMTrace");
 			}
 
 			try {
@@ -520,8 +529,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				try {
 
 					jmtrunner.run(tamiflex);
-					dynamicLog.append(" + JMTrace");
-
 					//resetting results to merged results
 					tamiflex = (TamiFlexRunner) jmtrunner;
 
@@ -529,6 +536,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					e.printStackTrace();
 				}
 			}
+
+			dynamicTimeTotal += Duration.between(start, Instant.now()).getSeconds();
 
 			// add all reached classes in each module to the corresponding set of used classes
 			for(String module : tamiflex.accessed_classes.keySet()) {
@@ -727,11 +736,13 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					}
 				}
 			}
-			dynamicLog.append(" Execution time - "+Duration.between(start, Instant.now()).getSeconds()+" secs");
 			if(this.verbose){
-				System.out.println("Dynamic Analysis completed");
-				System.out.println(dynamicLog.toString());
+				System.out.println("Done running dynamic analysis!");
 			}
+
+			log.append("dynamic_analysis_time," + Long.toString(dynamicTimeTotal) + System.lineSeparator());
+
+			long callGraphDynamicTime = 0;
 			// set those methods that are invoked via reflection as entry points and redo the
 			// static analysis
 			for(String module : new_entry_points.keySet()) {
@@ -752,12 +763,15 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 				EntryPointProcessor customEntryPointProcessor =
 					new EntryPointProcessor(false, false, false,entry_methods);
 
+				Instant callgraphTime = Instant.now();
 				CallGraphAnalysisCacheWrapper runner =
 						new CallGraphAnalysisCacheWrapper(new File(project_path), module, localLibClassPaths,
 							localAppClassPaths, localTestClassPaths, customEntryPointProcessor,
 								useSpark, this.useCache, this.verbose);
 				runner.setup();
 				runner.run();
+
+				callGraphDynamicTime += Duration.between(callgraphTime, Instant.now()).getSeconds();
 
 				//this.callgraphs.addAll(runner.getCallGraphs());
 				
@@ -797,8 +811,10 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					System.out.println("Done running Tamiflex callgraph analysis for module \"" + module +"\"!");
 				}
 			}
-			dynamicAnalysisTime = Duration.between(start, Instant.now()).getSeconds()+"";
+			log.append("dynamic_callgraph_extension_time," + Long.toString(callGraphDynamicTime) + System.lineSeparator());
 		}
+
+
 		
 		if(count > 1) {
 			adjustClassesAndMethodsAndFieldsFromSubmodules();
@@ -1126,9 +1142,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		return stripAnnotationClasses(this.usedTestClasses);
 	}
 
-	public String getDynamicAnalysisTime(){
-		if(dynamicAnalysisTime == null)
-			return "null";
-		return dynamicAnalysisTime;
+	public String getLog(){
+		return this.log.toString();
 	}
 }
