@@ -701,15 +701,15 @@ public class JShrink {
 		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
 		for(String className : this.getProjectAnalyser().getAppClasses()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
 		}
 		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
 		}
 		for(String className : this.getProjectAnalyser().getTestClasses()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
 		}
 		if(this.verbose)
 			System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());

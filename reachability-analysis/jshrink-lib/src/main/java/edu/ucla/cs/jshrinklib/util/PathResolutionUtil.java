@@ -6,12 +6,30 @@ import java.util.*;
 
 
 public class PathResolutionUtil {
-	public static HashMap<String, String> classPathMap = new HashMap<String, String>();
+	private static HashMap<String, String> classPathMap = new HashMap<String, String>();
+	private static HashSet<String> classPaths = new HashSet<>();
 	public static void buildMap(Set<File> class_paths){
-		for(File cp:class_paths)
+		for(File cp:class_paths) {
+			classPaths.add(cp.getAbsolutePath());
 			PathResolutionUtil.readClass(cp);
+		}
 	}
-
+	public static String getClassPath(String className){
+		if(PathResolutionUtil.classPathMap.containsKey(className))
+			return PathResolutionUtil.classPathMap.get(className);
+		else
+		{
+			className.replaceAll(".",File.separator);
+			String fp = className+".class";
+			String path = "";
+			for(String cp: classPaths){
+				path = cp+File.separator+fp;
+				if(new File(path).exists())
+					return path;
+			}
+		}
+		return null;
+	}
 	public static void readClass(File dir){
 		try {
 			if (dir.isDirectory()) {
@@ -29,6 +47,8 @@ public class PathResolutionUtil {
 	public static void readClassFromDirectory(File dirPath, String prefix) {
 		if(prefix.startsWith("/"))
 			prefix = prefix.substring(1);
+		if(prefix.equals("classes") || prefix.equals("test-classes"))
+			prefix = "";
 		if(!dirPath.exists()) {
 			// fix NPE due to non-existent file
 			System.err.println(dirPath.getAbsolutePath() + " does not exist.");
