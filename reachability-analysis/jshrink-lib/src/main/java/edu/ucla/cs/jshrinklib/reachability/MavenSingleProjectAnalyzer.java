@@ -68,7 +68,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final Set<MethodData> entryPoints;
 	private final Optional<File> tamiFlexJar;
 	private final Optional<File> jmtrace;
-	private final Set<CallGraph> callgraphs;
 	private final boolean useSpark;
 	private final boolean verbose;
 	private TestOutput testOutput;
@@ -113,7 +112,6 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		entryPoints = new HashSet<MethodData>();
 		tamiFlexJar = tamiFlex;
 		this.jmtrace = jmtrace;
-		this.callgraphs = new HashSet<CallGraph>();
 		this.useSpark = useSpark;
 		this.verbose = verbose;
 		this.runTests = executeTests;
