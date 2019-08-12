@@ -801,7 +801,7 @@ public class JShrink {
 
 		return removedFields;
 	}
-	public String getDynamicAnalysisTime(){
-		return ((MavenSingleProjectAnalyzer)getProjectAnalyser()).getDynamicAnalysisTime();
+	public String getLog(){
+		return ((MavenSingleProjectAnalyzer)getProjectAnalyser()).getLog();
 	}
 }
