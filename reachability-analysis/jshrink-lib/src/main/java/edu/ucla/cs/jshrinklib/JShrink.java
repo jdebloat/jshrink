@@ -9,12 +9,15 @@ import edu.ucla.cs.jshrinklib.methodinliner.MethodInliner;
 import edu.ucla.cs.jshrinklib.methodwiper.MethodWiper;
 import edu.ucla.cs.jshrinklib.reachability.*;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
+import edu.ucla.cs.jshrinklib.util.PathResolutionUtil;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import org.apache.commons.io.FileUtils;
 import soot.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -460,6 +463,10 @@ public class JShrink {
 			Set<File> classPaths = this.getClassPaths();
 			Set<File> decompressedJars =
 				new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+
+			modifyClasses(this.classesToModify, classPaths);
+			this.classesToModify.clear();
+
 			this.removeClasses(this.classesToRemove, classPaths);
 			/*
 			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
@@ -469,10 +476,10 @@ public class JShrink {
 			 */
 			TimeUnit.SECONDS.sleep(1);
 			this.classesToRemove.clear();
-            modifyClasses(this.classesToModify, classPaths);
+            //modifyClasses(this.classesToModify, classPaths);
 			ClassFileUtils.compressJars(decompressedJars);
 
-			this.classesToModify.clear();
+			//this.classesToModify.clear();
 			updateSizes();
 			this.reset();
 		}catch(IOException | InterruptedException e){
@@ -689,19 +696,23 @@ public class JShrink {
 	}
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		Instant start = Instant.now();
+		PathResolutionUtil.buildMap(classPaths);
 		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
 		for(String className : this.getProjectAnalyser().getAppClasses()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
 		}
 		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
 		}
 		for(String className : this.getProjectAnalyser().getTestClasses()){
 			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass);
+			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.classPathMap.get(sootClass.getName()));
 		}
+		if(this.verbose)
+			System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			//not including classes marked for deletion
