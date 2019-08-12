@@ -145,18 +145,6 @@ public class ClassCollapserAnalysis {
                 }
             }
             for (String parent: parents) {
-//                if (childrenMap.get(parent).contains(child)) {
-//                    childrenMap.get(parent).remove(child);
-//                }
-//                if (childrenVirtualMap.get(parent).contains(child)) {
-//                    childrenVirtualMap.get(parent).remove(child);
-//                }
-//                parentsMap.put(child, "");
-//                parentsVirtualMap.remove(child);
-//                if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0 && !visited.contains(parent)) {
-//                    queue.addLast(parent);
-//                    visited.add(parent);
-//                }
                 Set<String> children = new HashSet<String>();
                 children.addAll(childrenMap.get(parent));
                 children.addAll(childrenVirtualMap.get(parent));
@@ -241,10 +229,6 @@ public class ClassCollapserAnalysis {
     }
 
     private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
-        if(from.equals("org.gridkit.jvmtool.event.TaggedEvent") && to.equals("org.gridkit.jvmtool.event.Event")) {
-            System.out.println("Caught");
-        }
-
         if(classesToIgnore.contains(from) || classesToIgnore.contains(to)) {
             return false;
         }
@@ -267,7 +251,7 @@ public class ClassCollapserAnalysis {
             return false;
         }
 
-        if(toClass.isInterface()){// && !fromClass.isInterface()) {
+        if(toClass.isInterface() && !fromClass.isInterface()) {
             // do not merge a class to an interface
             return false;
         }
@@ -443,10 +427,6 @@ public class ClassCollapserAnalysis {
     }
 
     private void initOneClass(String thisClass, Set<String> visited) {
-        if(thisClass.equals("org.gridkit.jvmtool.event.ErrorEvent") || thisClass.equals("org.gridkit.jvmtool.event.ThreadTraceEvent")
-           || thisClass.equals("org.gridkit.jvmtool.event.MultiCounterEvent")) {
-            System.out.println("stop here");
-        }
         if (visited.contains(thisClass)) {
             return;
         }
