@@ -80,10 +80,10 @@ public class ClassCollapserAnalysis {
         HashSet<String> visited = new HashSet<String>();
         for (String leaf: processableLeaves) {
             queue.addLast(leaf);
-            visited.add(leaf);
         }
         while (!queue.isEmpty()) {
             String child = queue.removeFirst();
+            visited.add(child);
             Set<String> parents = new HashSet<String>();
             if (!parentsMap.get(child).isEmpty()) {
                 parents.add(parentsMap.get(child));
@@ -96,60 +96,74 @@ public class ClassCollapserAnalysis {
                 String singleParent = parents.iterator().next();
                 boolean cont = false;
                 for (String c: childrenMap.get(singleParent)) {
-                    if (!visited.contains(c)) {
+                    if (!visited.contains(c) && !queue.contains(c)) {
                         queue.addLast(child);
+                    }
+
+                    if(!c.equals(child) && usedAppClasses.contains(c)) {
+                        // quick check whether there is a sibling class that is also used
                         cont = true;
                         break;
                     }
                 }
-                if (!cont) {
-                    for (String c : childrenVirtualMap.get(singleParent)) {
-                        if (!visited.contains(c)) {
-                            queue.addLast(child);
-                            cont = true;
-                            break;
-                        }
+                for (String c : childrenVirtualMap.get(singleParent)) {
+                    if (!visited.contains(c) && !queue.contains(c)) {
+                        queue.addLast(child);
+                    }
+
+                    if(!c.equals(child) && usedAppClasses.contains(c)) {
+                        // quick check whether there is a sibling class that is also used
+                        cont = true;
+                        break;
                     }
                 }
-                if (cont) {
-                    continue;
-                }
 
-                SootClass fromClass = Scene.v().loadClassAndSupport(child);
-                SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
-                if (collapsable(child, singleParent, fromClass, toClass)) {
-                    ArrayList<String> collapse = new ArrayList<String>();
-                    collapse.add(child);
-                    collapse.add(singleParent);
-                    collapseList.addLast(collapse);
-                    nameChangeList.put(child, singleParent);
-                    usedAppClasses.add(singleParent);
+                if(!cont) {
+                    // none of the sibling is used, can further check
+                    SootClass fromClass = Scene.v().loadClassAndSupport(child);
+                    SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
+                    if (collapsable(child, singleParent, fromClass, toClass)) {
+                        ArrayList<String> collapse = new ArrayList<String>();
+                        collapse.add(child);
+                        collapse.add(singleParent);
+                        collapseList.addLast(collapse);
+                        nameChangeList.put(child, singleParent);
+                        usedAppClasses.add(singleParent);
 
-                    // all the subclasses or interfaces of this parent class will be removed
-                    if(childrenMap.containsKey(singleParent)) {
-                        for (String child2 : childrenMap.get(singleParent)) {
-                            removeList.add(child2);
+                        // all the subclasses or interfaces of this parent class will be removed
+                        if(childrenMap.containsKey(singleParent)) {
+                            for (String child2 : childrenMap.get(singleParent)) {
+                                removeList.add(child2);
+                            }
                         }
-                    }
-                    if(childrenVirtualMap.containsKey(singleParent)) {
-                        for(String child2 : childrenVirtualMap.get(singleParent)) {
-                            removeList.add(child2);
+                        if(childrenVirtualMap.containsKey(singleParent)) {
+                            for(String child2 : childrenVirtualMap.get(singleParent)) {
+                                removeList.add(child2);
+                            }
                         }
                     }
                 }
             }
             for (String parent: parents) {
-                if (childrenMap.get(parent).contains(child)) {
-                    childrenMap.get(parent).remove(child);
-                }
-                if (childrenVirtualMap.get(parent).contains(child)) {
-                    childrenVirtualMap.get(parent).remove(child);
-                }
-                parentsMap.put(child, "");
-                parentsVirtualMap.remove(child);
-                if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0 && !visited.contains(parent)) {
+//                if (childrenMap.get(parent).contains(child)) {
+//                    childrenMap.get(parent).remove(child);
+//                }
+//                if (childrenVirtualMap.get(parent).contains(child)) {
+//                    childrenVirtualMap.get(parent).remove(child);
+//                }
+//                parentsMap.put(child, "");
+//                parentsVirtualMap.remove(child);
+//                if (childrenMap.get(parent).size() == 0 && childrenVirtualMap.get(parent).size() == 0 && !visited.contains(parent)) {
+//                    queue.addLast(parent);
+//                    visited.add(parent);
+//                }
+                Set<String> children = new HashSet<String>();
+                children.addAll(childrenMap.get(parent));
+                children.addAll(childrenVirtualMap.get(parent));
+                if(visited.containsAll(children) && !visited.contains(parent) && !queue.contains(parent)) {
+                    // all children has been processed
+                    // move on to their parent
                     queue.addLast(parent);
-                    visited.add(parent);
                 }
             }
         }
@@ -227,6 +241,10 @@ public class ClassCollapserAnalysis {
     }
 
     private boolean collapsable(String from, String to, SootClass fromClass, SootClass toClass) {
+        if(from.equals("org.gridkit.jvmtool.event.TaggedEvent") && to.equals("org.gridkit.jvmtool.event.Event")) {
+            System.out.println("Caught");
+        }
+
         if(classesToIgnore.contains(from) || classesToIgnore.contains(to)) {
             return false;
         }
@@ -425,6 +443,10 @@ public class ClassCollapserAnalysis {
     }
 
     private void initOneClass(String thisClass, Set<String> visited) {
+        if(thisClass.equals("org.gridkit.jvmtool.event.ErrorEvent") || thisClass.equals("org.gridkit.jvmtool.event.ThreadTraceEvent")
+           || thisClass.equals("org.gridkit.jvmtool.event.MultiCounterEvent")) {
+            System.out.println("stop here");
+        }
         if (visited.contains(thisClass)) {
             return;
         }

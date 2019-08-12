@@ -360,6 +360,10 @@ public class CallGraphAnalysis implements IProjectAnalyser, Serializable {
 	}
 
 	public String getLibPathOfClass(String libClass) {
+		List<File> files = ClassFileUtils.classInPath(libClass, this.libJarPath);
+		if(files.size() == 0) {
+			return null;
+		}
 		return ClassFileUtils.classInPath(libClass, this.libJarPath).get(0).getAbsolutePath();
 	}
 
