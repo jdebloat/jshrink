@@ -244,6 +244,60 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void mainTest_targetMainEntryPoint_applicationOnly() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project " + getSimpleTestProjectDir().getAbsolutePath() + " ");
+		arguments.append("--main-entry ");
+		arguments.append("--remove-classes ");
+		arguments.append("--remove-methods ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
+		arguments.append("--ignore-libs ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		Set<MethodData> methodsRemoved = Application.removedMethods;
+		Set<String> classesRemoved = Application.removedClasses;
+
+
+		assertTrue(Application.removedMethod);
+		assertFalse(Application.wipedMethodBody);
+		assertFalse(Application.wipedMethodBodyWithExceptionNoMessage);
+		assertFalse(Application.wipedMethodBodyWithExceptionAndMessage);
+
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getStringStatic"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "getString"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff", "doNothing"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicAndTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "publicNotTestedButUntouchedCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "privateAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "protectedAndUntouched"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuffSub", "subMethodUntouched"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethod"));
+		assertFalse(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassMethodCallee"));
+		assertTrue(isPresent(methodsRemoved, "StandardStuff$NestedClass", "nestedClassNeverTouched"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "getNumber"));
+		assertFalse(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass", "untouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass", "privateUntouchedGetNumber"));
+		assertFalse(isPresent(methodsRemoved, "edu.ucla.cs.onr.test.LibraryClass", "<init>"));
+		assertFalse(isPresent(methodsRemoved, "Main", "main"));
+		assertFalse(isPresent(methodsRemoved, "Main", "compare"));
+		assertFalse(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.UnusedClass", "unusedMethod"));
+		assertFalse(isPresent(methodsRemoved,
+				"edu.ucla.cs.onr.test.LibraryClass2", "methodInAnotherClass"));
+
+		assertTrue(jarIntact());
+	}
+
+	@Test
 	public void mainTest_targetMainEntryPoint_withSpark() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -867,6 +921,29 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void junit_test_application_only() {
+		//This tests ensures that all test cases pass before and after the tool is run
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getJunitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--run-tests ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
+		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
 	public void junit_test_dont_run_tests() {
 		//This tests ensures that all test cases pass before and after the tool is run
 		StringBuilder arguments = new StringBuilder();
@@ -972,7 +1049,7 @@ public class ApplicationTest {
 		entryPoints.add(failedTest);
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(false, false, false, entryPoints);
 		MavenSingleProjectAnalyzer runner =
-				new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.empty(), Optional.empty(), false, true, true, true);
+				new MavenSingleProjectAnalyzer(junit_project_path, entryPointProcessor, Optional.empty(), Optional.empty(), false, true, true, true, false);
 		runner.setup();
 		runner.run();
 		assertTrue(isPresent(runner.getUsedAppMethods().keySet(), "org.junit.rules.Verifier", "verify"));

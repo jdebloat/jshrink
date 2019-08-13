@@ -75,10 +75,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean runTests;
 	private final boolean useCache;
 	private final StringBuilder log;
+	private final boolean ignoreLibs;
 
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
-	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) {
+	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache,
+									  boolean ignoreLibs) {
 		project_path = pathToMavenProject;
 
 		log = new StringBuilder();
@@ -117,6 +119,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.verbose = verbose;
 		this.runTests = executeTests;
 		this.useCache = useCache;
+		this.ignoreLibs = ignoreLibs;
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
@@ -352,15 +355,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					app_test_paths.put(artifact_id, Arrays.asList(app_test_path));
 				}
 
-				String[] cps = cp.split(File.pathSeparator);
-				lib_class_paths.put(artifact_id, new ArrayList<File>());
-				for(String path: cps){
-					File pathFile = new File(path);
-					if(!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir,pathFile)
-						//I only consider .class and .jar files as valid libraries
-						&& (pathFile.getAbsolutePath().endsWith(".class")
-						|| pathFile.getAbsolutePath().endsWith(".jar"))) {
-						lib_class_paths.get(artifact_id).add(new File(path));
+				if(!this.ignoreLibs) {
+					String[] cps = cp.split(File.pathSeparator);
+					lib_class_paths.put(artifact_id, new ArrayList<File>());
+					for (String path : cps) {
+						File pathFile = new File(path);
+						if (!path.isEmpty() && pathFile.exists() && ClassFileUtils.directoryContains(root_dir, pathFile)
+								//I only consider .class and .jar files as valid libraries
+								&& (pathFile.getAbsolutePath().endsWith(".class")
+								|| pathFile.getAbsolutePath().endsWith(".jar"))) {
+							lib_class_paths.get(artifact_id).add(new File(path));
+						}
 					}
 				}
 				if(this.verbose){

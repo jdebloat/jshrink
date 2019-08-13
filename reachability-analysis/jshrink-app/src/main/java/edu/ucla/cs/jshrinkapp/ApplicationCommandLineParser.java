@@ -39,6 +39,7 @@ public class ApplicationCommandLineParser {
 	private final boolean removeFields;
 	private final File logDirectory;
 	private final boolean cache;
+	private final boolean ignoreLibs;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -182,6 +183,7 @@ public class ApplicationCommandLineParser {
 		this.skipMethodRemoval = commandLine.hasOption("S");
 		this.removeFields = commandLine.hasOption("F");
 		this.cache = commandLine.hasOption("A");
+		this.ignoreLibs = commandLine.hasOption("b");
 
 		if(this.removeFields && this.skipMethodRemoval){
 			throw new ParseException("Cannot Remove fields while skipping method removal.");
@@ -494,6 +496,13 @@ public class ApplicationCommandLineParser {
 			.required(false)
 			.build();
 
+		Option ignoreLibsOptions = Option.builder("b")
+				.desc("Only prune the app at the level of the application.")
+				.longOpt("ignore-libs")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
@@ -521,6 +530,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(logDirectoryOption);
 		toReturn.addOption(jmTraceOption);
 		toReturn.addOption(cacheOption);
+		toReturn.addOption(ignoreLibsOptions);
 
 		return toReturn;
 	}
@@ -635,5 +645,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean useCache(){
 		return this.cache;
+	}
+
+	public boolean isIgnoreLibs(){
+		return this.ignoreLibs;
 	}
 }

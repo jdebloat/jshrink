@@ -48,7 +48,7 @@ public class MavenSingleProjectAnalyzerTest {
 				new MavenSingleProjectAnalyzer(junit_project,
 						new EntryPointProcessor(true, false, true,
 							 new HashSet<MethodData>()),
-						Optional.empty(), Optional.empty(), true, false, true, false);
+						Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
@@ -70,7 +70,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(junit_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.of(getTamiFlexJar()), Optional.empty(),  true, false, true, false);
+				Optional.of(getTamiFlexJar()), Optional.empty(),  true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(73, runner.getUsedLibClasses().size());
@@ -89,7 +89,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(), Optional.empty(), true, false, true, false);
+				Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(72, runner.getUsedLibClasses().size());
@@ -110,7 +110,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(gson_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(), Optional.empty(), true, false, true, false);
+				Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(89, runner.getUsedLibClasses().size());
@@ -130,7 +130,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(), Optional.empty(), true, false, true, false);
+				Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(1168, runner.getUsedLibClasses().size());
@@ -151,7 +151,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(essentials_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.of(getTamiFlexJar()),Optional.empty(), true, false, true, false);
+				Optional.of(getTamiFlexJar()),Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(1184, runner.getUsedLibClasses().size());
@@ -172,7 +172,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(), Optional.empty(), true, false, true, false);
+				Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(968, runner.getUsedLibClasses().size());
@@ -196,7 +196,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(cglib_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.of(getTamiFlexJar()),Optional.empty(),true, false, true, false);
+				Optional.of(getTamiFlexJar()),Optional.empty(),true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(970, runner.getUsedLibClasses().size());
@@ -215,7 +215,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(),Optional.empty(), true, false, true, false);
+				Optional.empty(),Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(1159, runner.getUsedLibClasses().size());
@@ -235,7 +235,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(pf4j_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true, false);
+				Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		assertEquals(1196, runner.getUsedLibClasses().size());
@@ -252,7 +252,7 @@ public class MavenSingleProjectAnalyzerTest {
 		File mavenProject = new File(classLoader.getResource("module-test-project").getFile());
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(mavenProject.getAbsolutePath(),
 				new EntryPointProcessor(true, false, false,
-						new HashSet<MethodData>()), Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true, false);
+						new HashSet<MethodData>()), Optional.of(getTamiFlexJar()), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 		Map<MethodData, Set<MethodData>> usedAppMethods = runner.getUsedAppMethods();
@@ -343,7 +343,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(jctools_project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()), Optional.empty(), Optional.empty(), true,
-			false, true, false);
+			false, true, false, false);
 		runner.setup();
 		runner.run();
 	}
@@ -355,7 +355,7 @@ public class MavenSingleProjectAnalyzerTest {
 		MavenSingleProjectAnalyzer runner = new MavenSingleProjectAnalyzer(project,
 				new EntryPointProcessor(true, false, true,
 					new HashSet<MethodData>()),
-				Optional.empty(), Optional.empty(), true, false, true, false);
+				Optional.empty(), Optional.empty(), true, false, true, false, false);
 		runner.setup();
 		runner.run();
 	}

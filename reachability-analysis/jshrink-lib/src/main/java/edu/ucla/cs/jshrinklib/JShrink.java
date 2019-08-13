@@ -30,6 +30,7 @@ public class JShrink {
 	private boolean useSpark;
 	private boolean verbose;
 	private boolean useCache;
+	private boolean ignoreLibs;
 	private Optional<IProjectAnalyser> projectAnalyser = Optional.empty();
 	private boolean projectAnalyserRun = false;
 	private Set<SootClass> classesToModify = new HashSet<SootClass>();
@@ -77,7 +78,8 @@ public class JShrink {
 	public static JShrink createInstance(File projectDir,
 	                                  EntryPointProcessor entryPointProcessor,
 	                                  Optional<File> tamiflex, Optional<File> jmtrace,
-	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) throws IOException{
+	                                  boolean useSpark, boolean verbose, boolean executeTests, boolean useCache,
+										 boolean ignoreLibs) throws IOException{
 		/*
 		Due to Soot using a singleton pattern, I use a singleton pattern here to ensure safety.
 		E.g., only one project can be worked on at once.
@@ -85,7 +87,8 @@ public class JShrink {
 		if(instance.isPresent()){
 			throw new IOException("Instance of JShrink already exists. Please use \"getInstance\".");
 		}
-		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, jmtrace, useSpark, verbose, executeTests, useCache));
+		instance = Optional.of(new JShrink(projectDir, entryPointProcessor, tamiflex, jmtrace, useSpark,
+				verbose, executeTests, useCache, ignoreLibs));
 		return instance.get();
 	}
 
@@ -103,7 +106,8 @@ public class JShrink {
 	public static JShrink resetInstance(File projectDir,
 	                                    EntryPointProcessor entryPointProcessor,
 	                                    Optional<File> tamiflex, Optional<File> jmtrace,
-	                                    boolean useSpark, boolean verbose, boolean executeTests, boolean useCache) throws IOException{
+	                                    boolean useSpark, boolean verbose, boolean executeTests,
+										boolean useCache, boolean ignoreLibs) throws IOException{
 		if(instance.isPresent()){
 			instance.get().reset();
 			instance.get().projectDir = projectDir;
@@ -114,6 +118,7 @@ public class JShrink {
 			instance.get().verbose = verbose;
 			instance.get().useCache = useCache;
 			instance.get().runTests = executeTests;
+			instance.get().ignoreLibs = ignoreLibs;
 			instance.get().alreadyCompiled = false;
 			instance.get().libSizeCompressed = -1;
 			instance.get().libSizeDecompressed = -1;
@@ -125,7 +130,7 @@ public class JShrink {
 	}
 
 	private JShrink(File projectDir, EntryPointProcessor entryPointProcessor, Optional<File> tamiflex, Optional<File> jmtrace,
-	                boolean useSpark, boolean verbose, boolean executeTests, boolean useCache){
+	                boolean useSpark, boolean verbose, boolean executeTests, boolean useCache, boolean ignoreLibs){
 			this.projectDir = projectDir;
 			this.entryPointProcessor = entryPointProcessor;
 			this.tamiflex = tamiflex;
@@ -134,6 +139,7 @@ public class JShrink {
 			this.verbose = verbose;
 			this.runTests = executeTests;
 			this.useCache = useCache;
+			this.ignoreLibs = ignoreLibs;
 			classDependencyGraph = new ClassReferenceGraph();
 	}
 
@@ -151,7 +157,7 @@ public class JShrink {
 		this.projectAnalyser = Optional.of(
 			new MavenSingleProjectAnalyzer(this.projectDir.getAbsolutePath(),
 				this.entryPointProcessor, this.tamiflex, this.jmtrace,
-				this.useSpark, this.verbose, this.runTests, this.useCache));
+				this.useSpark, this.verbose, this.runTests, this.useCache, this.ignoreLibs));
 
 		((MavenSingleProjectAnalyzer) this.projectAnalyser.get()).setCompileProject(!alreadyCompiled);
 
