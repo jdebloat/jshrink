@@ -702,6 +702,8 @@ public class JShrink {
 	}
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		if(classesToRemove.size() == 0)
+			return;
 		Instant start = Instant.now();
 		PathResolutionUtil.buildMap(classPaths);
 		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
