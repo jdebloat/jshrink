@@ -19,8 +19,7 @@ public class PathResolutionUtil {
 			return PathResolutionUtil.classPathMap.get(className);
 		else
 		{
-			className.replaceAll(".",File.separator);
-			String fp = className+".class";
+			String fp = className.replaceAll("\\.",File.separator)+".class";
 			String path = "";
 			for(String cp: classPaths){
 				path = cp+File.separator+fp;
@@ -64,8 +63,8 @@ public class PathResolutionUtil {
 					if(path_start>-1){
 						class_package = prefix.substring(prefix.indexOf("/")+1).replaceAll("/",".")+".";
 					}
-
-					if(dirPath.getName().equals("classes") || dirPath.getName().equals("test-classes")){
+					//prefix shouldn't start from classes. or test-classes
+					if(prefix.length()==0 && (dirPath.getName().equals("classes") || dirPath.getName().equals("test-classes"))){
 						class_package = "";
 					}
 					else
