@@ -1,7 +1,7 @@
 #!/bin/bash
 
 PWD=`pwd`
-work_list="${PWD}/work_list.dat"
+work_list=$1
 project_dir="${PWD}/sample-projects"
 
 cat ${work_list} | while read project; do
