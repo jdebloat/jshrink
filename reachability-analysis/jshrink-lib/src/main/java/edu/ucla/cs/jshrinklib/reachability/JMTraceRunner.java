@@ -114,7 +114,7 @@ public class JMTraceRunner extends TamiFlexRunner{
 					String[] tokens = lines.get(i).split(",");
 					if(tokens[0].equals("Class")){
 						currClass = tokens[1].replaceAll("/",".");
-						if(Long.parseLong(tokens[2])>0){
+						if(Long.parseLong(tokens[2])>=0){
 							class_set.add(currClass);
 						}
 					}
