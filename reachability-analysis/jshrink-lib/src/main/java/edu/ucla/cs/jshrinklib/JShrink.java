@@ -310,7 +310,7 @@ public class JShrink {
 		callGraphs = Optional.of(new HashMap<MethodData, Set<MethodData>>());
 		callGraphs.get().putAll(this.getProjectAnalyserRun().getUsedAppMethods());
 		callGraphs.get().putAll(this.getProjectAnalyserRun().getUsedLibMethodsCompileOnly());
-
+		callGraphs.get().putAll(this.getProjectAnalyserRun().getUsedTestMethods());
 		return callGraphs.get();
 	}
 
@@ -322,7 +322,7 @@ public class JShrink {
 		if(inlineLibClassMethods) {
 			classesInScope.addAll(this.getAllLibClasses());
 		}
-
+		classesInScope.addAll(this.getUsedTestClasses());
 		Map<MethodData, Set<MethodData>> simplifiedCallGraph = new HashMap<MethodData, Set<MethodData>>();
 		Map<MethodData, Set<MethodData>> originalCallGraph = this.getSimplifiedCallGraph();
 		for(MethodData md : originalCallGraph.keySet()) {
@@ -702,6 +702,8 @@ public class JShrink {
 	}
 
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
+		if(classesToRemove.size() == 0)
+			return;
 		Instant start = Instant.now();
 		PathResolutionUtil.buildMap(classPaths);
 		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());

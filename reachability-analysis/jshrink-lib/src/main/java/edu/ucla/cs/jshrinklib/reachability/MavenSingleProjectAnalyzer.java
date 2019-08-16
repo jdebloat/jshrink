@@ -604,7 +604,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 							processed_callers.put(calledFrom, methodarr);
 
 							//insert into used_methods array to be processed by the next loop
-							tamiflex.used_methods.get(module).put( md.getClassName()+": "+md.getSubSignature(),new HashSet<String>());
+							//tamiflex.used_methods.get(module).put( md.getClassName()+": "+md.getSubSignature(),new HashSet<String>());
 						}
 					}
 				}
