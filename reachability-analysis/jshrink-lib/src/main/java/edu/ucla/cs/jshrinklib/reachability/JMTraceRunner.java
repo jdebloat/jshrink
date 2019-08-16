@@ -129,7 +129,7 @@ public class JMTraceRunner extends TamiFlexRunner{
 						}
 						String method_name = currClass+": "+returnType+" "+tokens[1]+"("+args+")";
 						HashSet<String> callers = new HashSet<String>();
-						if(tokens.length>7 && !tokens[7].equals("")){
+						if(tokens.length>7 && tokens[7].length()>1 && !tokens[7].equals("(null)")){
 							callers.addAll(Arrays.asList(tokens[7].split(";")));
 						}
 						method_map.put(method_name, callers);
