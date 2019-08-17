@@ -360,6 +360,14 @@ public class ClassCollapser {
         List<SootMethod> fromMethods = from.getMethods();
         for (int i = 0; i < fromMethods.size(); i++) {
             SootMethod method = fromMethods.get(i);
+            MethodData md = SootUtils.sootMethodToMethodData(method);
+
+            if(!callGraph.containsKey(md)) {
+                // this method is not used so no need to move it
+                // this check is only true when method removal is not enabled
+                continue;
+            }
+
             // find the super constructor calls in a constructor of a subclass
             Stmt toInLine = null;
             SootMethod inlinee = null;
@@ -411,6 +419,26 @@ public class ClassCollapser {
                         methodsToMove.add(method);
                     }
 //                }
+            }
+
+            // check if the method calls an overridden method in the super class
+            Body b = method.retrieveActiveBody();
+            for(Unit u : b.getUnits()) {
+                if (u instanceof Stmt) {
+                    Stmt stmt = (Stmt) u;
+                    if(stmt.containsInvokeExpr()) {
+                        InvokeExpr invokeExpr = stmt.getInvokeExpr();
+                        SootMethodRef smf = invokeExpr.getMethodRef();
+                        if(smf.getDeclaringClass().getName().equals(to.getName()) && smf.getName().equals(method.getName()) && smf.getParameterTypes().equals(method.getParameterTypes())) {
+                            // replace the call target from the super class to the super class of the super class
+                            // to avoid recursion
+                            invokeExpr.setMethodRef(Scene.v().makeMethodRef(to.getSuperclass(), smf.getName(),
+                                    smf.getParameterTypes(),
+                                    smf.getReturnType(),
+                                    smf.isStatic()));
+                        }
+                    }
+                }
             }
         }
 
@@ -746,10 +774,10 @@ public class ClassCollapser {
                     InvokeExpr expr = ((InvokeStmt) u).getInvokeExpr();
                     SootMethodRef originalMethodRef = expr.getMethodRef();
                     // check whether the method target is declared in the changeFrom class
-                    if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
-                        expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
-                                originalMethodRef.parameterTypes(),
-                                originalMethodRef.returnType(),
+                    if (originalMethodRef.getDeclaringClass().getName().equals(changeFrom.getName())) {
+                        expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.getName(),
+                                originalMethodRef.getParameterTypes(),
+                                originalMethodRef.getReturnType(),
                                 originalMethodRef.isStatic()));
                         ((InvokeStmt) u).setInvokeExpr(expr);
                         changed = true;
@@ -769,10 +797,10 @@ public class ClassCollapser {
                     } else if (rightOp instanceof InvokeExpr) {
                         InvokeExpr expr = (InvokeExpr) rightOp;
                         SootMethodRef originalMethodRef = expr.getMethodRef();
-                        if (originalMethodRef.declaringClass().getName().equals(changeFrom.getName())) {
-                            expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.name(),
-                                    originalMethodRef.parameterTypes(),
-                                    originalMethodRef.returnType(),
+                        if (originalMethodRef.getDeclaringClass().getName().equals(changeFrom.getName())) {
+                            expr.setMethodRef(Scene.v().makeMethodRef(changeTo, originalMethodRef.getName(),
+                                    originalMethodRef.getParameterTypes(),
+                                    originalMethodRef.getReturnType(),
                                     originalMethodRef.isStatic()));
                             changed = true;
                         }

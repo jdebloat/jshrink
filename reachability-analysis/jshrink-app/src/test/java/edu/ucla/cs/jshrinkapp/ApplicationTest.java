@@ -30,6 +30,8 @@ public class ApplicationTest {
 	private static Optional<File> lambdaProject = Optional.empty();
 	private static Optional<File> dynamicDispatchingProject = Optional.empty();
 	private static Optional<File> logDirectory = Optional.empty();
+	private static Optional<File> issue74and81Directory = Optional.empty();
+	private static Optional<File> issue96Directory = Optional.empty();
 
 	protected static File getOptionalFile(Optional<File> optionalFile, String resources) {
 		if (optionalFile.isPresent()) {
@@ -61,7 +63,7 @@ public class ApplicationTest {
 		return toReturn;
 	}
 
-	private File getJMTrace(){
+	protected File getJMTrace(){
 		return new File(ApplicationTest.class.getClassLoader().getResource("jmtrace").getFile());
 	}
 
@@ -137,8 +139,13 @@ public class ApplicationTest {
 	}
 
 	private File getIssue74And81Project() {
-		return getOptionalFile(overridenFieldClassCollapserProject, "classcollapser"
+		return getOptionalFile(issue74and81Directory, "classcollapser"
 				+ File.separator + "issue74and81");
+	}
+
+	private File getIssue96Project() {
+		return getOptionalFile(issue96Directory, "classcollapser"
+				+ File.separator + "issue96");
 	}
 
 	@After
@@ -150,6 +157,9 @@ public class ApplicationTest {
 		simpleClassCollapserProject = Optional.empty();
 		lambdaProject = Optional.empty();
 		logDirectory = Optional.empty();
+		overridenFieldClassCollapserProject = Optional.empty();
+		issue74and81Directory = Optional.empty();
+		issue96Directory = Optional.empty();
 		G.reset();
 	}
 
@@ -1058,6 +1068,30 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void test_issue96() {
+		StringBuilder arguments = new StringBuilder();
+		String projectFilePath = getIssue96Project().getAbsolutePath();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + projectFilePath + "\" ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--run-tests ");
+		arguments.append("--use-cache ");
+//		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		assertEquals(1, classCollapseResult.getClassesToRemove().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
 	public void junit_test_class_collapser_and_inliner() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
@@ -1564,7 +1598,7 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
-		arguments.append("--jmtrace "+ getJMTrace().getAbsolutePath() +" ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
 		arguments.append("--run-tests ");
@@ -1577,6 +1611,5 @@ public class ApplicationTest {
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
 		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
 		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
-
 	}
 }
