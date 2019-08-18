@@ -33,6 +33,7 @@ public class ApplicationTest {
 	private static Optional<File> issue74and81Directory = Optional.empty();
 	private static Optional<File> issue96Directory = Optional.empty();
 	private static Optional<File> issue99Directory = Optional.empty();
+	private static Optional<File> bukkit = Optional.empty();
 
 	protected static File getOptionalFile(Optional<File> optionalFile, String resources) {
 		if (optionalFile.isPresent()) {
@@ -154,6 +155,10 @@ public class ApplicationTest {
 				+ File.separator + "issue99");
 	}
 
+	protected File getBukkitProjectDir() {
+		return getOptionalFile(bukkit, "bukkit");
+	}
+
 	@After
 	public void rectifyChanges() {
 		simpleTestProject = Optional.empty();
@@ -166,6 +171,7 @@ public class ApplicationTest {
 		overridenFieldClassCollapserProject = Optional.empty();
 		issue74and81Directory = Optional.empty();
 		issue96Directory = Optional.empty();
+		bukkit = Optional.empty();
 		G.reset();
 	}
 
@@ -1098,7 +1104,7 @@ public class ApplicationTest {
 	}
 
 	@Test
-	public void test_issue99() {
+	public void test_issue99_simplified() {
 		StringBuilder arguments = new StringBuilder();
 		String projectFilePath = getIssue99Project().getAbsolutePath();
 		arguments.append("--prune-app ");
@@ -1114,6 +1120,35 @@ public class ApplicationTest {
 
 		ClassCollapserData classCollapseResult = Application.classCollapserData;
 		assertEquals(1, classCollapseResult.getClassesToRemove().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
+	public void test_issue99_original() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getBukkitProjectDir() + "\" ");
+		arguments.append("--public-entry ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+//		arguments.append("--verbose ");
+		arguments.append("-T ");
+		arguments.append("--use-cache ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		System.out.println(classCollapseResult.getRemovedMethods().size());
+		System.out.println(classCollapseResult.getClassesToRemove().size());
+		System.out.println(classCollapseResult.getClassesToRewrite().size());
 
 		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
 		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
