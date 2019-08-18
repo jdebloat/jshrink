@@ -32,6 +32,7 @@ public class ApplicationTest {
 	private static Optional<File> logDirectory = Optional.empty();
 	private static Optional<File> issue74and81Directory = Optional.empty();
 	private static Optional<File> issue96Directory = Optional.empty();
+	private static Optional<File> issue99Directory = Optional.empty();
 
 	protected static File getOptionalFile(Optional<File> optionalFile, String resources) {
 		if (optionalFile.isPresent()) {
@@ -146,6 +147,11 @@ public class ApplicationTest {
 	private File getIssue96Project() {
 		return getOptionalFile(issue96Directory, "classcollapser"
 				+ File.separator + "issue96");
+	}
+
+	private File getIssue99Project() {
+		return getOptionalFile(issue99Directory, "classcollapser"
+				+ File.separator + "issue99");
 	}
 
 	@After
@@ -1071,6 +1077,30 @@ public class ApplicationTest {
 	public void test_issue96() {
 		StringBuilder arguments = new StringBuilder();
 		String projectFilePath = getIssue96Project().getAbsolutePath();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + projectFilePath + "\" ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--run-tests ");
+		arguments.append("--use-cache ");
+//		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		assertEquals(1, classCollapseResult.getClassesToRemove().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
+	public void test_issue99() {
+		StringBuilder arguments = new StringBuilder();
+		String projectFilePath = getIssue99Project().getAbsolutePath();
 		arguments.append("--prune-app ");
 		arguments.append("--maven-project \"" + projectFilePath + "\" ");
 		arguments.append("--test-entry ");

@@ -76,6 +76,8 @@ public class ClassCollapserAnalysis {
 
     public void run() {
         setup();
+        // bug fix for issue#99, enforce transitive class usage
+        enforceTransitiveClassUsage();
         LinkedList<String> queue = new LinkedList<String>();
         HashSet<String> visited = new HashSet<String>();
         for (String leaf: processableLeaves) {
@@ -436,16 +438,49 @@ public class ClassCollapserAnalysis {
         Scene.v().loadNecessaryClasses();
         appClassMap.put(thisClass, sootClass);
         if (sootClass.hasSuperclass() && childrenMap.containsKey(sootClass.getSuperclass().getName())) {
-            parentsMap.put(thisClass, sootClass.getSuperclass().getName());
-            childrenMap.get(sootClass.getSuperclass().getName()).add(thisClass);
+            String superClass = sootClass.getSuperclass().getName();
+            parentsMap.put(thisClass, superClass);
+            childrenMap.get(superClass).add(thisClass);
         }
         for (SootClass c : sootClass.getInterfaces()) {
-            if (childrenVirtualMap.containsKey(c.getName())) {
-                parentsVirtualMap.get(thisClass).add(c.getName());
-                childrenVirtualMap.get(c.getName()).add(thisClass);
+            String superInterface = c.getName();
+            if (childrenVirtualMap.containsKey(superInterface)) {
+                parentsVirtualMap.get(thisClass).add(superInterface);
+                childrenVirtualMap.get(superInterface).add(thisClass);
+            }
+            if(usedAppClasses.contains(thisClass) && !usedAppClasses.contains(superInterface)) {
+                usedAppClasses.add(superInterface);
             }
         }
-    }
+     }
+
+     // Class is used if its subclass is used
+     private void enforceTransitiveClassUsage() {
+         HashSet<String> tmp = new HashSet<String>(usedAppClasses);
+         for(String className : tmp) {
+             enforceTransitiveClassUsage(className);
+         }
+     }
+
+     private void enforceTransitiveClassUsage(String className) {
+         if(parentsMap.containsKey(className)) {
+             String superClass = parentsMap.get(className);
+             if(!superClass.isEmpty() && !usedAppClasses.contains(superClass)) {
+                 usedAppClasses.add(superClass);
+                 enforceTransitiveClassUsage(superClass);
+             }
+         }
+
+         if(parentsVirtualMap.containsKey(className)) {
+             Set<String> superInterfaces = parentsVirtualMap.get(className);
+             for(String superInterface : superInterfaces) {
+                 if(!usedAppClasses.contains(superInterface)) {
+                     usedAppClasses.add(superInterface);
+                     enforceTransitiveClassUsage(superInterface);
+                 }
+             }
+         }
+     }
 
     /*package*/ Queue<ArrayList<String>> getCollapseList() {
         return collapseList;
