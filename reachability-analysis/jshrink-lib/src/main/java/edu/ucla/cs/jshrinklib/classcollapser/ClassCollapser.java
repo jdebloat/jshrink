@@ -362,9 +362,11 @@ public class ClassCollapser {
             SootMethod method = fromMethods.get(i);
             MethodData md = SootUtils.sootMethodToMethodData(method);
 
-            if(!callGraph.containsKey(md)) {
+            if(!callGraph.containsKey(md) && !(method.isAbstract() || method.isNative())) {
                 // this method is not used so no need to move it
                 // this check is only true when method removal is not enabled
+                // but we have to keep interface methods, abstract methods, and native methods
+                // since they are never removed
                 continue;
             }
 
@@ -421,6 +423,9 @@ public class ClassCollapser {
 //                }
             }
 
+            if(method.isNative() || method.isAbstract()) {
+                continue;
+            }
             // check if the method calls an overridden method in the super class
             Body b = method.retrieveActiveBody();
             for(Unit u : b.getUnits()) {
