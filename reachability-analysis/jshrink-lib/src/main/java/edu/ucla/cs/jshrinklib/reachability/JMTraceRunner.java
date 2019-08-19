@@ -95,6 +95,7 @@ public class JMTraceRunner extends TamiFlexRunner{
 			//public HashMap<String, Map<String, Set<String>>> used_methods;
 			HashSet class_set;
 			Map<String, Set<String>> method_map;
+			Set<String> used_callers;
 			if(super.accessed_classes.containsKey(module)) {
 				class_set = super.accessed_classes.get(module);
 			} else {
@@ -104,6 +105,11 @@ public class JMTraceRunner extends TamiFlexRunner{
 				method_map = super.used_methods.get(module);
 			} else {
 				method_map = new HashMap<String, Set<String>>();
+			}
+			if(super.used_methods_callers.containsKey(module)) {
+				used_callers = super.used_methods_callers.get(module);
+			} else {
+				used_callers = new HashSet<String>();
 			}
 			try {
 				List<String> lines = FileUtils.readLines(log, Charset.defaultCharset());
@@ -130,19 +136,20 @@ public class JMTraceRunner extends TamiFlexRunner{
 						String method_name = currClass+": "+returnType+" "+tokens[1]+"("+args+")";
 						HashSet<String> callers = new HashSet<String>();
 						if(tokens.length>7 && tokens[7].length()>1 && !tokens[7].equals("(null)")){
-							callers.addAll(Arrays.asList(tokens[7].split(";")));
+							callers.addAll(Arrays.asList(tokens[7].split(";")).stream().map(x->{
+								return x.replaceAll(": ","\\.");
+							}).collect(Collectors.toList()));
 						}
 						method_map.put(method_name, callers);
+						used_callers.addAll(callers);
 					}
 				}
 				super.accessed_classes.put(module, class_set);
 				super.used_methods.put(module,method_map);
+				super.used_methods_callers.put(module, used_callers);
 				//creating empty placeholders for the other 2 arrays
 				if(!super.accessed_fields.containsKey(module)) {
 					super.accessed_fields.put(module, new HashSet<>());
-				}
-				if(!super.used_methods_callers.containsKey(module)) {
-					super.used_methods_callers.put(module, new HashSet<>());
 				}
 			}
 			catch (IOException e) {
