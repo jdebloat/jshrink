@@ -41,6 +41,9 @@ public class JShrink {
 	private long appSizeCompressed = -1;
 	private long appSizeDecompressed = -1;
 
+	// a global boolean variable indicating whether we should aodw
+	public static boolean enable_extensions = false;
+
 	//Map<Class,Exception thrown by Soot>
 	private Map<String,String> unmodifiableClasses = new HashMap<String, String>();
 	private boolean runTests;

@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import edu.ucla.cs.jshrinklib.JShrink;
 import edu.ucla.cs.jshrinklib.reachability.FieldData;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.FilePathProcessor;
@@ -270,8 +271,11 @@ public class ClassCollapserAnalysis {
             return false;
         }
 
-        if(!isSafeAccessAfterMerge(toClass, fromClass)){
-            return false;
+
+        if(JShrink.enable_extensions) {
+            if(!isSafeAccessAfterMerge(toClass, fromClass)){
+                return false;
+            }
         }
 
         int numUsedChildren = 0;
