@@ -25,7 +25,11 @@ package soot;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -380,9 +384,5 @@ public class SootResolver {
     private SootClassNotFoundException(String s) {
       super(s);
     }
-  }
-
-  public Set<soot.Type> getReferenceSignatures(SootClass sc){
-    return this.classToTypesSignature.get(sc);
   }
 }

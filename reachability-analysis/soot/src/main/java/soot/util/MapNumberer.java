@@ -31,7 +31,6 @@ public class MapNumberer<T> implements Numberer<T> {
   ArrayList<T> al = new ArrayList<T>();
   int nextIndex = 1;
 
-  @Override
   public void add(T o) {
     if (!map.containsKey(o)) {
       map.put(o, new Integer(nextIndex));
@@ -40,12 +39,10 @@ public class MapNumberer<T> implements Numberer<T> {
     }
   }
 
-  @Override
   public T get(long number) {
     return al.get((int) number);
   }
 
-  @Override
   public long get(Object o) {
     if (o == null) {
       return 0;
@@ -57,7 +54,6 @@ public class MapNumberer<T> implements Numberer<T> {
     return i.intValue();
   }
 
-  @Override
   public int size() {
     return nextIndex - 1;
     /* subtract 1 for null */ }
@@ -68,15 +64,5 @@ public class MapNumberer<T> implements Numberer<T> {
 
   public boolean contains(Object o) {
     return map.containsKey(o);
-  }
-
-  @Override
-  public boolean remove(T o) {
-    Integer i = map.remove(o);
-    if (i == null) {
-      return false;
-    }
-    al.set(i, null);
-    return true;
   }
 }

@@ -44,7 +44,7 @@ import soot.util.LargeNumberedMap;
  * @author Ondrej Lhotak
  */
 
-public class PropCycle extends Propagator {
+public final class PropCycle extends Propagator {
   private static final Logger logger = LoggerFactory.getLogger(PropCycle.class);
 
   public PropCycle(PAG pag) {
@@ -53,7 +53,7 @@ public class PropCycle extends Propagator {
   }
 
   /** Actually does the propagation. */
-  public void propagate() {
+  public final void propagate() {
     ofcg = pag.getOnFlyCallGraph();
     boolean verbose = pag.getOpts().verbose();
     Collection<VarNode> bases = new HashSet<VarNode>();

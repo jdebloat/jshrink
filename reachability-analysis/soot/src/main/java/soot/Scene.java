@@ -637,14 +637,14 @@ public class Scene // extends AbstractHost
 
     return jarPath;
   }
-
+  
   public static boolean isApk(String file) {
     // decide if a file is an APK by its magic number and whether it contains dex file.
     boolean r = false;
     // first check magic number
     File apk = new File(file);
-    MagicNumberFileFilter apkFilter
-        = new MagicNumberFileFilter(new byte[] { (byte) 0x50, (byte) 0x4B, (byte) 0x03, (byte) 0x04 });
+    MagicNumberFileFilter apkFilter = new MagicNumberFileFilter(new byte[] {(byte) 0x50, (byte) 0x4B,
+                                                                            (byte) 0x03, (byte) 0x04});
     if (!apkFilter.accept(apk)) {
       return r;
     }
@@ -672,7 +672,7 @@ public class Scene // extends AbstractHost
         }
       }
     }
-
+    
     return r;
   }
 
@@ -1750,19 +1750,17 @@ public class Scene // extends AbstractHost
     } else {
       for (final String path : Options.v().process_dir()) {
         for (String cl : SourceLocator.v().getClassesUnder(path)) {
-          // If a project uses jars built by Java 9, there will be a module-info.class
-          // in the jar, which causes IllegalArgumentException in ASM
-          if(!cl.startsWith("META-INF") && !cl.endsWith("module-info")) {
-            try {
-              SootClass theClass = loadClassAndSupport(cl);
-              if (!theClass.isPhantom) {
-                theClass.setApplicationClass();
-              }
-            }catch(Exception e){
-              e.printStackTrace();
-              System.out.println("Problem class: " + cl);
-              System.exit(1);
+          try {
+            SootClass theClass = loadClassAndSupport(cl);
+            if (!theClass.isPhantom) {
+              theClass.setApplicationClass();
             }
+          } catch (IllegalArgumentException e) {
+            // 1. IllegalArgumentException:
+            // If a project uses jars built by Java 9, there will be a module-info.class
+            // in the jar, which causes IllegalArgumentException in Soot
+            // as an example, check the asm-6.2 library in cglib/cglib project
+            // suppress it silently as a temporary workaround
           }
         }
       }
@@ -1879,9 +1877,6 @@ public class Scene // extends AbstractHost
   /** Create an unresolved reference to a method. */
   public SootMethodRef makeMethodRef(SootClass declaringClass, String name, List<Type> parameterTypes, Type returnType,
       boolean isStatic) {
-    if (PolymorphicMethodRef.handlesClass(declaringClass)) {
-      return new PolymorphicMethodRef(declaringClass, name, parameterTypes, returnType, isStatic);
-    }
     return new SootMethodRefImpl(declaringClass, name, parameterTypes, returnType, isStatic);
   }
 
