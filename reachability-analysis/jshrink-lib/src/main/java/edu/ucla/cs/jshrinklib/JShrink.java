@@ -707,23 +707,28 @@ public class JShrink {
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		if(classesToRemove.size() == 0)
 			return;
-		Instant start = Instant.now();
-		PathResolutionUtil.buildMap(classPaths);
-		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
-		for(String className : this.getProjectAnalyser().getAppClasses()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+
+		Set<String> classesToBeRemoved = new HashSet<String>();
+		if(JShrink.enable_extensions) {
+			Instant start = Instant.now();
+			PathResolutionUtil.buildMap(classPaths);
+			classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
+			for(String className : this.getProjectAnalyser().getAppClasses()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			for(String className : this.getProjectAnalyser().getTestClasses()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			if(this.verbose)
+				System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
 		}
-		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
-		}
-		for(String className : this.getProjectAnalyser().getTestClasses()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
-		}
-		if(this.verbose)
-			System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
+
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			//not including classes marked for deletion
