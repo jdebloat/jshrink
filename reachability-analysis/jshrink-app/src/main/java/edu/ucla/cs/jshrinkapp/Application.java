@@ -122,7 +122,7 @@ public class Application {
 		}
 		long analysisStartTime = System.nanoTime();
 		jShrink.makeSootPass();
-		long analysisEndTime = System.nanoTime();;
+		long analysisEndTime = System.nanoTime();
 
 		unmodifiableClass.putAll(jShrink.getUnmodifiableClasses());
 
