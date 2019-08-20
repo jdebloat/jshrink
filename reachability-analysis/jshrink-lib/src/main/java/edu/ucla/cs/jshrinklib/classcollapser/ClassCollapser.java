@@ -424,24 +424,26 @@ public class ClassCollapser {
 //                }
             }
 
-            if(method.isNative() || method.isAbstract()) {
-                continue;
-            }
-            // check if the method calls an overridden method in the super class
-            Body b = method.retrieveActiveBody();
-            for(Unit u : b.getUnits()) {
-                if (u instanceof Stmt) {
-                    Stmt stmt = (Stmt) u;
-                    if(stmt.containsInvokeExpr()) {
-                        InvokeExpr invokeExpr = stmt.getInvokeExpr();
-                        SootMethodRef smf = invokeExpr.getMethodRef();
-                        if(smf.getDeclaringClass().getName().equals(to.getName()) && smf.getName().equals(method.getName()) && smf.getParameterTypes().equals(method.getParameterTypes())) {
-                            // replace the call target from the super class to the super class of the super class
-                            // to avoid recursion
-                            invokeExpr.setMethodRef(Scene.v().makeMethodRef(to.getSuperclass(), smf.getName(),
-                                    smf.getParameterTypes(),
-                                    smf.getReturnType(),
-                                    smf.isStatic()));
+            if(JShrink.enable_extensions) {
+                if(method.isNative() || method.isAbstract()) {
+                    continue;
+                }
+                // check if the method calls an overridden method in the super class
+                Body b = method.retrieveActiveBody();
+                for(Unit u : b.getUnits()) {
+                    if (u instanceof Stmt) {
+                        Stmt stmt = (Stmt) u;
+                        if(stmt.containsInvokeExpr()) {
+                            InvokeExpr invokeExpr = stmt.getInvokeExpr();
+                            SootMethodRef smf = invokeExpr.getMethodRef();
+                            if(smf.getDeclaringClass().getName().equals(to.getName()) && smf.getName().equals(method.getName()) && smf.getParameterTypes().equals(method.getParameterTypes())) {
+                                // replace the call target from the super class to the super class of the super class
+                                // to avoid recursion
+                                invokeExpr.setMethodRef(Scene.v().makeMethodRef(to.getSuperclass(), smf.getName(),
+                                        smf.getParameterTypes(),
+                                        smf.getReturnType(),
+                                        smf.isStatic()));
+                            }
                         }
                     }
                 }
