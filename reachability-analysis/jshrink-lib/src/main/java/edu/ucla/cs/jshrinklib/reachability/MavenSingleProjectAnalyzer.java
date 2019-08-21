@@ -76,6 +76,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 	private final boolean useCache;
 	private final StringBuilder log;
 	private final boolean ignoreLibs;
+	private HashSet<MethodData> unknownCallerMethods;
 
 	public MavenSingleProjectAnalyzer(String pathToMavenProject, EntryPointProcessor entryPointProc,
 									  Optional<File> tamiFlex, Optional<File> jmtrace,
@@ -120,6 +121,7 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 		this.runTests = executeTests;
 		this.useCache = useCache;
 		this.ignoreLibs = ignoreLibs;
+		this.unknownCallerMethods = new HashSet<MethodData>();
 
 		// initialize a dummy test output object instead of assigning a null value
 		// if the test is never run due to a compilation error in a build process, the test output object will remain dummy
@@ -615,14 +617,17 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					String[] ss = record.split(": ");
 					String class_name1 = ss[0];
 					String method_signature1 = ss[1];
-
+					boolean hasUnidentifiedCallers = false;
 					Set<MethodData> calledFromMethodData = new HashSet<MethodData>();
 					for(String calledFrom : entry.getValue()){
 						//TEMP FIX: add all entry from the resolved methods, might need to be changed later
 						if(processed_callers.containsKey(calledFrom)){
 							processed_callers.get(calledFrom).forEach((caller_md)->calledFromMethodData.add(caller_md));
 						}
-
+						else{
+							//method not found in processed callers, is probably a dynamic caller
+							hasUnidentifiedCallers = true;
+						}
 					}
 					
 					boolean foundInApp = false;
@@ -633,6 +638,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 						String method_signature2 = md.getSubSignature(); 
 						if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
 							// this is an application method
+							if(hasUnidentifiedCallers)
+								setHasUnedtifiedCallers(md);
 							if(!usedAppMethods.containsKey(md)) {
 								// this method is already identified as a used method by static analysis
 								set.add(md);
@@ -655,7 +662,9 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 							// and arguments. There are no access modifiers.
 							String method_signature2 = md.getSubSignature(); 
 							if(class_name1.equals(class_name2) && method_signature1.equals(method_signature2)) {
-								// this is a library method 
+								// this is a library method
+								if(hasUnidentifiedCallers)
+									setHasUnedtifiedCallers(md);
 								if(!usedLibMethods.containsKey(md)) {
 									// this method is already identified as a used method by static analysis
 									set.add(md);
@@ -684,6 +693,8 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 					if(!foundInApp){
 						for(MethodData md: testMethods){
 							if(class_name1.equals(md.getClassName()) && method_signature1.equals(md.getSubSignature())){
+								if(hasUnidentifiedCallers)
+									setHasUnedtifiedCallers(md);
 								if(!usedTestMethods.containsKey(md)){
 									set.add(md);
 									usedTestMethods.put(md, new HashSet<MethodData>());
@@ -1149,5 +1160,12 @@ public class MavenSingleProjectAnalyzer implements IProjectAnalyser {
 
 	public String getLog(){
 		return this.log.toString();
+	}
+
+	public void setHasUnedtifiedCallers(MethodData method){
+		this.unknownCallerMethods.add(method);
+	}
+	public Set<MethodData> getUnknownCallerMethods(){
+		return this.unknownCallerMethods;
 	}
 }

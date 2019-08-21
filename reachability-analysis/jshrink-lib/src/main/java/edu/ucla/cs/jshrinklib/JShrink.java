@@ -325,8 +325,15 @@ public class JShrink {
 		classesInScope.addAll(this.getUsedTestClasses());
 		Map<MethodData, Set<MethodData>> simplifiedCallGraph = new HashMap<MethodData, Set<MethodData>>();
 		Map<MethodData, Set<MethodData>> originalCallGraph = this.getSimplifiedCallGraph();
+		Set<MethodData> unInlinableMethods;
+		try{
+			unInlinableMethods = ((MavenSingleProjectAnalyzer)this.getProjectAnalyser()).getUnknownCallerMethods();
+		}
+		catch(Exception e){
+			unInlinableMethods = new HashSet<>();
+		}
 		for(MethodData md : originalCallGraph.keySet()) {
-			if(classesInScope.contains(md.getClassName())) {
+			if((!unInlinableMethods.contains(md)) && classesInScope.contains(md.getClassName())) {
 				simplifiedCallGraph.put(md,  originalCallGraph.get(md));
 			}
 		}
