@@ -83,7 +83,6 @@ public class SootUtils {
 			checks... doesn't get to the root of the problem but I had to move forward.
 			TODO: Investigate this bug.
 			 */
-			boolean cont = true;
 			if(keySootClass.declaresMethod(entry.getKey().getSubSignature())) {
 				SootMethod keySootMethod = keySootClass.getMethod(entry.getKey().getSubSignature());
 				Set<SootMethod> value = new HashSet<SootMethod>();
@@ -93,14 +92,8 @@ public class SootUtils {
 						SootMethod valueSootMethod = valueSootClass.getMethod(methodData.getSubSignature());
 						value.add(valueSootMethod);
 					}
-					else{
-						//method not found in soot classes
-						cont = false;
-					}
 				}
-				if(cont){
-					toReturn.put(keySootMethod, value);
-				}
+				toReturn.put(keySootMethod, value);
 			}
 		}
 		return toReturn;
