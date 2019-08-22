@@ -871,6 +871,19 @@ public class ClassCollapser {
                                 }
                             }
                         }
+                        else{
+                            for(ValueBox v: u.getUseAndDefBoxes()){
+                                if(v.getValue() instanceof ClassConstant && (ClassConstant.fromType(changeFrom.getType()).equals(v.getValue())))
+                                {
+                                    v.setValue(ClassConstant.fromType(changeTo.getType()));
+                                    changed = true;
+                                }
+                                else if(v.getValue() instanceof RefType && v.getValue().getType().equals(changeFrom.getType())){
+                                    v.setValue((Value) changeTo.getType());
+                                    changed = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
