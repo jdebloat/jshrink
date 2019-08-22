@@ -272,7 +272,7 @@ public class ClassCollapserAnalysis {
         }
 
 
-        if(JShrink.enable_extensions) {
+        if(JShrink.enable_member_visibility) {
             if(!isSafeAccessAfterMerge(toClass, fromClass)){
                 return false;
             }

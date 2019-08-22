@@ -424,7 +424,7 @@ public class ClassCollapser {
 //                }
             }
 
-            if(JShrink.enable_extensions) {
+            if(JShrink.enable_super_class_recursion_check) {
                 if(method.isNative() || method.isAbstract()) {
                     continue;
                 }
@@ -541,7 +541,7 @@ public class ClassCollapser {
             }
         }
 
-        if(JShrink.enable_extensions) {
+        if(JShrink.enable_annotation_analysis) {
             // handle class annotations
             List<Tag> tags  = c.getTags();
             for(int i = 0; i < tags.size(); i++) {
@@ -875,7 +875,7 @@ public class ClassCollapser {
                 }
             }
 
-            if(JShrink.enable_extensions) {
+            if(JShrink.enable_annotation_analysis) {
                 // handle method annotations
                 List<Tag> tags = m.getTags();
                 for (int i = 0; i < tags.size(); i++) {

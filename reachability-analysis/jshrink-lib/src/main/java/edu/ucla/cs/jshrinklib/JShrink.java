@@ -41,8 +41,11 @@ public class JShrink {
 	private long appSizeCompressed = -1;
 	private long appSizeDecompressed = -1;
 
-	// a global boolean variable indicating whether we should aodw
-	public static boolean enable_extensions = false;
+	// a global boolean variable indicating whether we should allow
+	public static boolean enable_type_dependency = false;
+	public static boolean enable_member_visibility = false;
+	public static boolean enable_super_class_recursion_check = false;
+	public static boolean enable_annotation_analysis = false;
 
 	//Map<Class,Exception thrown by Soot>
 	private Map<String,String> unmodifiableClasses = new HashMap<String, String>();
@@ -713,7 +716,7 @@ public class JShrink {
 			return;
 
 		Set<String> classesToBeRemoved = new HashSet<String>();
-		if(JShrink.enable_extensions) {
+		if(JShrink.enable_type_dependency) {
 			Instant start = Instant.now();
 			PathResolutionUtil.buildMap(classPaths);
 			classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());

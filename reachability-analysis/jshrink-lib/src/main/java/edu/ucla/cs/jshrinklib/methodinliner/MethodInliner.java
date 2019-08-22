@@ -157,7 +157,7 @@ public class MethodInliner {
 				}
 
 
-				if(JShrink.enable_extensions) {
+				if(JShrink.enable_member_visibility) {
 					/*
 					 * Check that inlining the method does not break any access controls (references to
 					 * private/package-private methods, etc.). If this check is ignored, IllegalAccessExceptions can be
