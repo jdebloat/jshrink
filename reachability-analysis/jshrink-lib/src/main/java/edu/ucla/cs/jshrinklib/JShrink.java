@@ -45,7 +45,7 @@ public class JShrink {
 	public static boolean enable_type_dependency = false;
 	public static boolean enable_member_visibility = false;
 	public static boolean enable_super_class_recursion_check = false;
-	public static boolean enable_annotation_analysis = false;
+	public static boolean enable_annotation_updates = false;
 
 	//Map<Class,Exception thrown by Soot>
 	private Map<String,String> unmodifiableClasses = new HashMap<String, String>();

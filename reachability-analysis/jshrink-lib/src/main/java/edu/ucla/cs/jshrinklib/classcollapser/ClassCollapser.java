@@ -541,7 +541,7 @@ public class ClassCollapser {
             }
         }
 
-        if(JShrink.enable_annotation_analysis) {
+        if(JShrink.enable_annotation_updates) {
             // handle class annotations
             List<Tag> tags  = c.getTags();
             for(int i = 0; i < tags.size(); i++) {
@@ -875,7 +875,7 @@ public class ClassCollapser {
                 }
             }
 
-            if(JShrink.enable_annotation_analysis) {
+            if(JShrink.enable_annotation_updates) {
                 // handle method annotations
                 List<Tag> tags = m.getTags();
                 for (int i = 0; i < tags.size(); i++) {
