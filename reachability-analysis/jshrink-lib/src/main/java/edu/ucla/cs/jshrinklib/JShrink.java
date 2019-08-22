@@ -296,9 +296,13 @@ public class JShrink {
 			Set<String> unusedClasses = new HashSet<String>(allClasses);
 			unusedClasses.removeAll(usedClasses);
 			for(String classToRemove : unusedClasses) {
-				SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
-				this.classesToModify.remove(sootClass);
-				this.classesToRemove.add(sootClass);
+				// as mentioned in the Jax paper, Jax removes a class if it is unused and if it does not have a derived class
+				if(!classCollapserAnalysis.childrenMap.containsKey(classToRemove) ||
+						(classCollapserAnalysis.childrenMap.get(classToRemove).isEmpty())) {
+					SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
+					this.classesToModify.remove(sootClass);
+					this.classesToRemove.add(sootClass);
+				}
 			}
 		}
 

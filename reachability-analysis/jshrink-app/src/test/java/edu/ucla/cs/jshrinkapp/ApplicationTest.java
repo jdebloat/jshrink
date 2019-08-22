@@ -929,10 +929,12 @@ public class ApplicationTest {
 		arguments.append("--main-entry ");
 		arguments.append("--test-entry ");
 		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
 		arguments.append("--log-directory " + getLogDirectory().getAbsolutePath() + " ");
 		arguments.append("--use-cache ");
+//		arguments.append("--verbose ");
 
 		Application.main(arguments.toString().split("\\s+"));
 
@@ -1019,6 +1021,7 @@ public class ApplicationTest {
 		arguments.append("--test-entry ");
 		arguments.append("--public-entry ");
 		arguments.append("--remove-methods ");
+		arguments.append("--remove-classes ");
 		arguments.append("--class-collapser ");
 		arguments.append("--run-tests ");
 		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");

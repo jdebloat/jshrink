@@ -244,8 +244,12 @@ public class Application {
 			}
 
 			if (commandLineParser.removeMethods()) {
-				appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove, commandLineParser.removeClasses()));
-				libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove, commandLineParser.removeClasses()));
+				// commandLineParser.removeClasses() && !commandLineParser.collapseClasses() ensures that we only perform the kind of class removal
+				// implemented in JShrink.removeMethods when running JRed
+				// the kind of class removel implemented in JShrink.removeMethods removes a class if it is unused and it does not contain a static
+				// field that is accessible from other classes, which is exactly the same as described in JRed
+				appMethodsRemoved.addAll(jShrink.removeMethods(appMethodsToRemove, commandLineParser.removeClasses() && !commandLineParser.collapseClasses()));
+				libMethodsRemoved.addAll(jShrink.removeMethods(libMethodsToRemove, commandLineParser.removeClasses() && !commandLineParser.collapseClasses()));
 
 				// wipe the body of virtually invoked methods, keep their method headers
 				appMethodsRemoved.addAll(jShrink.wipeMethods(appVirtualMethodsToWipe));

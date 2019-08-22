@@ -32,7 +32,7 @@ public class ClassCollapserAnalysis {
     private Map<String, String> nameChangeList;
 
     private Map<String, String> parentsMap; // class -> superclass
-    private Map<String, Set<String>> childrenMap; // class -> subclasses
+    public Map<String, Set<String>> childrenMap; // class -> subclasses
     private Map<String, Set<String>> parentsVirtualMap; // class -> interfaces
     private Map<String, Set<String>> childrenVirtualMap; // interface -> subclasses
     private Map<String, SootClass> appClassMap;
