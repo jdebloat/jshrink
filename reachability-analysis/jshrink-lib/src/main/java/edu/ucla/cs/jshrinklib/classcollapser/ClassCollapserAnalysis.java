@@ -19,6 +19,7 @@ import soot.util.EmptyChain;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ClassCollapserAnalysis {
     public Set<String> appClasses;
@@ -124,7 +125,7 @@ public class ClassCollapserAnalysis {
                     // none of the sibling is used, can further check
                     SootClass fromClass = Scene.v().loadClassAndSupport(child);
                     SootClass toClass = Scene.v().loadClassAndSupport(singleParent);
-                    if (collapsable(child, singleParent, fromClass, toClass)) {
+                    if (collapsable(child, singleParent, fromClass, toClass) && checkMethodOverridesFromHierarchy(child, singleParent)) {
                         ArrayList<String> collapse = new ArrayList<String>();
                         collapse.add(child);
                         collapse.add(singleParent);
@@ -481,6 +482,26 @@ public class ClassCollapserAnalysis {
              }
          }
      }
+
+     private boolean checkMethodOverridesFromHierarchy(String from, String to){
+        SootClass fromClass = Scene.v().loadClassAndSupport(from);
+        for(SootMethod m:fromClass.getMethods()){
+            if(m.getName().contains("init"))
+                continue;
+            String parentClass = to;
+            while(parentsMap.get(parentClass).length()>0){
+                parentClass = parentsMap.get(parentClass);
+                Set<String> usedMethodsInSuperClass = usedAppMethods.get(parentClass);
+                if(usedMethodsInSuperClass!=null && usedMethodsInSuperClass.contains(m.getSubSignature())) {
+                    // if there is a method with the same signature in the super class is used,
+                    // then we cannot merge the sub class into the super class
+                    return false;
+                }
+            }
+        }
+        return true;
+     }
+
 
     /*package*/ Queue<ArrayList<String>> getCollapseList() {
         return collapseList;
