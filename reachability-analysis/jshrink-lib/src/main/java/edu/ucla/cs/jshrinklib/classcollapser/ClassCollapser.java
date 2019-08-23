@@ -11,6 +11,7 @@ import soot.jimple.internal.JAssignStmt;
 import soot.jimple.internal.JCastExpr;
 import soot.jimple.internal.JIdentityStmt;
 import soot.jimple.internal.JInstanceOfExpr;
+import soot.jimple.spark.ondemand.pautil.SootUtil;
 import soot.jimple.toolkits.invoke.SiteInliner;
 import soot.tagkit.*;
 
@@ -815,6 +816,16 @@ public class ClassCollapser {
                                     originalMethodRef.isStatic()));
                             changed = true;
                         }
+                        //if return type of method is of type which has been merged
+                        /*else if((originalMethodRef.getReturnType() instanceof RefType) &&
+                                ((RefType) originalMethodRef.getReturnType()).getClassName().equals(changeFrom.getName()))
+                        {
+                            expr.setMethodRef(Scene.v().makeMethodRef(originalMethodRef.getDeclaringClass(), originalMethodRef.getName(),
+                                    originalMethodRef.getParameterTypes(),
+                                    changeTo.getType(),
+                                    originalMethodRef.isStatic()));
+                            changed = true;
+                        }*/
                     } else if (rightOp instanceof JInstanceOfExpr) {
                         JInstanceOfExpr expr = (JInstanceOfExpr) rightOp;
                         if(expr.getCheckType() == Scene.v().getType(changeFrom.getName())) {
@@ -863,6 +874,19 @@ public class ClassCollapser {
                                     fr.setFieldRef(newFieldRef);
                                     changed = true;
                                     continue;
+                                }
+                            }
+                        }
+                        else{
+                            for(ValueBox v: u.getUseAndDefBoxes()){
+                                if(v.getValue() instanceof ClassConstant && (ClassConstant.fromType(changeFrom.getType()).equals(v.getValue())))
+                                {
+                                    v.setValue(ClassConstant.fromType(changeTo.getType()));
+                                    changed = true;
+                                }
+                                else if(v.getValue() instanceof RefType && v.getValue().getType().equals(changeFrom.getType())){
+                                    v.setValue((Value) changeTo.getType());
+                                    changed = true;
                                 }
                             }
                         }
