@@ -1010,6 +1010,31 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void superClassMethodOverridenTest() throws IOException, InterruptedException {
+		StringBuilder arguments = new StringBuilder();
+		String projectPath = new File(ApplicationTest.class.getClassLoader().getResource("superclass-method-overriden-test-project").getFile()).getAbsolutePath();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + projectPath + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--remove-fields ");
+		arguments.append("--class-collapser ");
+		arguments.append("--run-tests ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
+		arguments.append("--verbose ");
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		assertTrue(classCollapseResult.getClassesToRemove().contains("B"));
+		assertFalse(classCollapseResult.getClassesToRemove().contains("C"));
+		assertFalse(classCollapseResult.getClassesToRewrite().contains("B"));
+		assertTrue(classCollapseResult.getClassesToRewrite().contains("Main"));
+		assertTrue(classCollapseResult.getClassesToRewrite().contains("A"));
+	}
+	@Test
 	public void junit_test_class_collapser() {
 		StringBuilder arguments = new StringBuilder();
 		String projectFilePath = getJunitProjectDir().getAbsolutePath();
