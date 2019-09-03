@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.methodinliner;
 
+import edu.ucla.cs.jshrinklib.JShrink;
 import edu.ucla.cs.jshrinklib.util.ClassFileUtils;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import soot.*;
@@ -155,16 +156,19 @@ public class MethodInliner {
 					continue;
 				}
 
-				/*
-				Check that inlining the method does not break any access controls (references to
-				private/package-private methods, etc.). If this check is ignored, IllegalAccessExceptions can be
-				thrown at runtime.
-				 */
-				if(!accessControlsOk(callee, caller.getDeclaringClass())){
-					if(debug){
-						System.out.println("Inlining the callee would violate Java access controls.");
+
+				if(JShrink.enable_member_visibility) {
+					/*
+					 * Check that inlining the method does not break any access controls (references to
+					 * private/package-private methods, etc.). If this check is ignored, IllegalAccessExceptions can be
+					 * thrown at runtime.
+					 */
+					if(!accessControlsOk(callee, caller.getDeclaringClass())){
+						if(debug){
+							System.out.println("Inlining the callee would violate Java access controls.");
+						}
+						continue;
 					}
-					continue;
 				}
 
 				Body b = caller.retrieveActiveBody();

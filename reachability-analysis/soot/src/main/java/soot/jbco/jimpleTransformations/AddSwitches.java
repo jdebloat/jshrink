@@ -152,7 +152,7 @@ public class AddSwitches extends BodyTransformer implements IJbcoTransform {
     List<Unit> targs = new ArrayList<Unit>();
     targs.addAll(zeroheight);
 
-    SootField ops[] = FieldRenamer.v().getRandomOpaques();
+    SootField ops[] = FieldRenamer.getRandomOpaques();
 
     Local b1 = Jimple.v().newLocal("addswitchesbool1", BooleanType.v());
     locals.add(b1);

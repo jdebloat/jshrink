@@ -41,6 +41,12 @@ public class JShrink {
 	private long appSizeCompressed = -1;
 	private long appSizeDecompressed = -1;
 
+	// a global boolean variable indicating whether we should allow
+	public static boolean enable_type_dependency = false;
+	public static boolean enable_member_visibility = false;
+	public static boolean enable_super_class_recursion_check = false;
+	public static boolean enable_annotation_updates = false;
+
 	//Map<Class,Exception thrown by Soot>
 	private Map<String,String> unmodifiableClasses = new HashMap<String, String>();
 	private boolean runTests;
@@ -293,9 +299,13 @@ public class JShrink {
 			Set<String> unusedClasses = new HashSet<String>(allClasses);
 			unusedClasses.removeAll(usedClasses);
 			for(String classToRemove : unusedClasses) {
-				SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
-				this.classesToModify.remove(sootClass);
-				this.classesToRemove.add(sootClass);
+				// as mentioned in the Jax paper, Jax removes a class if it is unused and if it does not have a derived class
+				if(!classCollapserAnalysis.childrenMap.containsKey(classToRemove) ||
+						(classCollapserAnalysis.childrenMap.get(classToRemove).isEmpty())) {
+					SootClass sootClass = Scene.v().loadClassAndSupport(classToRemove);
+					this.classesToModify.remove(sootClass);
+					this.classesToRemove.add(sootClass);
+				}
 			}
 		}
 
@@ -704,23 +714,28 @@ public class JShrink {
 	private void removeClasses(Set<SootClass> classesToRemove, Set<File> classPaths){
 		if(classesToRemove.size() == 0)
 			return;
-		Instant start = Instant.now();
-		PathResolutionUtil.buildMap(classPaths);
-		Set<String> classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
-		for(String className : this.getProjectAnalyser().getAppClasses()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+
+		Set<String> classesToBeRemoved = new HashSet<String>();
+		if(JShrink.enable_type_dependency) {
+			Instant start = Instant.now();
+			PathResolutionUtil.buildMap(classPaths);
+			classesToBeRemoved = classesToRemove.stream().map(x->x.getName()).collect(Collectors.toSet());
+			for(String className : this.getProjectAnalyser().getAppClasses()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			for(String className : this.getProjectAnalyser().getTestClasses()){
+				SootClass sootClass = Scene.v().getSootClass(className);
+				this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
+			}
+			if(this.verbose)
+				System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
 		}
-		for(String className : this.getProjectAnalyser().getLibClassesCompileOnly()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
-		}
-		for(String className : this.getProjectAnalyser().getTestClasses()){
-			SootClass sootClass = Scene.v().getSootClass(className);
-			this.classDependencyGraph.addClass(sootClass.getName(), PathResolutionUtil.getClassPath(sootClass.getName()));
-		}
-		if(this.verbose)
-			System.out.println("Resolved dependencies in "+Duration.between(Instant.now(),start).getSeconds());
+
 		for(SootClass sootClass : classesToRemove){
 			Set<String> referencedBy = this.classDependencyGraph.getReferencedBy(sootClass.getName());
 			//not including classes marked for deletion

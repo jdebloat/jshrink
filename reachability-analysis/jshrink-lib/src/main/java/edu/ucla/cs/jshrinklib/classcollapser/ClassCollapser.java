@@ -1,5 +1,6 @@
 package edu.ucla.cs.jshrinklib.classcollapser;
 
+import edu.ucla.cs.jshrinklib.JShrink;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
 import edu.ucla.cs.jshrinklib.util.SootUtils;
 import fj.P;
@@ -424,24 +425,26 @@ public class ClassCollapser {
 //                }
             }
 
-            if(method.isNative() || method.isAbstract()) {
-                continue;
-            }
-            // check if the method calls an overridden method in the super class
-            Body b = method.retrieveActiveBody();
-            for(Unit u : b.getUnits()) {
-                if (u instanceof Stmt) {
-                    Stmt stmt = (Stmt) u;
-                    if(stmt.containsInvokeExpr()) {
-                        InvokeExpr invokeExpr = stmt.getInvokeExpr();
-                        SootMethodRef smf = invokeExpr.getMethodRef();
-                        if(smf.getDeclaringClass().getName().equals(to.getName()) && smf.getName().equals(method.getName()) && smf.getParameterTypes().equals(method.getParameterTypes())) {
-                            // replace the call target from the super class to the super class of the super class
-                            // to avoid recursion
-                            invokeExpr.setMethodRef(Scene.v().makeMethodRef(to.getSuperclass(), smf.getName(),
-                                    smf.getParameterTypes(),
-                                    smf.getReturnType(),
-                                    smf.isStatic()));
+            if(JShrink.enable_super_class_recursion_check) {
+                if(method.isNative() || method.isAbstract()) {
+                    continue;
+                }
+                // check if the method calls an overridden method in the super class
+                Body b = method.retrieveActiveBody();
+                for(Unit u : b.getUnits()) {
+                    if (u instanceof Stmt) {
+                        Stmt stmt = (Stmt) u;
+                        if(stmt.containsInvokeExpr()) {
+                            InvokeExpr invokeExpr = stmt.getInvokeExpr();
+                            SootMethodRef smf = invokeExpr.getMethodRef();
+                            if(smf.getDeclaringClass().getName().equals(to.getName()) && smf.getName().equals(method.getName()) && smf.getParameterTypes().equals(method.getParameterTypes())) {
+                                // replace the call target from the super class to the super class of the super class
+                                // to avoid recursion
+                                invokeExpr.setMethodRef(Scene.v().makeMethodRef(to.getSuperclass(), smf.getName(),
+                                        smf.getParameterTypes(),
+                                        smf.getReturnType(),
+                                        smf.isStatic()));
+                            }
                         }
                     }
                 }
@@ -539,61 +542,64 @@ public class ClassCollapser {
             }
         }
 
-        List<Tag> tags  = c.getTags();
-        for(int i = 0; i < tags.size(); i++) {
-            Tag tag = tags.get(i);
-            if(tag instanceof VisibilityAnnotationTag) {
-                ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
-                for(AnnotationTag annotation : annotations) {
-                    Collection<AnnotationElem> values = annotation.getElems();
-                    List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
-                    for(AnnotationElem annotationElem: values) {
-                        if(annotationElem instanceof AnnotationClassElem) {
-                            String desc = ((AnnotationClassElem) annotationElem).getDesc();
-                            if(desc.startsWith("L") && desc.endsWith(";")) {
-                                String typeName = desc.substring(1, desc.length() - 1);
-                                typeName = typeName.replaceAll(Pattern.quote("/"), ".");
-                                if(typeName.equals(changeFrom.getName())) {
-                                    AnnotationClassElem classElem = new AnnotationClassElem(
-                                            "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
-                                            annotationElem.getKind(), annotationElem.getName());
-                                    newValues.add(classElem);
-                                    changed = true;
-                                    continue;
-                                }
-                            }
-                            newValues.add(annotationElem);
-                        } else if (annotationElem instanceof AnnotationArrayElem) {
-                            AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
-                            ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
-                            for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
-                                if(annotationElem2 instanceof AnnotationClassElem) {
-                                    String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
-                                    if(desc2.startsWith("L") && desc2.endsWith(";")) {
-                                        String typeName2 = desc2.substring(1, desc2.length() - 1);
-                                        typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
-                                        if(typeName2.equals(changeFrom.getName())) {
-                                            AnnotationClassElem classElem2 = new AnnotationClassElem(
-                                                    "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
-                                                    annotationElem2.getKind(), annotationElem2.getName());
-                                            newValues2.add(classElem2);
-                                            changed = true;
-                                            continue;
-                                        }
+        if(JShrink.enable_annotation_updates) {
+            // handle class annotations
+            List<Tag> tags  = c.getTags();
+            for(int i = 0; i < tags.size(); i++) {
+                Tag tag = tags.get(i);
+                if(tag instanceof VisibilityAnnotationTag) {
+                    ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
+                    for(AnnotationTag annotation : annotations) {
+                        Collection<AnnotationElem> values = annotation.getElems();
+                        List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
+                        for(AnnotationElem annotationElem: values) {
+                            if(annotationElem instanceof AnnotationClassElem) {
+                                String desc = ((AnnotationClassElem) annotationElem).getDesc();
+                                if(desc.startsWith("L") && desc.endsWith(";")) {
+                                    String typeName = desc.substring(1, desc.length() - 1);
+                                    typeName = typeName.replaceAll(Pattern.quote("/"), ".");
+                                    if(typeName.equals(changeFrom.getName())) {
+                                        AnnotationClassElem classElem = new AnnotationClassElem(
+                                                "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                annotationElem.getKind(), annotationElem.getName());
+                                        newValues.add(classElem);
+                                        changed = true;
+                                        continue;
                                     }
                                 }
-                                newValues2.add(annotationElem2);
+                                newValues.add(annotationElem);
+                            } else if (annotationElem instanceof AnnotationArrayElem) {
+                                AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
+                                ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
+                                for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
+                                    if(annotationElem2 instanceof AnnotationClassElem) {
+                                        String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
+                                        if(desc2.startsWith("L") && desc2.endsWith(";")) {
+                                            String typeName2 = desc2.substring(1, desc2.length() - 1);
+                                            typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
+                                            if(typeName2.equals(changeFrom.getName())) {
+                                                AnnotationClassElem classElem2 = new AnnotationClassElem(
+                                                        "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                        annotationElem2.getKind(), annotationElem2.getName());
+                                                newValues2.add(classElem2);
+                                                changed = true;
+                                                continue;
+                                            }
+                                        }
+                                    }
+                                    newValues2.add(annotationElem2);
+                                }
+                                AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
+                                newValues.add(newArrayElem);
+                            } else {
+                                newValues.add(annotationElem);
                             }
-                            AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
-                            newValues.add(newArrayElem);
-                        } else {
-                            newValues.add(annotationElem);
                         }
-                    }
-                    annotation.setElems(newValues);
-                    for(AnnotationElem annotationElem : newValues){
-                        log.append("ADDED_ANNOTATION_ELEMENT_IN_CLASS_COLLAPSER," + annotationElem.toString()
-                            + " from class " + c.getName() + System.lineSeparator());
+                        annotation.setElems(newValues);
+                        for(AnnotationElem annotationElem : newValues){
+                            log.append("ADDED_ANNOTATION_ELEMENT_IN_CLASS_COLLAPSER," + annotationElem.toString()
+                                    + " from class " + c.getName() + System.lineSeparator());
+                        }
                     }
                 }
             }
@@ -892,61 +898,63 @@ public class ClassCollapser {
                     t.setException(changeTo);
                 }
             }
-            List<Tag> tags  = m.getTags();
-            for(int i = 0; i < tags.size(); i++) {
-                Tag tag = tags.get(i);
-                if(tag instanceof VisibilityAnnotationTag) {
-                    ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
-                    for(AnnotationTag annotation : annotations) {
-                        Collection<AnnotationElem> values = annotation.getElems();
-                        List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
-                        for(AnnotationElem annotationElem: values) {
-                            if(annotationElem instanceof AnnotationClassElem) {
-                                String desc = ((AnnotationClassElem) annotationElem).getDesc();
-                                if(desc.startsWith("L") && desc.endsWith(";")) {
-                                    String typeName = desc.substring(1, desc.length() - 1);
-                                    typeName = typeName.replaceAll(Pattern.quote("/"), ".");
-                                    if(typeName.equals(changeFrom.getName())) {
-                                        AnnotationClassElem classElem = new AnnotationClassElem(
-                                                "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
-                                                annotationElem.getKind(), annotationElem.getName());
-                                        newValues.add(classElem);
-                                        changed = true;
-                                        continue;
-                                    }
-                                }
-                                newValues.add(annotationElem);
-                            }
-                            else if (annotationElem instanceof AnnotationArrayElem) {
-                                AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
-                                ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
-                                for(AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
-                                    if(annotationElem2 instanceof AnnotationClassElem) {
-                                        String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
-                                        if(desc2.startsWith("L") && desc2.endsWith(";")) {
-                                            String typeName2 = desc2.substring(1, desc2.length() - 1);
-                                            typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
-                                            if(typeName2.equals(changeFrom.getName())) {
-                                                AnnotationClassElem classElem2 = new AnnotationClassElem(
-                                                        "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
-                                                        annotationElem2.getKind(), annotationElem2.getName());
-                                                newValues2.add(classElem2);
-                                                changed = true;
-                                                continue;
-                                            }
+
+            if(JShrink.enable_annotation_updates) {
+                // handle method annotations
+                List<Tag> tags = m.getTags();
+                for (int i = 0; i < tags.size(); i++) {
+                    Tag tag = tags.get(i);
+                    if (tag instanceof VisibilityAnnotationTag) {
+                        ArrayList<AnnotationTag> annotations = ((VisibilityAnnotationTag) tag).getAnnotations();
+                        for (AnnotationTag annotation : annotations) {
+                            Collection<AnnotationElem> values = annotation.getElems();
+                            List<AnnotationElem> newValues = new ArrayList<AnnotationElem>();
+                            for (AnnotationElem annotationElem : values) {
+                                if (annotationElem instanceof AnnotationClassElem) {
+                                    String desc = ((AnnotationClassElem) annotationElem).getDesc();
+                                    if (desc.startsWith("L") && desc.endsWith(";")) {
+                                        String typeName = desc.substring(1, desc.length() - 1);
+                                        typeName = typeName.replaceAll(Pattern.quote("/"), ".");
+                                        if (typeName.equals(changeFrom.getName())) {
+                                            AnnotationClassElem classElem = new AnnotationClassElem(
+                                                    "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                    annotationElem.getKind(), annotationElem.getName());
+                                            newValues.add(classElem);
+                                            changed = true;
+                                            continue;
                                         }
                                     }
-                                    newValues2.add(annotationElem2);
+                                    newValues.add(annotationElem);
+                                } else if (annotationElem instanceof AnnotationArrayElem) {
+                                    AnnotationArrayElem annotationArrayElem = (AnnotationArrayElem) annotationElem;
+                                    ArrayList<AnnotationElem> newValues2 = new ArrayList<AnnotationElem>();
+                                    for (AnnotationElem annotationElem2 : annotationArrayElem.getValues()) {
+                                        if (annotationElem2 instanceof AnnotationClassElem) {
+                                            String desc2 = ((AnnotationClassElem) annotationElem2).getDesc();
+                                            if (desc2.startsWith("L") && desc2.endsWith(";")) {
+                                                String typeName2 = desc2.substring(1, desc2.length() - 1);
+                                                typeName2 = typeName2.replaceAll(Pattern.quote("/"), ".");
+                                                if (typeName2.equals(changeFrom.getName())) {
+                                                    AnnotationClassElem classElem2 = new AnnotationClassElem(
+                                                            "L" + changeTo.getName().replaceAll(Pattern.quote("."), "/") + ";",
+                                                            annotationElem2.getKind(), annotationElem2.getName());
+                                                    newValues2.add(classElem2);
+                                                    changed = true;
+                                                    continue;
+                                                }
+                                            }
+                                        }
+                                        newValues2.add(annotationElem2);
+                                    }
+                                    AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
+                                    newValues.add(newArrayElem);
                                 }
-                                AnnotationArrayElem newArrayElem = new AnnotationArrayElem(newValues2, annotationArrayElem.getKind(), annotationArrayElem.getName());
-                                newValues.add(newArrayElem);
                             }
+                            annotation.setElems(newValues);
                         }
-                        annotation.setElems(newValues);
                     }
                 }
             }
-
         }
         return changed;
     }
