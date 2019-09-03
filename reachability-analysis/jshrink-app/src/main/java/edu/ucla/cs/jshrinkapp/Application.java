@@ -74,6 +74,18 @@ public class Application {
 
 		assert (commandLineParser != null);
 
+		//Setup which features we are going to use in JShrink. For now, baseline has them all turned off, otherwise all true
+		JShrink.enable_type_dependency = !commandLineParser.useBaseline();
+		JShrink.enable_member_visibility = !commandLineParser.useBaseline();
+		JShrink.enable_super_class_recursion_check = !commandLineParser.useBaseline();
+		JShrink.enable_annotation_updates = !commandLineParser.useBaseline();
+
+		if(commandLineParser.collapseClasses() && commandLineParser.removeClasses()){
+			//TODO: This inconsistency should be solved.
+			System.err.println("WARNING: When the \"--class-collaper\" and \"--remove-classes\" flags are set, the" +
+					"\"--remove-classes\" functionality changes to that of what is used in the Jax paper");
+		}
+
 		//TODO: Classes in which all methods are removed, and have no fields that are accessed, should be removed.
 
 		EntryPointProcessor entryPointProcessor = new EntryPointProcessor(commandLineParser.includeMainEntryPoint(),

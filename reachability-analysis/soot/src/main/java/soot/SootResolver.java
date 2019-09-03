@@ -382,7 +382,7 @@ public class SootResolver {
     }
   }
 
-  public Set<Type> getReferenceSignatures(SootClass sc){
+  public Set<soot.Type> getReferenceSignatures(SootClass sc){
     return this.classToTypesSignature.get(sc);
   }
 }

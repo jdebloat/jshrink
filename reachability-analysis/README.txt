@@ -5,6 +5,10 @@ mvn compile -pl jshrink-app -am
 The resulting jar can be found in 
 "jshrink-app/target/jshrink-app-1.0-SHAPSHOT-jar-with-dependencies.jar".
 
+If Soot v3.2 is required, the app is compiled with the following command:
+
+mvn --file pom_soot-3.2.xml -pl jshrink-app -am
+
 This will also compile the jshrink-lib library which jshrink-app builds
 upon. It can be found in
 "jshrink-lib/target/jshrink-lib-1.0-SNAPSHOT-jar-with-dependencies.jar".

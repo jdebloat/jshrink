@@ -40,6 +40,7 @@ public class ApplicationCommandLineParser {
 	private final File logDirectory;
 	private final boolean cache;
 	private final boolean ignoreLibs;
+	private final boolean baseline;
 
 
 	private static void printHelp(CommandLine commandLine){
@@ -184,6 +185,7 @@ public class ApplicationCommandLineParser {
 		this.removeFields = commandLine.hasOption("F");
 		this.cache = commandLine.hasOption("A");
 		this.ignoreLibs = commandLine.hasOption("b");
+		this.baseline = commandLine.hasOption("S");
 
 		if(this.removeFields && this.skipMethodRemoval){
 			throw new ParseException("Cannot Remove fields while skipping method removal.");
@@ -503,6 +505,13 @@ public class ApplicationCommandLineParser {
 				.required(false)
 				.build();
 
+		Option baselineOption = Option.builder("S")
+				.desc("Use the baseline version of JShrink.")
+				.longOpt("baseline")
+				.hasArg(false)
+				.required(false)
+				.build();
+
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
@@ -531,6 +540,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(jmTraceOption);
 		toReturn.addOption(cacheOption);
 		toReturn.addOption(ignoreLibsOptions);
+		toReturn.addOption(baselineOption);
 
 		return toReturn;
 	}
@@ -649,5 +659,9 @@ public class ApplicationCommandLineParser {
 
 	public boolean isIgnoreLibs(){
 		return this.ignoreLibs;
+	}
+
+	public boolean useBaseline(){
+		return this.baseline;
 	}
 }
