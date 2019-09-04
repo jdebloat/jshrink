@@ -3,7 +3,7 @@
 PWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 WORK_LIST="${PWD}/work_list.dat"
 PROJECT_DIR="${PWD}/sample-projects"
-DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies.jar"
+DEBLOAT_APP="${PWD}/jshrink-app-1.0-SNAPSHOT-jar-with-dependencies_soot3_2.jar"
 SIZE_FILE="${PWD}/size_data.csv"
 JAVA="/usr/bin/java"
 TAMIFLEX="${PWD}/poa-2.0.3.jar"
