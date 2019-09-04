@@ -9,8 +9,8 @@
 *.DS_Store
 *.tmp
 *.lst
-reachability-analysis/soot/eclipse
-reachability-analysis/soot/doc
-reachability-analysis/src
 */jmtrace.log
 *jshrink_caches/
+jshrink/soot/doc/
+jshrink/soot/eclipse/
+jshrink/src/
