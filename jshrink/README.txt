@@ -7,7 +7,7 @@ The resulting jar can be found in
 
 If Soot v3.2 is required, the app is compiled with the following command:
 
-mvn --file pom_soot-3.2.xml -pl jshrink-app -am
+mvn --file pom_soot-3.2.xml compile -pl jshrink-app -am
 
 This will also compile the jshrink-lib library which jshrink-app builds
 upon. It can be found in
