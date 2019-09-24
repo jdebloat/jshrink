@@ -1,13 +1,11 @@
 package edu.ucla.cs.jshrinklib.backup;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class Checkpoint {
 	private java.time.Instant timestamp;
@@ -16,15 +14,26 @@ public class Checkpoint {
 	private String transformation;
 	private boolean testsPassed;
 	private boolean isVerbose;
+	public boolean rollBack;
 
-	private void runTests(){
-
+	private boolean runTests(){
+		return false;
 	}
 
 	private void copyFiles(Path oldPath, Path newPath) throws IOException {
-		for(Path source: Files.walk(oldPath).collect(Collectors.toList())){
-			Files.copy(source, newPath.resolve(oldPath.relativize(source)));
-		}
+		FileUtils.copyDirectory(oldPath.toFile(), newPath.toFile());
+//		for(Path source: Files.walk(oldPath).collect(Collectors.toSet())){
+//			Path target = newPath.resolve(oldPath.getParent().relativize(source));
+//			if(source.toFile().isDirectory()){
+//				target.toFile().mkdirs();
+//			}
+//			else{
+//				if(!target.getParent().toFile().exists())
+//					target.getParent().toFile().mkdirs();
+//				Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+//			}
+//
+//		}
 	}
 	private boolean backup(String realPath, String backupPath){
 		try{
@@ -34,7 +43,7 @@ public class Checkpoint {
 			if (!this.oldPath.toFile().isDirectory() ||  (!backupFolder.isDirectory()))
 				throw new IllegalArgumentException("Input for backup is not a folder");
 
-			this.backupPath = Paths.get(backupFolder.toURI());
+			this.backupPath = Paths.get(backupFolder.getAbsolutePath()+File.separator+this.oldPath.getFileName());
 			copyFiles(this.oldPath, this.backupPath);
 		}
 		catch(Exception e){
@@ -48,6 +57,7 @@ public class Checkpoint {
 	public Checkpoint(String realPath, String backupFolder, String transformation, boolean isVerbose){
 		this.transformation = transformation;
 		this.isVerbose = isVerbose;
+		this.rollBack = false;
 		if(!this.backup(realPath, backupFolder))
 		{
 			throw new IllegalArgumentException("Checkpoint creation failed");
@@ -59,15 +69,29 @@ public class Checkpoint {
 		this(realPath, backupPath, transformation, false);
 	}
 
-	public boolean rollBack(){
-		return false;
+	public boolean rollBackToBackup(){
+		try {
+			this.copyFiles(this.backupPath, this.oldPath);
+			this.rollBack = true;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return this.rollBack;
 	}
 
 	public boolean isSafe(){
-		return this.testsPassed || false;
+		return this.testsPassed || this.runTests();
 	}
 
 	public void exit(){
 		System.exit(0);
+	}
+
+	public Path getRealPath(){
+		return this.oldPath;
+	}
+
+	public Path getBackupPath(){
+		return this.backupPath;
 	}
 }
