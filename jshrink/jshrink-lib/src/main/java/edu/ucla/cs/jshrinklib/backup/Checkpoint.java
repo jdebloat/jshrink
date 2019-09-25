@@ -1,9 +1,10 @@
 package edu.ucla.cs.jshrinklib.backup;
 
+import edu.ucla.cs.jshrinklib.reachability.TestOutput;
+import edu.ucla.cs.jshrinklib.util.MavenUtils;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -17,7 +18,53 @@ public class Checkpoint {
 	public boolean rollBack;
 
 	private boolean runTests(){
-		return false;
+		if (this.isVerbose) {
+			System.out.println("Running project tests...");
+		}
+		this.testsPassed = false;
+		String[] cmd;
+		ProcessBuilder processBuilder;
+		Process process;
+		InputStream stdout;
+		InputStreamReader isr;
+		BufferedReader br;
+		String line;
+		int exitValue;
+		String maven_log = "";
+		try{
+			File pomFile = new File(this.backupPath + File.separator + "pom.xml");
+			File libsDir = new File(this.backupPath + File.separator + "libs");
+			cmd = new String[]{"mvn", "-f", pomFile.getAbsolutePath(), "surefire:test",
+					"-Dmaven.repo.local=" + libsDir.getAbsolutePath(), "--batch-mode", "-fn"};
+			processBuilder = new ProcessBuilder(cmd);
+			processBuilder.redirectErrorStream(true);
+			process = processBuilder.start();
+			stdout = process.getInputStream();
+			isr = new InputStreamReader(stdout);
+			br = new BufferedReader(isr);
+			while ((line = br.readLine()) != null) {
+				maven_log += line + System.lineSeparator();
+			}
+			br.close();
+			exitValue = process.waitFor();
+		}
+		catch(Exception e){
+			System.out.println(e.getStackTrace());
+			return false;
+		}
+
+		// still get test output even in case of test failure
+		TestOutput out = MavenUtils.testOutputFromString(maven_log);
+		if(out.isTestBuildSuccess() && out.getFailures() == 0 && out.getErrors() == 0){
+			this.testsPassed = true;
+		}
+
+		if (this.isVerbose) {
+			System.out.println(maven_log);
+			System.out.println("Done running project tests!");
+		}
+
+		return this.testsPassed;
 	}
 
 	private void copyFiles(Path oldPath, Path newPath) throws IOException {
@@ -63,6 +110,9 @@ public class Checkpoint {
 			throw new IllegalArgumentException("Checkpoint creation failed");
 		}
 		this.timestamp = java.time.Instant.now();
+		if(this.isVerbose){
+			System.out.println("Created checkpoint "+this.getBackupPath()+" for "+this.getRealPath()+" at "+this.timestamp);
+		}
 	}
 
 	public Checkpoint(String realPath, String backupPath, String transformation){
@@ -75,6 +125,9 @@ public class Checkpoint {
 			this.rollBack = true;
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		if(this.isVerbose){
+			System.out.println("Rolled back "+this.getBackupPath()+" to "+this.getRealPath()+" at "+java.time.Instant.now());
 		}
 		return this.rollBack;
 	}
