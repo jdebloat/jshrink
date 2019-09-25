@@ -115,5 +115,16 @@ public class CheckpointTest {
 			CheckpointTest.buildProject(c.getBackupPath());
 		}
 		assertTrue(c.isSafe());
+		assertTrue(c.isSafe());
+	}
+	@Test
+	public void checkpointTestMultipleModules(){
+		String realPath = CheckpointTest.class.getClassLoader().getResource("module-test-project").getPath();
+		String backupPath = "/tmp/checkpoint-test";
+		Checkpoint c = new Checkpoint(realPath, backupPath, "class-collapse", true);
+		if(!new File(c.getBackupPath().toFile().getAbsolutePath()+File.separator+"target").exists()){
+			CheckpointTest.buildProject(c.getBackupPath());
+		}
+		assertTrue(c.isSafe());
 	}
 }
