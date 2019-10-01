@@ -12,10 +12,11 @@ public class Checkpoint {
 	private java.time.Instant timestamp;
 	private Path backupPath;
 	private Path oldPath;
-	private String transformation;
+	public String transformation;
 	private boolean testsPassed;
 	private boolean isVerbose;
 	public boolean rollBack;
+	private boolean isValid;
 
 	private boolean runTests(){
 		if (this.isVerbose) {
@@ -110,6 +111,7 @@ public class Checkpoint {
 			throw new IllegalArgumentException("Checkpoint creation failed");
 		}
 		this.timestamp = java.time.Instant.now();
+		this.isValid = true;
 		if(this.isVerbose){
 			System.out.println("Created checkpoint "+this.getBackupPath()+" for "+this.getRealPath()+" at "+this.timestamp);
 		}
@@ -132,9 +134,22 @@ public class Checkpoint {
 		return this.rollBack;
 	}
 
+	public boolean delete(){
+		try {
+			FileUtils.deleteDirectory(this.backupPath.toFile());
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+		this.isValid = false;
+		return true;
+	}
+
 	public boolean isSafe(){
 		return this.testsPassed || this.runTests();
 	}
+
+	public boolean isValid(){return this.isValid;}
 
 	public void exit(){
 		System.exit(0);
