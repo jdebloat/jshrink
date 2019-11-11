@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import edu.ucla.cs.jshrinklib.JShrink;
+import edu.ucla.cs.jshrinklib.backup.BackupService;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapser;
 import edu.ucla.cs.jshrinklib.classcollapser.ClassCollapserData;
 import edu.ucla.cs.jshrinklib.reachability.MethodData;
@@ -38,6 +39,7 @@ public class Application {
 	/*package*/ static TestOutput testOutputAfter = null;
 
 	/*package*/ static Map<String, String> unmodifiableClass = null;
+	static BackupService backupService = null;
 
 	public static void main(String[] args) {
 
@@ -218,6 +220,15 @@ public class Application {
 
 		toLog.append("app_num_classes_before," + allAppClasses.size() + System.lineSeparator());
 		toLog.append("lib_num_classes_before," + allLibClasses.size() + System.lineSeparator());
+		//TODO: Add command line check here for backupservice
+		if(true) {
+			//commandLineParser.useCheckpoints();
+			backupService = new BackupService(commandLineParser.getMavenDirectory().get(), "/tmp/checkpointTest",commandLineParser.isVerbose());
+		}
+		//create checkpoint
+		if(backupService!=null){
+			backupService.addCheckpoint("init");
+		}
 
 		//Run the method removal.
 		if(!commandLineParser.isSkipMethodRemoval()) {
@@ -268,7 +279,8 @@ public class Application {
 				libMethodsRemoved.addAll(jShrink.wipeMethods(libVirtualMethodsToWipe));
 
 				removedMethod = true;
-			} else if (commandLineParser.includeException()) {
+			}
+			else if (commandLineParser.includeException()) {
 				appMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(appMethodsToRemove,
 					commandLineParser.getExceptionMessage()));
 				libMethodsRemoved.addAll(jShrink.wipeMethodAndAddException(libMethodsToRemove,
@@ -284,7 +296,8 @@ public class Application {
 				} else {
 					wipedMethodBodyWithExceptionNoMessage = true;
 				}
-			} else {
+			}
+			else {
 				appMethodsRemoved.addAll(jShrink.wipeMethods(appMethodsToRemove));
 				libMethodsRemoved.addAll(jShrink.wipeMethods(libMethodsToRemove));
 
@@ -299,6 +312,9 @@ public class Application {
 			if(commandLineParser.isVerbose()){
 				System.out.println("Done removing unused methods!");
 			}
+
+			//add new checkpoint and update
+			Application.applyAndValidateTransform(jShrink, "method-removal");
 
 			//Run the field removal
 			if(commandLineParser.removedFields()) {
@@ -322,7 +338,10 @@ public class Application {
 				if(commandLineParser.isVerbose()){
 					System.out.println("Done removing unused fields!");
 				}
+
+				Application.applyAndValidateTransform(jShrink, "field-removal");
 			}
+
 
 			//Run the class collapser.
 			if (commandLineParser.collapseClasses()) {
@@ -341,6 +360,7 @@ public class Application {
 				if(commandLineParser.isVerbose()){
 					System.out.println("Done collapsing collapsable classes!");
 				}
+				Application.applyAndValidateTransform(jShrink, "class-collapser");
 			}
 
 			// filter out unmodifiable classes after debloating
@@ -379,7 +399,7 @@ public class Application {
 			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
 					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
 
-//			jShrink.updateClassFiles();
+			Application.applyAndValidateTransform(jShrink, "class-collapser");
 		}
 
 		toLog.append(jShrink.getLog());
@@ -583,7 +603,25 @@ public class Application {
 			System.exit(1);
 		}
 	}
+	private static boolean applyAndValidateTransform(JShrink jShrink, String transform){
+		if(backupService!=null){
+			//create new copy
+			backupService.addCheckpoint("method-removal");
 
+			//update files
+			jShrink.updateClassFilesAtPath(backupService.resolveFiles(jShrink.getClassPaths()));
+
+			//conduct tests
+			if(!backupService.validateLastCheckpoint()){
+				//if not safe
+				backupService.removeCheckpoint();
+				backupService.revertToLast();
+				System.err.println("Exiting after checkpoint failure - method-removal");
+				System.exit(1);
+			}
+		}
+		return true;
+	}
 	private static void filterUnmodifiableClassesAfterDebloating(JShrink jShrink, Set<MethodData> appMethodsRemoved,
 																 Set<MethodData> libMethodsRemoved,
 																 Set<FieldData> appFieldsRemoved,
