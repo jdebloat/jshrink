@@ -133,8 +133,7 @@ public class CheckpointTest {
 		String realPath = CheckpointTest.class.getClassLoader().getResource("simple-test-project2").getPath();
 		String backupPath = "/tmp/checkpoint-test";
 		Checkpoint c = new Checkpoint(realPath, backupPath, "class-collapse", true);
-		c.resolveToBackupPath(new File(realPath+File.separator+"src"+File.separator+"main"+File.separator+"java"));
 		String p = File.separator+"src"+File.separator+"main"+File.separator+"java";
-		assertEquals(c.getBackupPath().toAbsolutePath()+p,c.resolveToBackupPath(new File(realPath+p)).toString());
+		assertEquals(c.getBackupPath().toAbsolutePath()+p,c.resolveToBackupFile(new File(realPath+p)).getAbsolutePath());
 	}
 }
