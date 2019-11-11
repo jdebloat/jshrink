@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 public class CheckpointTest {
@@ -126,5 +127,14 @@ public class CheckpointTest {
 			CheckpointTest.buildProject(c.getBackupPath());
 		}
 		assertTrue(c.isSafe());
+	}
+	@Test
+	public void testPathResolution(){
+		String realPath = CheckpointTest.class.getClassLoader().getResource("simple-test-project2").getPath();
+		String backupPath = "/tmp/checkpoint-test";
+		Checkpoint c = new Checkpoint(realPath, backupPath, "class-collapse", true);
+		c.resolveToBackupPath(new File(realPath+File.separator+"src"+File.separator+"main"+File.separator+"java"));
+		String p = File.separator+"src"+File.separator+"main"+File.separator+"java";
+		assertEquals(c.getBackupPath().toAbsolutePath()+p,c.resolveToBackupPath(new File(realPath+p)).toString());
 	}
 }

@@ -20,7 +20,7 @@ public class Checkpoint {
 
 	private boolean runTests(){
 		if (this.isVerbose) {
-			System.out.println("Running project tests...");
+			System.out.println("Running project tests for checkpoint "+this.transformation+" ...");
 		}
 		this.testsPassed = false;
 		String[] cmd;
@@ -108,7 +108,7 @@ public class Checkpoint {
 		this.rollBack = false;
 		if(!this.backup(realPath, backupFolder))
 		{
-			throw new IllegalArgumentException("Checkpoint creation failed");
+			throw new IllegalArgumentException("Checkpoint creation failed "+this.transformation);
 		}
 		this.timestamp = java.time.Instant.now();
 		this.isValid = true;
@@ -145,6 +145,9 @@ public class Checkpoint {
 		return true;
 	}
 
+	public File resolveToBackupFile(File realPath){
+		return (this.getBackupPath().resolve(this.getRealPath().relativize(realPath.toPath()))).toFile();
+	}
 	public boolean isSafe(){
 		return this.testsPassed || this.runTests();
 	}
