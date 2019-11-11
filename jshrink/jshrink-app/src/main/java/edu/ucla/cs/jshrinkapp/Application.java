@@ -616,7 +616,9 @@ public class Application {
 				//if not safe
 				backupService.removeCheckpoint();
 				backupService.revertToLast();
-				System.err.println("Exiting after checkpoint failure - method-removal");
+				//clean up all checkpoints
+				while(backupService.removeCheckpoint()){}
+				System.err.println("Exiting after checkpoint failure - "+transform);
 				System.exit(1);
 			}
 		}
