@@ -399,7 +399,7 @@ public class Application {
 			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
 					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
 
-			Application.applyAndValidateTransform(jShrink, "class-collapser");
+			Application.applyAndValidateTransform(jShrink, "method-inline");
 		}
 
 		toLog.append(jShrink.getLog());
@@ -606,7 +606,7 @@ public class Application {
 	private static boolean applyAndValidateTransform(JShrink jShrink, String transform){
 		if(backupService!=null){
 			//create new copy
-			backupService.addCheckpoint("method-removal");
+			backupService.addCheckpoint(transform);
 
 			//update files
 			jShrink.updateClassFilesAtPath(backupService.resolveFiles(jShrink.getClassPaths()));
