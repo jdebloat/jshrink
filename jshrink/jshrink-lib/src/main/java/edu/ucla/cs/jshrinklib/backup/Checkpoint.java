@@ -61,8 +61,8 @@ public class Checkpoint {
 		}
 
 		if (this.isVerbose) {
-			System.out.println(maven_log);
-			System.out.println("Done running project tests!");
+			//System.out.println(maven_log);
+			System.out.println("Done running project tests for "+transformation+" !");
 		}
 
 		return this.testsPassed;
@@ -86,7 +86,7 @@ public class Checkpoint {
 	private boolean backup(String realPath, String backupPath){
 		try{
 			this.oldPath = Paths.get(realPath);
-			File backupFolder = new File(backupPath+File.separator+"backup");
+			File backupFolder = new File(backupPath+File.separator+"backup_"+transformation);
 			backupFolder.mkdirs();
 			if (!this.oldPath.toFile().isDirectory() ||  (!backupFolder.isDirectory()))
 				throw new IllegalArgumentException("Input for backup is not a folder");
@@ -113,7 +113,7 @@ public class Checkpoint {
 		this.timestamp = java.time.Instant.now();
 		this.isValid = true;
 		if(this.isVerbose){
-			System.out.println("Created checkpoint "+this.getBackupPath()+" for "+this.getRealPath()+" at "+this.timestamp);
+			System.out.println("Created checkpoint "+transformation+" - "+this.getBackupPath()+" for "+this.getRealPath()+" at "+this.timestamp);
 		}
 	}
 
