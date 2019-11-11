@@ -220,10 +220,10 @@ public class Application {
 
 		toLog.append("app_num_classes_before," + allAppClasses.size() + System.lineSeparator());
 		toLog.append("lib_num_classes_before," + allLibClasses.size() + System.lineSeparator());
-		//TODO: Add command line check here for backupservice
-		if(true) {
+
+		if(commandLineParser.getBackupPath()!=null) {
 			//commandLineParser.useCheckpoints();
-			backupService = new BackupService(commandLineParser.getMavenDirectory().get(), "/tmp/checkpointTest",commandLineParser.isVerbose());
+			backupService = new BackupService(commandLineParser.getMavenDirectory().get(), commandLineParser.getBackupPath(),commandLineParser.isVerbose());
 		}
 		//create checkpoint
 		if(backupService!=null){
@@ -314,7 +314,7 @@ public class Application {
 			}
 
 			//add new checkpoint and update
-			Application.applyAndValidateTransform(jShrink, "method-removal");
+			if(!Application.applyAndValidateTransform(jShrink, "method-removal")) return;
 
 			//Run the field removal
 			if(commandLineParser.removedFields()) {
@@ -339,7 +339,7 @@ public class Application {
 					System.out.println("Done removing unused fields!");
 				}
 
-				Application.applyAndValidateTransform(jShrink, "field-removal");
+				if(!Application.applyAndValidateTransform(jShrink, "field-removal")) return;
 			}
 
 
@@ -360,7 +360,7 @@ public class Application {
 				if(commandLineParser.isVerbose()){
 					System.out.println("Done collapsing collapsable classes!");
 				}
-				Application.applyAndValidateTransform(jShrink, "class-collapser");
+				if (!Application.applyAndValidateTransform(jShrink, "class-collapser")) return;
 			}
 
 			// filter out unmodifiable classes after debloating
@@ -399,7 +399,7 @@ public class Application {
 			filterUnmodifiableClassesAfterDebloating(jShrink, appMethodsRemoved,
 					libMethodsRemoved, appFieldsRemoved, libFieldsRemoved);
 
-			Application.applyAndValidateTransform(jShrink, "method-inline");
+			if(!Application.applyAndValidateTransform(jShrink, "method-inline")) return;
 		}
 
 		toLog.append(jShrink.getLog());
@@ -619,7 +619,7 @@ public class Application {
 				//clean up all checkpoints
 				while(backupService.removeCheckpoint()){}
 				System.err.println("Exiting after checkpoint failure - "+transform);
-				System.exit(1);
+				return false;
 			}
 		}
 		return true;

@@ -38,6 +38,7 @@ public class ApplicationCommandLineParser {
 	private final boolean skipMethodRemoval;
 	private final boolean removeFields;
 	private final File logDirectory;
+	private final String backupPath;
 	private final boolean cache;
 	private final boolean ignoreLibs;
 	private final boolean baseline;
@@ -217,6 +218,25 @@ public class ApplicationCommandLineParser {
 			}
 			directory.mkdirs();
 			this.logDirectory = directory;
+		}
+		if(commandLine.hasOption("ch")){
+			File backupPath = new File(commandLine.getOptionValue("ch"));
+			if(!backupPath.exists()){
+				if(!backupPath.mkdirs()){
+					throw new ParseException("Specified backup path '"
+							+ backupPath.getAbsolutePath() + " cannot be created.");
+				}
+			} else if(!backupPath.isDirectory()){
+				throw new ParseException("Specified backup path '"
+						+ backupPath.getAbsolutePath() + "' is not a directory.");
+			} else if(!backupPath.canWrite()){
+				throw new ParseException("Specified backup path '"
+						+ backupPath.getAbsolutePath() + "' is not writable.");
+			}
+			this.backupPath = backupPath.getAbsolutePath();
+		}
+		else{
+			this.backupPath = null;
 		}
 	}
 
@@ -511,7 +531,12 @@ public class ApplicationCommandLineParser {
 				.hasArg(false)
 				.required(false)
 				.build();
-
+		Option checkpointOption = Option.builder("ch")
+				.desc("Create checkpoints and rollback on test failure.")
+				.longOpt("checkpoint")
+				.hasArg(true)
+				.required(false)
+				.build();
 
 		Options toReturn = new Options();
 		toReturn.addOption(libClassPathOption);
@@ -541,6 +566,7 @@ public class ApplicationCommandLineParser {
 		toReturn.addOption(cacheOption);
 		toReturn.addOption(ignoreLibsOptions);
 		toReturn.addOption(baselineOption);
+		toReturn.addOption(checkpointOption);
 
 		return toReturn;
 	}
@@ -664,4 +690,6 @@ public class ApplicationCommandLineParser {
 	public boolean useBaseline(){
 		return this.baseline;
 	}
+
+	public String getBackupPath(){ return this.backupPath;}
 }
