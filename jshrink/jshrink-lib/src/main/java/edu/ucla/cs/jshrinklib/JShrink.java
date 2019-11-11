@@ -473,7 +473,25 @@ public class JShrink {
 
 		return classPaths;
 	}
-
+	public void updateClassFilesAtPath(Set<File> classPaths){
+		try {
+			Set<File> decompressedJars =
+					new HashSet<File>(ClassFileUtils.extractJars(new ArrayList<File>(classPaths)));
+			modifyClasses(this.classesToModify, classPaths);
+			this.removeClasses(this.classesToRemove, classPaths);
+			/*
+			File.delete() does not delete a file immediately. I was therefore running into a problem where the jars
+			were being recompressed with the files that were supposed to be deleted. I found adding a small delay
+			solved this problem. However, it would be good to find a better solution to this problem.
+			TODO: Fix the above.
+			 */
+			TimeUnit.SECONDS.sleep(1);
+			ClassFileUtils.compressJars(decompressedJars);
+		}catch(IOException | InterruptedException e){
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 	public void updateClassFiles(){
 		try {
 			Set<File> classPaths = this.getClassPaths();
