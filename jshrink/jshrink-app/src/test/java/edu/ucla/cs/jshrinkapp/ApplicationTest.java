@@ -1245,6 +1245,37 @@ public class ApplicationTest {
 	}
 
 	@Test
+	public void Bukkit_test_class_collapser_and_inliner_with_checkpoint() {
+		StringBuilder arguments = new StringBuilder();
+		arguments.append("--prune-app ");
+		arguments.append("--maven-project \"" + getBukkitProjectDir().getAbsolutePath() + "\" ");
+		arguments.append("--main-entry ");
+		arguments.append("--test-entry ");
+		arguments.append("--public-entry ");
+		arguments.append("--remove-methods ");
+		arguments.append("--class-collapser ");
+		arguments.append("--inline ");
+		arguments.append("--run-tests ");
+		arguments.append("--checkpoint /tmp/checkpointTest ");
+		arguments.append("--tamiflex " + getTamiFlexJar().getAbsolutePath() + " ");
+		arguments.append("--jmtrace " + getJMTrace().getAbsolutePath() + " ");
+		arguments.append("--use-cache ");
+		arguments.append("--verbose ");
+
+		Application.main(arguments.toString().split("\\s+"));
+
+		ClassCollapserData classCollapseResult = Application.classCollapserData;
+		System.out.println(classCollapseResult.getRemovedMethods().size());
+		System.out.println(classCollapseResult.getClassesToRemove().size());
+		System.out.println(classCollapseResult.getClassesToRewrite().size());
+
+		assertEquals(Application.testOutputBefore.getRun(), Application.testOutputAfter.getRun());
+		assertEquals(Application.testOutputBefore.getErrors(), Application.testOutputAfter.getErrors());
+		assertEquals(Application.testOutputBefore.getFailures(), Application.testOutputAfter.getFailures());
+		assertEquals(Application.testOutputBefore.getSkipped(), Application.testOutputAfter.getSkipped());
+	}
+
+	@Test
 	public void test_handling_virtually_invoked_methods() {
 		StringBuilder arguments = new StringBuilder();
 		arguments.append("--prune-app ");
