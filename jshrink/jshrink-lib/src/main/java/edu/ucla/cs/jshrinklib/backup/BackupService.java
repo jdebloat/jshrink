@@ -32,7 +32,7 @@ public class BackupService {
 		}
 		Checkpoint c= checkpoints.get(checkpoints.size()-1);
 		if(this.isVerbose){
-			System.out.println("Removing checkpoing - "+c.transformation);
+			System.out.println("Removing checkpoint- "+c.transformation);
 		}
 		c.delete();
 		checkpoints.remove(c);
