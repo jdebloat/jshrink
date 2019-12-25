@@ -47,6 +47,10 @@ do
 
 done < ${project_list}
 
+# If you're receiving an error here, it may be because you cloned this repo
+# without the Git LFS (Large File Storage) enabled. To setup Git LFS please
+# consult https://github.com/git-lfs/git-lfs/wiki/Installation . Once setup,
+# delete this repo and re-pull.
 tar xzf "jshrink_caches.tar.gz"
 while read line
 do

@@ -8,7 +8,12 @@ map="${DIR}/cache_map.csv"
 {
 	rm -rf "${caches_untarred}"
 	mkdir -p "${caches_untarred}"
-	tar xzf "${caches_tar}" -C "${caches_untarred}"
+
+    # If you're receiving an error here, it may be because you cloned this repo
+    # without the Git LFS (Large File Storage) enabled. To setup Git LFS please
+    # consult https://github.com/git-lfs/git-lfs/wiki/Installation . Once
+    # setup, delete this repo and re-pull.
+    tar xzf "${caches_tar}" -C "${caches_untarred}"
 
 	cat "${map}" | while read entry; do
 		from=$(echo "${entry}" | cut -d, -f1)
