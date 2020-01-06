@@ -3,6 +3,9 @@ package edu.ucla.cs.jshrinklib.reachability;
 import edu.ucla.cs.jshrinklib.util.MavenUtils;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
@@ -128,5 +131,56 @@ public class TestOutputTest {
 		assertEquals(0, output.getSkipped());
 		assertEquals(toProcess, output.getTestOutputText());
 		assertTrue(output.isTestBuildSuccess());
+	}
+
+	@Test
+	public void TestOutputTestClassesTest(){
+		HashMap<String, Integer> testNamesOriginal = new HashMap<>();
+		testNamesOriginal.put("org.I0Itec.zkclient.util.ZkPathUtilTest", 2);
+		testNamesOriginal.put("org.I0Itec.zkclient.ServerZkClientTest", 18);
+		testNamesOriginal.put("org.I0Itec.zkclient.InMemoryConnectionTest", 2);
+		testNamesOriginal.put("org.I0Itec.zkclient.ContentWatcherTest", 4);
+		testNamesOriginal.put("org.I0Itec.zkclient.ZkClientSerializationTest", 2);
+		testNamesOriginal.put("org.I0Itec.zkclient.ZkConnectionTest", 2);
+		testNamesOriginal.put("org.I0Itec.zkclient.DistributedQueueTest", 3);
+		testNamesOriginal.put("org.I0Itec.zkclient.MemoryZkClientTest", 11);
+
+		String toProcess = "-------------------------------------------------------\n" +
+				" T E S T S\n" +
+				"-------------------------------------------------------\n" +
+				"\n" +
+				"-------------------------------------------------------\n" +
+				" T E S T S\n" +
+				"-------------------------------------------------------\n" +
+				"Running org.I0Itec.zkclient.util.ZkPathUtilTest\n" +
+				"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.375 sec - " +
+				"in org.I0Itec.zkclient.util.ZkPathUtilTest\n" +
+				"Running org.I0Itec.zkclient.ServerZkClientTest\n" +
+				"Tests run: 18, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 42.592 sec - " +
+				"in org.I0Itec.zkclient.ServerZkClientTest\n" +
+				"Running org.I0Itec.zkclient.InMemoryConnectionTest\n" +
+				"Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.034 sec - " +
+				"in org.I0Itec.zkclient.InMemoryConnectionTest\n" +
+				"Running org.I0Itec.zkclient.ContentWatcherTest\n" +
+				"Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.57 sec - " +
+				"in org.I0Itec.zkclient.ContentWatcherTest\n" +
+				"Running org.I0Itec.zkclient.ZkClientSerializationTest\n" +
+				"Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.282 sec - " +
+				"in org.I0Itec.zkclient.ZkClientSerializationTest\n" +
+				"Running org.I0Itec.zkclient.ZkConnectionTest\n" +
+				"Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 1.29 sec - " +
+				"in org.I0Itec.zkclient.ZkConnectionTest\n" +
+				"Running org.I0Itec.zkclient.DistributedQueueTest\n" +
+				"Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.801 sec - " +
+				"in org.I0Itec.zkclient.DistributedQueueTest\n" +
+				"Running org.I0Itec.zkclient.MemoryZkClientTest\n" +
+				"Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.965 sec - " +
+				"in org.I0Itec.zkclient.MemoryZkClientTest\n" +
+				"\n" +
+				"Results :\n" +
+				"\n" +
+				"Tests run: 44, Failures: 0, Errors: 0, Skipped: 2\n";
+		HashMap<String, Integer> testNames = MavenUtils.testClassesFromString(toProcess);
+		assertEquals(testNames, testNamesOriginal);
 	}
 }

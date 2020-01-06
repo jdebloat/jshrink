@@ -3,6 +3,7 @@ package edu.ucla.cs.jshrinklib.util;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -43,6 +44,26 @@ public class MavenUtils {
 		}
 
 		return cp_map;
+	}
+
+	public static HashMap<String, Integer> testClassesFromString(String mavenOutput){
+		HashMap<String, Integer> testNames = new HashMap<>();
+
+		if(mavenOutput!=null && mavenOutput.length()!=0){
+			String test_regex = ".*Tests run: (\\d+), Failures: (\\d+), Errors: (\\d+), Skipped: (\\d+),.*";
+			String[] log_lines = mavenOutput.split(System.lineSeparator());
+			Pattern pattern = Pattern.compile(test_regex);
+			for (String line : log_lines) {
+				if (pattern.matcher(line).matches()) {
+					String name = line.substring(line.lastIndexOf(" ")+1, line.length());
+					Matcher matcher = Pattern.compile("\\d+").matcher(line);
+					matcher.find();
+					testNames.put(name, Integer.parseInt(matcher.group()));
+				}
+			}
+		}
+
+		return testNames;
 	}
 
 	public static TestOutput testOutputFromString(String mavenOutput){
