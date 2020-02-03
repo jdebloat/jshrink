@@ -60,4 +60,16 @@ public class ProGuardRunnerTest {
         f.deleteOnExit();
         assertTrue(exitCode);
     }
+
+    @Test
+    public void testBundleMultiModuleMavenProject() throws IOException, InterruptedException {
+        String projectDir = ProGuardRunnerTest.class.getClassLoader().getResource("module-test-project").getPath();
+        ProGuardRunner runner = new ProGuardRunner();
+        File f = new File("test.jar");
+        assertFalse(f.exists());
+        boolean exitCode = runner.bundleMavenProject(projectDir, f.getAbsolutePath());
+        assertTrue(f.exists());
+        f.deleteOnExit();
+        assertTrue(exitCode);
+    }
 }
