@@ -71,3 +71,8 @@ rm -rf "jshrink_caches"
 if [ -d "sample-projects/dieforfree_qart4j" ]; then
 	cp -r qart4j_patch/* sample-projects/dieforfree_qart4j/
 fi
+
+# Fix notnoop_java-apns
+if [ -d "sample-projects/notnoop_java-apns" ]; then
+  cp -r notnoop_java-apns/* sample-projects/notnoop_java-apns/
+fi
