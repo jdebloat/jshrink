@@ -682,7 +682,7 @@ public class Application {
 				toLog.append(jShrink.getLog());
 				// update class files at the end of all transformations
 				// write the result after rollback
-				jShrink.updateClassFiles();
+				//jShrink.updateClassFiles();
 
 
 				toLog.append("app_num_methods_after," +
