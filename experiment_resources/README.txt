@@ -47,3 +47,6 @@ file, and output to "size_data.csv".
 Once the experiment script has finished running, please run 
 "reset_work_list.sh" to clean the projects in "sample-projects" (the 
 projects must be "cleaned" before any other experiments are run again!).
+
+All the experiments may be run via execution of the "replicate_experiments.sh"
+script.
