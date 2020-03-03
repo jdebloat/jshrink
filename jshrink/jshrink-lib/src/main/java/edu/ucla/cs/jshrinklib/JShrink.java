@@ -561,10 +561,11 @@ public class JShrink {
 	}
 
 	private void checkSizes(){
-		if(this.libSizeCompressed < 0 || this.libSizeDecompressed < 0
-			|| this.appSizeCompressed < 0 || this.appSizeDecompressed < 0){
-			updateSizes();
-		}
+//		if(this.libSizeCompressed < 0 || this.libSizeDecompressed < 0
+//			|| this.appSizeCompressed < 0 || this.appSizeDecompressed < 0){
+//			updateSizes();
+//		}
+		updateSizes();
 	}
 
 	public long getLibSize(boolean withJarsDecompressed){
