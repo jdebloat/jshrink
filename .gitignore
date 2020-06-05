@@ -4,8 +4,8 @@
 *target
 *.metadata
 *.classpath
-*.project 
-*.settings 
+*.project
+*.settings
 *.DS_Store
 *.tmp
 *.lst
