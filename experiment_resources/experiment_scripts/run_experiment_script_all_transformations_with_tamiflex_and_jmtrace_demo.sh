@@ -12,7 +12,7 @@ JMTRACE="${JSHRINK_MTRACE}/jmtrace"
 MTRACE_BUILD="${JSHRINK_MTRACE}/build"
 TIMEOUT=54000 #15 hours
 LOG_DIR="${PWD}/output_log"
-OUTPUT_LOG_DIR="${LOG_DIR}/all_transformations_static_output_log"
+OUTPUT_LOG_DIR="${LOG_DIR}/all_transformations_with_tamiflex_and_jmtrace_output_log"
 
 if [ ! -f "${JAVA}" ]; then
 	>&2 echo "Could not find Java 1.8 at the specified path: "${JAVA}
@@ -55,7 +55,7 @@ cat ${WORK_LIST} |  while read item; do
 
 	temp_file=$(mktemp /tmp/XXXX)
 
-	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --maven-project ${item_dir} -T --use-cache --public-entry --main-entry --test-entry --prune-app --class-collapser --inline --remove-fields --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
+	timeout ${TIMEOUT} ${JAVA} -Xmx20g -jar ${DEBLOAT_APP} --jmtrace "${MTRACE_BUILD}" --tamiflex ${TAMIFLEX} --maven-project ${item_dir} -T --use-cache --public-entry --main-entry --test-entry --prune-app --class-collapser --inline --remove-fields --remove-methods --log-directory "${ITEM_LOG_DIR}" --verbose 2>&1 >${temp_file} 
 	exit_status=$?
 	if [[ ${exit_status} == 0 ]]; then
 		cat ${temp_file}
@@ -84,8 +84,8 @@ cat ${WORK_LIST} |  while read item; do
 		using_test_entry="1"
 		custom_entry=""
 		is_app_prune="1"
-		tamiflex="0"
-		jmtrace="0"
+		tamiflex="1"
+		jmtrace="1"
 		baseline="0"
 		remove_methods="1"
 		method_inliner="1"

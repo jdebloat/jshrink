@@ -21,7 +21,7 @@ cp "${JSHRINK_JAR}" "${JSHRINK_3_2_DEST}"
 echo "Downloading the projects..."
 ${DOWNLOAD_SCRIPT} ${WORKLIST}
 
-script="run_experiment_script_all_transformations_static_demo.sh"
+script="run_experiment_script_all_transformations_with_tamiflex_and_jmtrace_demo.sh"
 echo "Running the experiment script ${script}"
 cp "${EXPERIMENT_SCRIPTS_DIR}/${script}" "${PWD}/${script}"
 ${PWD}/${script}
