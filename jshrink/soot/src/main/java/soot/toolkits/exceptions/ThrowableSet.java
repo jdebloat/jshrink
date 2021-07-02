@@ -91,7 +91,7 @@ import soot.options.Options;
 public class ThrowableSet {
 
   private static final boolean INSTRUMENTING = false;
-  private final static SootClass JAVA_LANG_OBJECT_CLASS = Scene.v().getObjectType().getSootClass();
+  private final SootClass JAVA_LANG_OBJECT_CLASS = Scene.v().getObjectType().getSootClass();
 
   /**
    * Set of exception types included within the set.
@@ -1159,7 +1159,7 @@ public class ThrowableSet {
      * @return a <code>ThrowableSet</code> representing the set of exceptions corresponding to <code>include</code> -
      *         <code>exclude</code>.
      */
-    private ThrowableSet registerSetIfNew(Set<RefLikeType> include, Set<AnySubType> exclude) {
+    protected ThrowableSet registerSetIfNew(Set<RefLikeType> include, Set<AnySubType> exclude) {
       if (INSTRUMENTING) {
         registrationCalls++;
       }

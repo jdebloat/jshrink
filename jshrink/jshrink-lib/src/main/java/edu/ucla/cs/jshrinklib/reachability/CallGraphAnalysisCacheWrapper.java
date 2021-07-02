@@ -1,7 +1,6 @@
 package edu.ucla.cs.jshrinklib.reachability;
 
 import edu.ucla.cs.jshrinklib.util.SootUtils;
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import soot.Scene;
 
 import java.io.*;

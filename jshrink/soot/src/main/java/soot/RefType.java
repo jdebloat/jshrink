@@ -22,6 +22,8 @@ package soot;
  * #L%
  */
 
+import com.google.common.base.Optional;
+
 import java.util.ArrayDeque;
 
 import soot.util.Switch;
@@ -38,6 +40,9 @@ public class RefType extends RefLikeType implements Comparable<RefType> {
   }
 
   public static RefType v() {
+    if (ModuleUtil.module_mode()) {
+      return G.v().soot_ModuleRefType();
+    }
     return G.v().soot_RefType();
   }
 
@@ -48,10 +53,10 @@ public class RefType extends RefLikeType implements Comparable<RefType> {
     return className;
   }
 
-  private volatile SootClass sootClass;
+  protected volatile SootClass sootClass;
   private AnySubType anySubType;
 
-  private RefType(String className) {
+  protected RefType(String className) {
     if (className.startsWith("[")) {
       throw new RuntimeException("Attempt to create RefType whose name starts with [ --> " + className);
     }
@@ -72,12 +77,12 @@ public class RefType extends RefLikeType implements Comparable<RefType> {
    * @return a RefType for the given class name.
    */
   public static RefType v(String className) {
-    RefType rt = Scene.v().getRefTypeUnsafe(className);
-    if (rt == null) {
-      rt = new RefType(className);
-      return Scene.v().getOrAddRefType(rt);
+
+    if (ModuleUtil.module_mode()) {
+      return ModuleRefType.v(className);
     }
-    return rt;
+
+    return Scene.v().getOrAddRefType(className);
   }
 
   public int compareTo(RefType t) {
@@ -92,6 +97,9 @@ public class RefType extends RefLikeType implements Comparable<RefType> {
    * @return a RefType for the given SootClass..
    */
   public static RefType v(SootClass c) {
+    if (ModuleUtil.module_mode()) {
+      return ModuleRefType.v(c.getName(), Optional.fromNullable(c.moduleName));
+    }
     return v(c.getName());
   }
 

@@ -25,7 +25,12 @@ package soot;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,6 +94,9 @@ public class SootResolver {
   }
 
   public static SootResolver v() {
+    if (ModuleUtil.module_mode()) {
+      return G.v().soot_SootModuleResolver();
+    }
     return G.v().soot_SootResolver();
   }
 
@@ -111,7 +119,11 @@ public class SootResolver {
     }
 
     SootClass newClass;
-    newClass = new SootClass(className);
+    if (className.endsWith(SootModuleInfo.MODULE_INFO)) {
+      newClass = new SootModuleInfo(className, null);
+    } else {
+      newClass = new SootClass(className);
+    }
     newClass.setResolvingLevel(SootClass.DANGLING);
     Scene.v().addClass(newClass);
 
@@ -212,7 +224,13 @@ public class SootResolver {
 
   protected void bringToHierarchyUnchecked(SootClass sc) {
     String className = sc.getName();
-    ClassSource is = SourceLocator.v().getClassSource(className);
+    ClassSource is;
+    if (ModuleUtil.module_mode()) {
+      is = ModulePathSourceLocator.v().getClassSource(className,
+          com.google.common.base.Optional.fromNullable(sc.moduleName));
+    } else {
+      is = SourceLocator.v().getClassSource(className);
+    }
     try {
       boolean modelAsPhantomRef = is == null;
       if (modelAsPhantomRef) {
@@ -377,7 +395,7 @@ public class SootResolver {
      */
     private static final long serialVersionUID = 1563461446590293827L;
 
-    private SootClassNotFoundException(String s) {
+    public SootClassNotFoundException(String s) {
       super(s);
     }
   }
@@ -385,4 +403,5 @@ public class SootResolver {
   public Set<soot.Type> getReferenceSignatures(SootClass sc){
     return this.classToTypesSignature.get(sc);
   }
+
 }

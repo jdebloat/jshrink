@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -34,7 +35,6 @@ import java.util.Set;
  *
  * @author Ondrej Lhotak
  */
-
 public class HashMultiMap<K, V> extends AbstractMultiMap<K, V> {
 
   private static final long serialVersionUID = -1928446853508616896L;
@@ -159,11 +159,7 @@ public class HashMultiMap<K, V> extends AbstractMultiMap<K, V> {
   @Override
   public Set<V> get(K o) {
     Set<V> ret = m.get(o);
-    if (ret == null) {
-      return Collections.emptySet();
-    } else {
-      return ret;
-    }
+    return (ret == null) ? Collections.emptySet() : ret;
   }
 
   @Override
@@ -216,4 +212,15 @@ public class HashMultiMap<K, V> extends AbstractMultiMap<K, V> {
     m.clear();
   }
 
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    for (Entry<K, Set<V>> entry : m.entrySet()) {
+      builder.append(entry.getKey()).append(":\n").append(entry.getValue().toString()).append("\n\n");
+    }
+    if (builder.length() > 2) {
+      builder.delete(builder.length() - 2, builder.length());
+    }
+    return builder.toString();
+  }
 }
